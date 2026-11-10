@@ -30,10 +30,10 @@ def test_challenge_mode_grades_the_stored_optimum():
     if opt:
         for k, v in opt.items():
             key = f"k_{k}"
-            try:
-                at.session_state[key] = v
-            except Exception:
-                pass
+            if key in [w.key for w in at.toggle]:
+                at.toggle(key=key).set_value(v)
+            elif key in [w.key for w in at.select_slider]:
+                at.select_slider(key=key).set_value(v)
         at.run()
     sub = [b for b in at.button if "Lock prediction" in b.label][0]
     sub.click().run()
@@ -51,3 +51,31 @@ def test_sandbox_predict_mode_scores_a_prediction():
     [b for b in at.button if "Lock prediction" in b.label][0].click().run()
     assert not at.exception
     assert any(m.label == "Calibration" for m in at.metric)
+
+
+def test_campaign_locks_and_unlocks_by_stars():
+    from sim import progress as pg
+    from sim.challenges import challenges
+    order = list(challenges())
+    at = AppTest.from_file(APP, default_timeout=120).run()
+    at.radio(key="mode").set_value("Challenge").run()
+    assert not at.exception
+    assert [b.disabled for b in at.button if b.key and b.key.startswith("play_")][1:] == [True] * (len(order) - 1)
+    prog = pg.empty()
+    prog["stars"][order[0]] = 1
+    at.session_state["progress"] = prog
+    at.run()
+    assert not at.exception
+    play = {b.key: b.disabled for b in at.button if b.key and b.key.startswith("play_")}
+    assert play[f"play_{order[1]}"] is False and play[f"play_{order[2]}"] is True
+
+
+def test_theme_and_industry_filter_do_not_crash():
+    from sim.themes import THEMES
+    at = AppTest.from_file(APP, default_timeout=120).run()
+    for name in THEMES:
+        at.selectbox(key="theme").select(name).run()
+        assert not at.exception, name
+    for ind in ("E-commerce", "Fintech", "Gaming", "Infrastructure"):
+        at.selectbox(key="industry").select(ind).run()
+        assert not at.exception, ind

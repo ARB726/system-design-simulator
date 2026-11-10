@@ -208,3 +208,29 @@ def test_near_ties_both_count_as_the_bottleneck():
     s = dict(p95_ms=40.0, tiers={"app": dict(mean_util=0.60), "db_primary": dict(mean_util=0.57)})
     assert score_prediction(Prediction("app", 0.6, 0, True), s, True)["parts"]["bottleneck"] == 40
     assert score_prediction(Prediction("db_primary", 0.6, 0, True), s, True)["parts"]["bottleneck"] == 40
+
+
+# ---------------------------------------------------------------- replay and share card
+def test_replay_figure_has_one_frame_per_second_and_controls():
+    from sim import charts
+    cfg = presets()["Async writes: absorb a burst"].cfg
+    cfg = copy.deepcopy(cfg)
+    cfg.workload.duration_s = 20
+    cfg.events = [Event("traffic_spike", 6, 6, 1.8)]
+    res, tl, s = sim(cfg)
+    fig = charts.replay_figure(res, tl)
+    assert len(fig.frames) == len(tl)
+    assert len(fig.layout.sliders[0].steps) == len(tl)
+    assert [b.label for b in fig.layout.updatemenus[0].buttons] == ["▶ Play", "❚❚ Pause"]
+    assert any("Traffic spike" in f.layout.title.text for f in fig.frames)
+
+
+def test_share_card_is_a_valid_png_of_the_right_size():
+    import io
+    from PIL import Image
+    from sim.sharecard import design_lines, make_card
+    ch = challenges()["launch"]
+    png = make_card(ch.title, 91.0, 2, "Engineer", 3, "3/3", 380.0, 352.0, design_lines(default_design(ch)),
+                    theme="Sunset", calibration=88)
+    img = Image.open(io.BytesIO(png))
+    assert img.size == (1200, 630) and img.format == "PNG"

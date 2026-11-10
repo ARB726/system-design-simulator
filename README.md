@@ -6,21 +6,28 @@ A discrete-event simulation (Python + SimPy) of **clients → CDN → load balan
 
 > Add a demo GIF here: `![demo](docs/demo.gif)` and your live link.
 
-## Three ways to use it
+## What you can do
 
-**Sandbox.** Tune every knob, add chaos events (traffic spike, replica crash, cold cache, slow database), and read findings generated from the numbers, not from an LLM.
+**Sandbox.** Tune every knob, add chaos events (traffic spike, replica crash, cold cache, slow database), and read findings generated from the numbers, not from an LLM. Press **Play** on the live replay to watch tiers heat up and queues fill, second by second.
 
-**Challenge mode.** Each challenge gives a story, a monthly budget and a target SLO. You pick a design with a few knobs. It is graded by *hidden* chaos tests with fixed seeds (so the same design always scores the same):
+**Challenge campaign.** Six industry-themed challenges unlock in order (earn one star to open the next). Each gives a story, a monthly budget and a target SLO. You pick a design with a few knobs, and it is graded by *hidden* chaos tests with fixed seeds, so the same design always scores the same.
 
-| Challenge | What it teaches |
-|---|---|
-| Launch day: URL shortener | Horizontal scaling, CDN vs cache, surviving the loss of servers |
-| Write storm: chat service | Async queues vs bigger databases, the freshness (lag) you trade for speed |
-| Cache failure drill | Size the database for the miss path, not the happy path |
+| Challenge | Industry | What it teaches |
+|---|---|---|
+| Launch day: URL shortener | Social | Horizontal scaling, CDN vs cache, losing servers |
+| Cache failure drill | E-commerce | Size the database for the miss path, not the happy path |
+| Write storm: chat service | Social | Async queues vs bigger databases, and the lag you trade for speed |
+| Flash sale: checkout | E-commerce | Peak-load napkin math, queue plus a flaky database |
+| Payments ledger: the hot account | Fintech | Why more shards don't fix a hot key; writes that can't be async |
+| Game launch: the leaderboard | Gaming | A CDN removes load from every tier behind it |
 
-Score = 70 points for hidden tests passed + 30 for cost efficiency (cheapest passing design's cost / yours, only if every test passes). The reference design is found **offline** by an optimizer (`tools/optimize.py`) and stored in `data/optima.json`; the app never runs it.
+Score = 70 points for hidden tests passed + 30 for cost efficiency (cheapest passing design's cost / yours, only if every test passes). Stars: 1 = all tests pass, 2 = 80% cost efficiency, 3 = 97%. The reference design is found **offline** by an optimizer (`tools/optimize.py`) and stored in `data/optima.json`; the app never runs it.
 
 **Predict-then-run.** Before a run you commit four guesses: the busiest tier, its utilization, the p95 latency bucket, and whether the design holds. They are scored against the simulator's steady state, and a running calibration score tells you whether your napkin math is improving.
+
+**Game layer.** XP and levels (Intern to Distinguished Engineer), ten badges, per-challenge stars, a campaign progress bar, and a downloadable PNG **share card** of your best design. Progress lives in the session; **Save progress** exports a small JSON file (validated and sanitized on load), so there is no account and no database.
+
+**Themes.** Pick a color theme (Ocean, Forest, Sunset, Grape, Slate) layered on Streamlit's light/dark mode, and filter scenarios by industry (E-commerce, Social, Fintech, Gaming, Infrastructure).
 
 ## Components
 CDN (edge hit rate), cache, **async write queue** (backlog, consumers, write lag, overflow rejects), **sharded database** with a hot-key control, read replicas per shard, and four load-balancing strategies. A live cost model uses illustrative prices.
@@ -29,7 +36,7 @@ CDN (edge hit rate), cache, **async write queue** (backlog, consumers, write lag
 ```bash
 pip install -r requirements.txt
 streamlit run app.py
-pip install pytest && pytest          # 54 tests, including queueing-theory validation
+pip install pytest && pytest          # 71 tests, including queueing-theory validation
 python tools/optimize.py              # optional: regenerate data/optima.json (about 15 min on 2 cores)
 ```
 Everything is free: Streamlit Community Cloud hosts it from a public GitHub repo, and there is no API key or database.
@@ -42,6 +49,9 @@ Everything is free: Streamlit Community Cloud hosts it from a public GitHub repo
 | Timelines, summary, rule-based findings | `sim/analysis.py` |
 | Challenges: knobs, hidden checks, scoring | `sim/challenges.py` |
 | Prediction scoring | `sim/predict.py` |
+| XP, levels, badges, stars, save/load | `sim/progress.py` |
+| Themes (CSS) and industry tags | `sim/themes.py` |
+| PNG share card (Pillow) | `sim/sharecard.py` |
 | Offline optimizer | `tools/optimize.py` |
 | Erlang C / M/M/c formulas, sweeps, validation | `sim/theory.py`, `sim/experiments.py` |
 | Plotly figures | `sim/charts.py` |

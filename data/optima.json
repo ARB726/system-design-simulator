@@ -955,5 +955,962 @@
   "screened": 70,
   "tried": 5,
   "seconds": 164
+ },
+ "flash": {
+  "optimum": {
+   "app_replicas": 4,
+   "app_workers": 8,
+   "cache": false,
+   "cdn": true,
+   "db_workers": 16,
+   "shards": 1,
+   "read_replicas": 0,
+   "queue": true,
+   "consumers": 16
+  },
+  "optimum_cost": 638.0,
+  "explored": [
+   {
+    "cost": 703.0,
+    "passed": 2,
+    "total": 3
+   },
+   {
+    "cost": 1068.0,
+    "passed": 3,
+    "total": 3
+   },
+   {
+    "cost": 607.0,
+    "passed": 2,
+    "total": 3
+   },
+   {
+    "cost": 736.0,
+    "passed": 3,
+    "total": 3
+   },
+   {
+    "cost": 852.0,
+    "passed": 2,
+    "total": 3
+   },
+   {
+    "cost": 514.0,
+    "passed": 2,
+    "total": 3
+   },
+   {
+    "cost": 544.0,
+    "passed": 2,
+    "total": 3
+   },
+   {
+    "cost": 946.0,
+    "passed": 3,
+    "total": 3
+   },
+   {
+    "cost": 799.0,
+    "passed": 3,
+    "total": 3
+   },
+   {
+    "cost": 567.0,
+    "passed": 2,
+    "total": 3
+   },
+   {
+    "cost": 724.0,
+    "passed": 3,
+    "total": 3
+   },
+   {
+    "cost": 822.0,
+    "passed": 2,
+    "total": 3
+   },
+   {
+    "cost": 524.0,
+    "passed": 2,
+    "total": 3
+   },
+   {
+    "cost": 1018.0,
+    "passed": 3,
+    "total": 3
+   },
+   {
+    "cost": 787.0,
+    "passed": 3,
+    "total": 3
+   },
+   {
+    "cost": 648.0,
+    "passed": 2,
+    "total": 3
+   },
+   {
+    "cost": 504.0,
+    "passed": 2,
+    "total": 3
+   },
+   {
+    "cost": 562.0,
+    "passed": 2,
+    "total": 3
+   },
+   {
+    "cost": 756.0,
+    "passed": 3,
+    "total": 3
+   },
+   {
+    "cost": 751.0,
+    "passed": 3,
+    "total": 3
+   },
+   {
+    "cost": 537.0,
+    "passed": 2,
+    "total": 3
+   },
+   {
+    "cost": 661.0,
+    "passed": 3,
+    "total": 3
+   },
+   {
+    "cost": 564.0,
+    "passed": 2,
+    "total": 3
+   },
+   {
+    "cost": 809.0,
+    "passed": 2,
+    "total": 3
+   },
+   {
+    "cost": 753.0,
+    "passed": 2,
+    "total": 3
+   },
+   {
+    "cost": 531.0,
+    "passed": 2,
+    "total": 3
+   },
+   {
+    "cost": 948.0,
+    "passed": 3,
+    "total": 3
+   },
+   {
+    "cost": 816.0,
+    "passed": 3,
+    "total": 3
+   },
+   {
+    "cost": 587.0,
+    "passed": 2,
+    "total": 3
+   },
+   {
+    "cost": 657.0,
+    "passed": 2,
+    "total": 3
+   },
+   {
+    "cost": 847.0,
+    "passed": 3,
+    "total": 3
+   },
+   {
+    "cost": 846.0,
+    "passed": 2,
+    "total": 3
+   },
+   {
+    "cost": 1051.0,
+    "passed": 3,
+    "total": 3
+   },
+   {
+    "cost": 996.0,
+    "passed": 3,
+    "total": 3
+   },
+   {
+    "cost": 819.0,
+    "passed": 3,
+    "total": 3
+   },
+   {
+    "cost": 975.0,
+    "passed": 3,
+    "total": 3
+   },
+   {
+    "cost": 1114.0,
+    "passed": 3,
+    "total": 3
+   },
+   {
+    "cost": 1092.0,
+    "passed": 3,
+    "total": 3
+   },
+   {
+    "cost": 650.0,
+    "passed": 2,
+    "total": 3
+   },
+   {
+    "cost": 512.0,
+    "passed": 2,
+    "total": 3
+   },
+   {
+    "cost": 809.0,
+    "passed": 3,
+    "total": 3
+   },
+   {
+    "cost": 598.0,
+    "passed": 2,
+    "total": 3
+   },
+   {
+    "cost": 690.0,
+    "passed": 2,
+    "total": 3
+   },
+   {
+    "cost": 1038.0,
+    "passed": 3,
+    "total": 3
+   },
+   {
+    "cost": 600.0,
+    "passed": 2,
+    "total": 3
+   },
+   {
+    "cost": 806.0,
+    "passed": 3,
+    "total": 3
+   },
+   {
+    "cost": 585.0,
+    "passed": 2,
+    "total": 3
+   },
+   {
+    "cost": 817.0,
+    "passed": 2,
+    "total": 3
+   },
+   {
+    "cost": 694.0,
+    "passed": 2,
+    "total": 3
+   },
+   {
+    "cost": 814.0,
+    "passed": 3,
+    "total": 3
+   },
+   {
+    "cost": 872.0,
+    "passed": 2,
+    "total": 3
+   },
+   {
+    "cost": 627.0,
+    "passed": 2,
+    "total": 3
+   },
+   {
+    "cost": 568.0,
+    "passed": 2,
+    "total": 3
+   },
+   {
+    "cost": 820.0,
+    "passed": 3,
+    "total": 3
+   },
+   {
+    "cost": 935.0,
+    "passed": 3,
+    "total": 3
+   },
+   {
+    "cost": 849.0,
+    "passed": 3,
+    "total": 3
+   },
+   {
+    "cost": 630.0,
+    "passed": 2,
+    "total": 3
+   },
+   {
+    "cost": 726.0,
+    "passed": 2,
+    "total": 3
+   },
+   {
+    "cost": 1132.0,
+    "passed": 3,
+    "total": 3
+   },
+   {
+    "cost": 807.0,
+    "passed": 3,
+    "total": 3
+   }
+  ],
+  "screened": 252,
+  "tried": 52,
+  "seconds": 314
+ },
+ "ledger": {
+  "optimum": {
+   "app_replicas": 2,
+   "app_workers": 8,
+   "cache": true,
+   "cdn": false,
+   "db_workers": 24,
+   "shards": 1,
+   "read_replicas": 0,
+   "queue": false,
+   "consumers": 8
+  },
+  "optimum_cost": 524.0,
+  "explored": [
+   {
+    "cost": 926.0,
+    "passed": 2,
+    "total": 3
+   },
+   {
+    "cost": 683.0,
+    "passed": 3,
+    "total": 3
+   },
+   {
+    "cost": 998.0,
+    "passed": 3,
+    "total": 3
+   },
+   {
+    "cost": 1487.0,
+    "passed": 2,
+    "total": 3
+   },
+   {
+    "cost": 551.0,
+    "passed": 2,
+    "total": 3
+   },
+   {
+    "cost": 614.0,
+    "passed": 1,
+    "total": 3
+   },
+   {
+    "cost": 1247.0,
+    "passed": 3,
+    "total": 3
+   },
+   {
+    "cost": 620.0,
+    "passed": 3,
+    "total": 3
+   },
+   {
+    "cost": 989.0,
+    "passed": 2,
+    "total": 3
+   },
+   {
+    "cost": 1310.0,
+    "passed": 3,
+    "total": 3
+   },
+   {
+    "cost": 554.0,
+    "passed": 2,
+    "total": 3
+   },
+   {
+    "cost": 1190.0,
+    "passed": 3,
+    "total": 3
+   },
+   {
+    "cost": 800.0,
+    "passed": 2,
+    "total": 3
+   },
+   {
+    "cost": 524.0,
+    "passed": 3,
+    "total": 3
+   },
+   {
+    "cost": 617.0,
+    "passed": 2,
+    "total": 3
+   },
+   {
+    "cost": 1064.0,
+    "passed": 3,
+    "total": 3
+   },
+   {
+    "cost": 1061.0,
+    "passed": 3,
+    "total": 3
+   },
+   {
+    "cost": 587.0,
+    "passed": 3,
+    "total": 3
+   },
+   {
+    "cost": 809.0,
+    "passed": 3,
+    "total": 3
+   },
+   {
+    "cost": 1613.0,
+    "passed": 2,
+    "total": 3
+   },
+   {
+    "cost": 1253.0,
+    "passed": 3,
+    "total": 3
+   },
+   {
+    "cost": 1061.0,
+    "passed": 3,
+    "total": 3
+   },
+   {
+    "cost": 1637.0,
+    "passed": 3,
+    "total": 3
+   },
+   {
+    "cost": 1283.0,
+    "passed": 3,
+    "total": 3
+   },
+   {
+    "cost": 677.0,
+    "passed": 1,
+    "total": 3
+   },
+   {
+    "cost": 806.0,
+    "passed": 2,
+    "total": 3
+   },
+   {
+    "cost": 1424.0,
+    "passed": 2,
+    "total": 3
+   },
+   {
+    "cost": 1448.0,
+    "passed": 3,
+    "total": 3
+   },
+   {
+    "cost": 1637.0,
+    "passed": 3,
+    "total": 3
+   },
+   {
+    "cost": 1511.0,
+    "passed": 3,
+    "total": 3
+   },
+   {
+    "cost": 1301.0,
+    "passed": 2,
+    "total": 3
+   },
+   {
+    "cost": 1409.0,
+    "passed": 3,
+    "total": 3
+   },
+   {
+    "cost": 1757.0,
+    "passed": 3,
+    "total": 3
+   },
+   {
+    "cost": 1751.0,
+    "passed": 3,
+    "total": 3
+   },
+   {
+    "cost": 1448.0,
+    "passed": 3,
+    "total": 3
+   },
+   {
+    "cost": 551.0,
+    "passed": 0,
+    "total": 3
+   },
+   {
+    "cost": 1253.0,
+    "passed": 3,
+    "total": 3
+   },
+   {
+    "cost": 680.0,
+    "passed": 2,
+    "total": 3
+   },
+   {
+    "cost": 872.0,
+    "passed": 3,
+    "total": 3
+   },
+   {
+    "cost": 1574.0,
+    "passed": 3,
+    "total": 3
+   },
+   {
+    "cost": 680.0,
+    "passed": 3,
+    "total": 3
+   },
+   {
+    "cost": 1757.0,
+    "passed": 3,
+    "total": 3
+   },
+   {
+    "cost": 875.0,
+    "passed": 3,
+    "total": 3
+   },
+   {
+    "cost": 743.0,
+    "passed": 3,
+    "total": 3
+   },
+   {
+    "cost": 644.0,
+    "passed": 1,
+    "total": 3
+   },
+   {
+    "cost": 1247.0,
+    "passed": 3,
+    "total": 3
+   },
+   {
+    "cost": 869.0,
+    "passed": 3,
+    "total": 3
+   },
+   {
+    "cost": 926.0,
+    "passed": 2,
+    "total": 3
+   },
+   {
+    "cost": 1694.0,
+    "passed": 3,
+    "total": 3
+   },
+   {
+    "cost": 1634.0,
+    "passed": 3,
+    "total": 3
+   },
+   {
+    "cost": 1346.0,
+    "passed": 3,
+    "total": 3
+   },
+   {
+    "cost": 869.0,
+    "passed": 2,
+    "total": 3
+   },
+   {
+    "cost": 938.0,
+    "passed": 3,
+    "total": 3
+   },
+   {
+    "cost": 1631.0,
+    "passed": 3,
+    "total": 3
+   },
+   {
+    "cost": 1175.0,
+    "passed": 2,
+    "total": 3
+   },
+   {
+    "cost": 491.0,
+    "passed": 2,
+    "total": 3
+   },
+   {
+    "cost": 1190.0,
+    "passed": 3,
+    "total": 3
+   },
+   {
+    "cost": 1184.0,
+    "passed": 3,
+    "total": 3
+   },
+   {
+    "cost": 812.0,
+    "passed": 3,
+    "total": 3
+   },
+   {
+    "cost": 935.0,
+    "passed": 3,
+    "total": 3
+   }
+  ],
+  "screened": 131,
+  "tried": 5,
+  "seconds": 175
+ },
+ "game": {
+  "optimum": {
+   "app_replicas": 4,
+   "app_workers": 4,
+   "cache": true,
+   "cdn": true,
+   "db_workers": 8,
+   "shards": 1,
+   "read_replicas": 0,
+   "queue": false,
+   "consumers": 8
+  },
+  "optimum_cost": 402.0,
+  "explored": [
+   {
+    "cost": 924.0,
+    "passed": 1,
+    "total": 3
+   },
+   {
+    "cost": 660.0,
+    "passed": 2,
+    "total": 3
+   },
+   {
+    "cost": 1063.0,
+    "passed": 3,
+    "total": 3
+   },
+   {
+    "cost": 480.0,
+    "passed": 1,
+    "total": 3
+   },
+   {
+    "cost": 531.0,
+    "passed": 3,
+    "total": 3
+   },
+   {
+    "cost": 1554.0,
+    "passed": 3,
+    "total": 3
+   },
+   {
+    "cost": 574.0,
+    "passed": 2,
+    "total": 3
+   },
+   {
+    "cost": 1002.0,
+    "passed": 3,
+    "total": 3
+   },
+   {
+    "cost": 501.0,
+    "passed": 1,
+    "total": 3
+   },
+   {
+    "cost": 1382.0,
+    "passed": 3,
+    "total": 3
+   },
+   {
+    "cost": 739.0,
+    "passed": 3,
+    "total": 3
+   },
+   {
+    "cost": 458.0,
+    "passed": 3,
+    "total": 3
+   },
+   {
+    "cost": 561.0,
+    "passed": 3,
+    "total": 3
+   },
+   {
+    "cost": 1139.0,
+    "passed": 3,
+    "total": 3
+   },
+   {
+    "cost": 1110.0,
+    "passed": 3,
+    "total": 3
+   },
+   {
+    "cost": 526.0,
+    "passed": 3,
+    "total": 3
+   },
+   {
+    "cost": 776.0,
+    "passed": 2,
+    "total": 3
+   },
+   {
+    "cost": 565.0,
+    "passed": 3,
+    "total": 3
+   },
+   {
+    "cost": 1121.0,
+    "passed": 3,
+    "total": 3
+   },
+   {
+    "cost": 504.0,
+    "passed": 2,
+    "total": 3
+   },
+   {
+    "cost": 624.0,
+    "passed": 1,
+    "total": 3
+   },
+   {
+    "cost": 747.0,
+    "passed": 3,
+    "total": 3
+   },
+   {
+    "cost": 511.0,
+    "passed": 2,
+    "total": 3
+   },
+   {
+    "cost": 1068.0,
+    "passed": 2,
+    "total": 3
+   },
+   {
+    "cost": 480.0,
+    "passed": 3,
+    "total": 3
+   },
+   {
+    "cost": 746.0,
+    "passed": 3,
+    "total": 3
+   },
+   {
+    "cost": 479.0,
+    "passed": 1,
+    "total": 3
+   },
+   {
+    "cost": 635.0,
+    "passed": 1,
+    "total": 3
+   },
+   {
+    "cost": 859.0,
+    "passed": 3,
+    "total": 3
+   },
+   {
+    "cost": 1111.0,
+    "passed": 3,
+    "total": 3
+   },
+   {
+    "cost": 647.0,
+    "passed": 3,
+    "total": 3
+   },
+   {
+    "cost": 615.0,
+    "passed": 3,
+    "total": 3
+   },
+   {
+    "cost": 891.0,
+    "passed": 3,
+    "total": 3
+   },
+   {
+    "cost": 693.0,
+    "passed": 2,
+    "total": 3
+   },
+   {
+    "cost": 586.0,
+    "passed": 1,
+    "total": 3
+   },
+   {
+    "cost": 702.0,
+    "passed": 2,
+    "total": 3
+   },
+   {
+    "cost": 1018.0,
+    "passed": 3,
+    "total": 3
+   },
+   {
+    "cost": 579.0,
+    "passed": 3,
+    "total": 3
+   },
+   {
+    "cost": 514.0,
+    "passed": 2,
+    "total": 3
+   },
+   {
+    "cost": 507.0,
+    "passed": 2,
+    "total": 3
+   },
+   {
+    "cost": 729.0,
+    "passed": 3,
+    "total": 3
+   },
+   {
+    "cost": 1329.0,
+    "passed": 3,
+    "total": 3
+   },
+   {
+    "cost": 1538.0,
+    "passed": 1,
+    "total": 3
+   },
+   {
+    "cost": 1127.0,
+    "passed": 2,
+    "total": 3
+   },
+   {
+    "cost": 912.0,
+    "passed": 1,
+    "total": 3
+   },
+   {
+    "cost": 1220.0,
+    "passed": 3,
+    "total": 3
+   },
+   {
+    "cost": 1184.0,
+    "passed": 3,
+    "total": 3
+   },
+   {
+    "cost": 999.0,
+    "passed": 3,
+    "total": 3
+   },
+   {
+    "cost": 873.0,
+    "passed": 3,
+    "total": 3
+   },
+   {
+    "cost": 783.0,
+    "passed": 2,
+    "total": 3
+   },
+   {
+    "cost": 693.0,
+    "passed": 1,
+    "total": 3
+   },
+   {
+    "cost": 778.0,
+    "passed": 3,
+    "total": 3
+   },
+   {
+    "cost": 551.0,
+    "passed": 2,
+    "total": 3
+   },
+   {
+    "cost": 874.0,
+    "passed": 1,
+    "total": 3
+   },
+   {
+    "cost": 1508.0,
+    "passed": 1,
+    "total": 3
+   },
+   {
+    "cost": 1316.0,
+    "passed": 3,
+    "total": 3
+   },
+   {
+    "cost": 962.0,
+    "passed": 3,
+    "total": 3
+   },
+   {
+    "cost": 1174.0,
+    "passed": 3,
+    "total": 3
+   },
+   {
+    "cost": 851.0,
+    "passed": 3,
+    "total": 3
+   },
+   {
+    "cost": 1443.0,
+    "passed": 3,
+    "total": 3
+   }
+  ],
+  "screened": 602,
+  "tried": 18,
+  "seconds": 814
  }
 }

@@ -30,6 +30,7 @@ STRATEGY_NAME = {"least_queue": "Least queue", "round_robin": "Round robin", "ra
                  "shared": "Shared queue"}
 FAIL_COLOR = {"timeout": STATUS["warning"], "dropped": STATUS["serious"],
               "error": STATUS["critical"], "incomplete": "#898781"}
+ACCENT: Optional[str] = None     # set by the app: tints neutral diagram boxes with the chosen theme
 FONT = 'system-ui, -apple-system, "Segoe UI", sans-serif'
 FAIL_KINDS_PLOT = ["timeout", "dropped", "error", "incomplete"]
 LOG_TICKS = [10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000]
@@ -106,7 +107,7 @@ def architecture_figure(cfg: Config, summ: Optional[Dict], theme: str = "light")
             col = STATUS[st["status"]]
             fillc = rgba(col, 0.16)
         else:
-            col, fillc = c["muted"], "rgba(137,135,129,0.10)"
+            col, fillc = (ACCENT, rgba(ACCENT, 0.10)) if ACCENT else (c["muted"], "rgba(137,135,129,0.10)")
         fig.add_shape(type="path", path=_rounded(x0, y0, x1, y1), fillcolor=fillc,
                       line=dict(color=col, width=2), layer="below")
         fig.add_annotation(x=x, y=y1 - 0.2, text=f"<b>{title}</b>", showarrow=False, font=dict(size=12, color=c["ink"]))
@@ -337,6 +338,77 @@ def frontier_figure(explored: List[Dict], yours: Optional[Dict], optimum_cost: O
     _layout(fig, theme, 340, top=40)
     fig.update_xaxes(title_text="Monthly cost ($, illustrative)", tickprefix="$", rangemode="tozero")
     fig.update_yaxes(title_text="Checks passed", ticksuffix="%", range=[-8, 112], tickvals=[0, 33, 67, 100])
+    return fig
+
+
+# ------------------------------------------------------------------ animated replay
+def replay_figure(res: SimResult, tl: pd.DataFrame, theme: str = "light") -> go.Figure:
+    """Play the run second by second: tiers light up by health, queues fill, the headline tracks traffic."""
+    cfg = res.cfg
+    c = _t(theme)
+    tiers = tiers_present(res)
+    labels = [TIER_LABEL[t] for t in tiers][::-1]
+    qcols = [("q_app", "App queue", "app"), ("q_cache", "Cache queue", "cache"), ("q_queue", "Write backlog", "queue"),
+             ("q_db_primary", "DB queue", "db_primary"), ("q_db_replicas", "Replica queue", "db_replicas")]
+    qcols = [(col, nm, t) for col, nm, t in qcols if col in tl.columns]
+    qlabels = [nm for _, nm, _ in qcols][::-1]
+    qmax = max([float(tl[col].fillna(0).max()) for col, _, _ in qcols] + [10.0])
+    xs = list(tl.index)
+
+    def util_bar(i):
+        vals = [float(tl[f"util_{t}"].iloc[i]) if pd.notna(tl[f"util_{t}"].iloc[i]) else 0.0 for t in tiers][::-1]
+        st = [health(v) for v in vals]
+        return go.Bar(x=[v * 100 for v in vals], y=labels, orientation="h",
+                      marker=dict(color=[STATUS[k] for k in st]),
+                      text=[f"{STATUS_TEXT[k]} · {v:.0%}" for k, v in zip(st, vals)], textposition="outside",
+                      cliponaxis=False, hoverinfo="skip", showlegend=False)
+
+    def queue_bar(i):
+        vals = [float(tl[col].iloc[i]) if pd.notna(tl[col].iloc[i]) else 0.0 for col, _, _ in qcols][::-1]
+        cols = [c["series"][TIER_SLOT[t]] for _, _, t in qcols][::-1]
+        return go.Bar(x=vals, y=qlabels, orientation="h", marker=dict(color=cols),
+                      text=[f"{v:,.0f}" for v in vals], textposition="outside", cliponaxis=False, hoverinfo="skip",
+                      showlegend=False)
+
+    def headline(i):
+        t = xs[i]
+        active = [e.label() for e in cfg.events if e.start_s <= t < e.end_s]
+        fail = sum(float(tl[f"{k}_rps"].iloc[i]) for k in ("timeout", "dropped", "error", "incomplete")
+                   if f"{k}_rps" in tl.columns and pd.notna(tl[f"{k}_rps"].iloc[i]))
+        p95 = tl["p95"].iloc[i]
+        txt = (f"<b>t = {t:.0f} s</b>   offered {tl.offered_rps.iloc[i]:,.0f} rps · served {tl.served_rps.iloc[i]:,.0f} rps"
+               f" · p95 {p95:,.0f} ms · failing {fail:,.0f}/s" if pd.notna(p95) else f"<b>t = {t:.0f} s</b>")
+        if active:
+            txt += "   ⚡ " + ", ".join(active)
+        return txt
+
+    fig = make_subplots(rows=1, cols=2, column_widths=[0.58, 0.42], horizontal_spacing=0.2,
+                        subplot_titles=("Utilization (% of workers busy)", "Requests waiting in queues"))
+    _left_titles(fig, c)
+    fig.add_trace(util_bar(0), row=1, col=1)
+    fig.add_trace(queue_bar(0), row=1, col=2)
+    frames = [go.Frame(name=f"{xs[i]:.0f}", data=[util_bar(i), queue_bar(i)], traces=[0, 1],
+                       layout=go.Layout(title=dict(text=headline(i)))) for i in range(len(xs))]
+    fig.frames = frames
+    _layout(fig, theme, 430, top=70, bottom=96)
+    fig.update_layout(
+        title=dict(text=headline(0), x=0, xanchor="left", y=0.97, font=dict(size=14, color=c["ink"])),
+        updatemenus=[dict(type="buttons", direction="left", x=0, y=-0.12, xanchor="left", yanchor="top", showactive=False,
+                          pad=dict(t=0, r=8),
+                          buttons=[dict(label="▶ Play", method="animate",
+                                        args=[None, dict(frame=dict(duration=140, redraw=True), transition=dict(duration=0),
+                                                         fromcurrent=True)]),
+                                   dict(label="❚❚ Pause", method="animate",
+                                        args=[[None], dict(frame=dict(duration=0, redraw=False), mode="immediate",
+                                                           transition=dict(duration=0))])])],
+        sliders=[dict(active=0, x=0.2, len=0.8, y=-0.1, yanchor="top", currentvalue=dict(visible=False),
+                      pad=dict(t=0, b=0), tickcolor=c["muted"], font=dict(color=c["muted"]),
+                      steps=[dict(method="animate", label=f"{xs[i]:.0f}",
+                                  args=[[f"{xs[i]:.0f}"], dict(mode="immediate", frame=dict(duration=0, redraw=True),
+                                                                transition=dict(duration=0))]) for i in range(len(xs))])])
+    fig.update_xaxes(range=[0, 125], ticksuffix="%", row=1, col=1)
+    fig.update_xaxes(range=[0, qmax * 1.25], row=1, col=2)
+    fig.update_yaxes(gridcolor="rgba(0,0,0,0)")
     return fig
 
 

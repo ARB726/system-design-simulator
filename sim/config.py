@@ -311,6 +311,22 @@ def presets() -> Dict[str, Preset]:
         "fall even though capacity never changed.",
     )
 
+    out["Gaming: launch-day leaderboard"] = Preset(
+        Config(
+            name="Leaderboard",
+            app=AppTier(replicas=3, workers=8, latency_ms=12),
+            cache=CacheTier(hit_rate=0.9),
+            cdn=CDNTier(enabled=False, hit_rate=0.6),
+            db=DBTier(workers=8, read_ms=10, write_ms=25),
+            workload=Workload(rps=800, read_ratio=0.9, duration_s=70),
+            events=[Event("traffic_spike", 25, 15, 2.5)],
+        ),
+        "A game launches and everyone opens the leaderboard at once. Almost all requests are reads of the same hot "
+        "pages, which is exactly what an edge cache is for.",
+        "Run it once, then turn the CDN on. Watch the app tier's utilization and how many requests never "
+        "reach it. What does the CDN do to the napkin math for every tier behind it?",
+    )
+
     out["Blank canvas"] = Preset(
         Config(name="My design"),
         "Start from sensible defaults and build your own design.",

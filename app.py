@@ -16,6 +16,7 @@ import pandas as pd
 import streamlit as st
 
 from sim import charts
+from sim import progress as pg
 from sim.analysis import TIER_LABEL, diagnose, summarize, timeline
 from sim.challenges import (KNOB_HELP, KNOB_LABELS, apply_design, challenges, default_design, design_cost,
                             load_optima, run_check, score_design)
@@ -25,6 +26,8 @@ from sim.config import (EVENT_KINDS, LB_STRATEGIES, AppTier, CacheTier, CDNTier,
 from sim.engine import run
 from sim.experiments import sweep_load, sweep_replicas, validate_mmc
 from sim.predict import BUCKETS, POINTS, Prediction, score_prediction
+from sim.sharecard import design_lines, make_card
+from sim.themes import (DEFAULT_THEME, INDUSTRIES, INDUSTRY_EMOJI, PRESET_INDUSTRY, THEMES, accent, tag, theme_css)
 
 st.set_page_config(page_title="System Design Simulator", page_icon="\U0001F9EA", layout="wide")
 
@@ -34,6 +37,7 @@ FIRST_PRESET = next(iter(PRESETS))
 CHALLENGES = challenges()
 OPTIMA = load_optima()
 FIRST_CHALLENGE = next(iter(CHALLENGES))
+ORDER = list(CHALLENGES)          # campaign order
 
 st.markdown(
     """
@@ -41,6 +45,8 @@ st.markdown(
       .block-container {padding-top: 2.2rem; max-width: 1250px;}
       [data-testid="stMetric"] {border: 1px solid rgba(137,135,129,.30); border-radius: 12px; padding: 12px 16px;}
       [data-testid="stMetricLabel"] {opacity: .75;}
+      [data-testid="stMetricValue"] {font-size: 1.55rem;}
+      [data-testid="stMetricValue"] > div {text-overflow: clip; white-space: normal;}
       h1 {letter-spacing: -0.02em;}
     </style>
     """,
@@ -57,8 +63,12 @@ def current_theme() -> str:
 
 THEME = current_theme()
 ss = st.session_state
+if "progress" not in ss:
+    ss.progress = pg.empty()
+ss.setdefault("theme", DEFAULT_THEME)
+ss.setdefault("industry", "All")
 
-SANDBOX_KEYS = (["preset", "predict_on", "cfg_name", "w_rps", "w_read", "w_dur", "w_timeout", "w_seed", "a_rep", "a_work",
+SANDBOX_KEYS = (["preset", "theme", "industry", "progress", "predict_on", "cfg_name", "w_rps", "w_read", "w_dur", "w_timeout", "w_seed", "a_rep", "a_work",
                  "a_lat", "a_lb", "a_maxq", "c_en", "c_hit", "c_lat", "x_en", "x_hit", "x_lat", "q_en", "q_cons",
                  "q_depth", "d_work", "d_read", "d_write", "d_rep", "d_shards", "d_hot"] +
                 [f"ev{i}_{s}" for i in range(MAX_EV) for s in ("on", "kind", "start", "dur", "mag")])
@@ -118,6 +128,14 @@ def load_challenge(cid: str) -> None:
     d = default_design(CHALLENGES[cid])
     for k in KNOB_LABELS:
         ss[f"k_{k}"] = d[k]
+
+
+def pick_challenge(cid: str) -> None:
+    if ss.get("industry", "All") not in ("All", CHALLENGES[cid].industry):
+        ss.industry = "All"
+    ss.chal = cid
+    load_challenge(cid)
+    ss.chal_last = None
 
 
 def on_challenge_change() -> None:
@@ -233,15 +251,43 @@ def show_prediction_score(ps: dict) -> None:
 # ------------------------------------------------------------------ sidebar
 with st.sidebar:
     st.markdown("### \U0001F9EA Design lab")
+    st.selectbox("Theme", list(THEMES), format_func=lambda n: f"{THEMES[n]['emoji']}  {n}", key="theme")
+    st.markdown(theme_css(ss.theme, THEME == "dark"), unsafe_allow_html=True)
+    charts.ACCENT = accent(ss.theme, THEME == "dark")
+
+    prog = ss.progress
+    xp = pg.xp_total(prog)
+    info = pg.level_info(xp)
+    st.markdown(f"**Level {info['level']} · {info['title']}**")
+    st.progress(info["frac"], text=f"{xp} XP" + (f" · {info['to_next']} to {info['next_title']}" if info["next_title"] else " · max level"))
+    with st.expander("Badges and progress"):
+        st.markdown("".join(f'<span class="badge{"" if b in prog["badges"] else " off"}" title="{d}">{n}</span>'
+                            for b, (n, d) in pg.BADGES.items()), unsafe_allow_html=True)
+        st.caption(f"{len(prog['badges'])} of {len(pg.BADGES)} earned. Hover a badge to see how to earn it.")
+        st.download_button("Save progress (JSON)", pg.dumps(prog), file_name="sysdesign_progress.json", width="stretch")
+        up = st.file_uploader("Load progress", type="json", label_visibility="collapsed")
+        if up is not None and ss.get("_loaded_upload") != (up.name, up.size):
+            try:
+                ss.progress = pg.loads(up.getvalue().decode("utf-8", "replace"), ORDER)
+                ss._loaded_upload = (up.name, up.size)
+                st.rerun()
+            except ValueError as e:
+                st.error(str(e))
+
     st.radio("Mode", ["Sandbox", "Challenge"], horizontal=True, key="mode", label_visibility="collapsed")
     MODE = ss.mode
+    st.selectbox("Industry", INDUSTRIES, format_func=lambda i: f"{INDUSTRY_EMOJI.get(i, '')}  {i}".strip(), key="industry")
 
     if MODE == "Sandbox":
         if "preset" not in ss or "w_rps" not in ss:
             ss.preset = ss.get("preset") if ss.get("preset") in PRESETS else FIRST_PRESET
             load_into_state(PRESETS[ss.preset].cfg)
             ss.committed = None
-        st.selectbox("Scenario", list(PRESETS), key="preset", on_change=on_preset_change)
+        p_opts = [n for n in PRESETS if ss.industry == "All" or PRESET_INDUSTRY.get(n) == ss.industry] or list(PRESETS)
+        if ss.preset not in p_opts:
+            ss.preset = p_opts[0]
+            on_preset_change()
+        st.selectbox("Scenario", p_opts, key="preset", on_change=on_preset_change)
         st.toggle("Predict before running", key="predict_on",
                   help="Commit your napkin math first, then see how close it was.")
         run_clicked = False
@@ -300,7 +346,13 @@ with st.sidebar:
         if "chal" not in ss or f"k_{next(iter(KNOB_LABELS))}" not in ss:
             ss.chal = ss.get("chal") if ss.get("chal") in CHALLENGES else FIRST_CHALLENGE
             load_challenge(ss.chal)
-        st.selectbox("Challenge", list(CHALLENGES), format_func=lambda k: CHALLENGES[k].title, key="chal",
+        open_ids = pg.unlocked(ss.progress, ORDER)
+        c_opts = [k for k in open_ids if ss.industry == "All" or CHALLENGES[k].industry == ss.industry] or open_ids
+        if ss.chal not in c_opts:
+            pick_challenge(c_opts[0])
+        star_lbl = {k: f"{'★' * ss.progress['stars'].get(k, 0)}{'☆' * (3 - ss.progress['stars'].get(k, 0))}  {CHALLENGES[k].title}"
+                    for k in ORDER}
+        st.selectbox("Challenge", c_opts, format_func=lambda k: star_lbl.get(k, k), key="chal",
                      on_change=on_challenge_change)
         CH = CHALLENGES[ss.chal]
         st.caption("Choose a design. It is graded by hidden tests.")
@@ -354,6 +406,10 @@ def render_results(res, tl, summ, findings, key_prefix: str, show_cost: bool = T
     st.caption("Box color shows each tier's 90th-percentile utilization over the run: "
                "✓ OK below 70%, ▲ Warm 70–85%, ▲ Hot 85–95%, ✕ Saturated above 95%.")
 
+    st.markdown("#### Live replay")
+    plot(charts.replay_figure(res, tl, THEME), key=f"{key_prefix}_replay")
+    st.caption("Press ▶ Play (or drag the slider). Bars change color as each tier heats up; the right panel shows queues filling.")
+
     st.markdown("#### What the simulation found")
     show_findings(findings)
 
@@ -395,6 +451,7 @@ if MODE == "Sandbox":
 
     with tab_results:
         pset = PRESETS[ss.preset]
+        st.markdown(f'<span class="chip">{tag(PRESET_INDUSTRY.get(ss.preset, ""))}</span>', unsafe_allow_html=True)
         st.info(f"**Scenario.** {pset.story}\n\n**Try this.** {pset.try_this}")
 
         gate = predict_on and ss.get("pred_for") != cfg_key
@@ -416,13 +473,23 @@ if MODE == "Sandbox":
                     base_summ = simulate(json.dumps(base_cfg.to_dict(), sort_keys=True))[2]
                     ss.pred_score = score_prediction(pred, base_summ, summ["success_rate"] >= 0.99)
                     record_calibration(ss.pred_score)
+                    ss.pred_ev = pg.record_prediction(ss.progress, ss.pred_score, ORDER)
                 st.rerun()
         else:
             if stale:
                 st.warning("Settings changed. Press **▶ Run simulation** in the sidebar to apply them.")
             with st.spinner("Simulating..."):
                 res, tl, summ, findings = simulate(committed)
+            pev = ss.pop("pred_ev", None)
+            if pev:
+                for b in pev["new_badges"]:
+                    st.toast(f"Badge earned: {pg.BADGES[b][0]}", icon="\U0001F3C5")
+                if pev["level_up"]:
+                    st.balloons()
+                    st.toast(f"Level up! {pev['level']['title']}", icon="\u2B06\uFE0F")
             if predict_on and ss.get("pred_score"):
+                if pev:
+                    st.success(f"+{pev['xp_gained']} XP for your prediction.")
                 show_prediction_score(ss.pred_score)
                 st.divider()
             ccfg = render_results(res, tl, summ, findings, "sb")
@@ -530,6 +597,33 @@ else:
     opt_cost = opt.get("optimum_cost")
 
     with tab_chal:
+        # ---- campaign map
+        stars_total = sum(ss.progress["stars"].get(c, 0) for c in ORDER)
+        st.markdown("### Campaign")
+        st.progress(stars_total / (3 * len(ORDER)), text=f"{stars_total} of {3 * len(ORDER)} stars. "
+                    "Earn one star on a challenge to unlock the next.")
+        open_ids = pg.unlocked(ss.progress, ORDER)
+        for r0 in range(0, len(ORDER), 3):
+            for col, cid in zip(st.columns(3), ORDER[r0:r0 + 3]):
+                c = CHALLENGES[cid]
+                n = ss.progress["stars"].get(cid, 0)
+                lock = cid not in open_ids
+                best = ss.progress["best"].get(cid)
+                if lock:
+                    meta = "Locked: earn a star on the previous challenge"
+                elif best is not None:
+                    meta = f"Budget ${c.budget:,.0f} · best {best:.0f}/100"
+                else:
+                    meta = f"Budget ${c.budget:,.0f} · not played yet"
+                cls = "card" + (" locked" if lock else "") + (" current" if cid == CH.id else "")
+                col.markdown(f'<div class="{cls}"><span class="chip">{tag(c.industry)}</span>'
+                             f'<div style="font-weight:600;margin:6px 0 2px">{"\U0001F512 " if lock else ""}{c.title}</div>'
+                             f'<div class="stars">{"★" * n}{"☆" * (3 - n)}</div><div class="meta">{meta}</div></div>',
+                             unsafe_allow_html=True)
+                col.button("Playing" if cid == CH.id else "Play", key=f"play_{cid}", disabled=lock or cid == CH.id,
+                           on_click=pick_challenge, args=(cid,), width="stretch")
+        st.divider()
+        st.markdown(f'<span class="chip">{tag(CH.industry)}</span>', unsafe_allow_html=True)
         st.subheader(CH.title)
         st.info(CH.story)
         c1, c2, c3 = st.columns(3)
@@ -558,14 +652,17 @@ else:
                 with st.spinner("Running the hidden tests..."):
                     results, base_summ = grade(CH.id, dj)
                 score = score_design(CH, design, results, opt_cost)
-                ps = None
+                ev = pg.record_attempt(ss.progress, CH.id, design, CH.budget, score, ORDER)
+                ps, pev = None, None
                 if pred is not None:
                     ps = score_prediction(pred, base_summ, score["all_pass"])
                     record_calibration(ps)
-                best = ss.setdefault("chal_best", {})
-                best[CH.id] = max(best.get(CH.id, 0.0), score["total_score"])
-                ss.chal_attempts = {**ss.get("chal_attempts", {}), CH.id: ss.get("chal_attempts", {}).get(CH.id, 0) + 1}
-                ss.chal_last = dict(cid=CH.id, dj=dj, design=design, results=results, score=score, ps=ps)
+                    pev = pg.record_prediction(ss.progress, ps, ORDER)
+                events = dict(xp=ev["xp_gained"] + (pev["xp_gained"] if pev else 0), stars=ev["stars_gained"],
+                              badges=ev["new_badges"] + (pev["new_badges"] if pev else []),
+                              level_up=ev["level_up"] or bool(pev and pev["level_up"]), level=(pev or ev)["level"])
+                ss.chal_last = dict(cid=CH.id, dj=dj, design=design, results=results, score=score, ps=ps,
+                                    events=events, celebrated=False)
                 st.rerun()
 
         if graded_now:
@@ -582,8 +679,26 @@ else:
                         delta_color="off", delta_arrow="off")
             m[3].metric("Your cost", f"${score['cost']:,.0f}",
                         delta=(f"optimum ${opt_cost:,.0f}" if opt_cost else None), delta_color="off", delta_arrow="off")
-            attempts = ss.get("chal_attempts", {}).get(CH.id, 1)
-            st.caption(f"Attempt {attempts}. Best so far: {ss.chal_best.get(CH.id, 0):.0f}. "
+            n_st = pg.stars_for(score)
+            hint = {0: "Pass every hidden test to earn a star.",
+                    1: f"Passed every test. Two stars need {pg.STAR_EFFICIENCY[2]:.0%} cost efficiency.",
+                    2: f"Three stars need {pg.STAR_EFFICIENCY[3]:.0%} cost efficiency, essentially the optimizer's design.",
+                    3: "You matched the optimizer. Share it!"}[n_st]
+            st.markdown(f"#### {'★' * n_st}{'☆' * (3 - n_st)}  {hint}")
+            evs = last["events"]
+            parts = ([f"+{evs['xp']} XP"] if evs["xp"] else []) + ([f"+{evs['stars']} ★"] if evs["stars"] else []) + \
+                    [f"New badge: {pg.BADGES[b][0]}" for b in evs["badges"]] + \
+                    ([f"Level up: {evs['level']['title']}"] if evs["level_up"] else [])
+            if parts:
+                st.success(" · ".join(parts))
+            if not last.get("celebrated"):
+                for b in evs["badges"]:
+                    st.toast(f"Badge earned: {pg.BADGES[b][0]}", icon="\U0001F3C5")
+                if evs["level_up"] or (evs["stars"] and n_st == 3):
+                    st.balloons()
+                last["celebrated"] = True
+            st.caption(f"Attempt {ss.progress['attempts'].get(CH.id, 1)}. Best so far: "
+                       f"{ss.progress['best'].get(CH.id, 0):.0f}. "
                        "Grading is deterministic: the same design always scores the same.")
             if not score["all_pass"]:
                 st.warning("Cost points are awarded only when every test passes.")
@@ -598,6 +713,19 @@ else:
                              "Write lag": f"{r['lag_p95_s']:.1f} s" if r["lag_p95_s"] is not None else "-",
                              "Why it failed": "; ".join(r["reasons"])})
             st.dataframe(pd.DataFrame(rows), hide_index=True, width="stretch")
+
+            st.markdown("#### Share your result")
+            ckey = f"{CH.id}|{dj}|{ss.theme}"
+            if st.button("Create share card", key="mk_card"):
+                pr = ss.progress["pred"]
+                lv = pg.level_info(pg.xp_total(ss.progress))
+                ss.card = (ckey, make_card(CH.title, score["total_score"], n_st, lv["title"], lv["level"],
+                                           f"{score['passed']}/{score['total']}", score["cost"], opt_cost,
+                                           design_lines(design), ss.theme,
+                                           calibration=(pr["sum"] / pr["n"] if pr["n"] else None)))
+            if ss.get("card") and ss.card[0] == ckey:
+                st.image(ss.card[1], width=560)
+                st.download_button("Download PNG", ss.card[1], file_name=f"{CH.id}_score_card.png", mime="image/png")
 
             if ps:
                 show_prediction_score(ps)
@@ -624,7 +752,7 @@ else:
                     st.write("Optimizer data not available.")
 
             st.markdown("#### Replay a test")
-            pick = st.selectbox("Test", range(len(CH.checks)), format_func=lambda i: CH.checks[i].name, key="ch_replay")
+            pick = st.selectbox("Test", range(len(CH.checks)), format_func=lambda i: CH.checks[i].name, key="ch_replay_pick")
             with st.spinner("Replaying..."):
                 rres, rtl, rsumm, rfind = replay(CH.id, dj, int(pick))
             render_results(rres, rtl, rsumm, rfind, "ch", show_cost=False)
@@ -654,6 +782,15 @@ efficiency** (cheapest passing design's cost ÷ yours, only if every test passes
 found offline by `tools/optimize.py`: enumerate the designs, filter by napkin math, simulate in cost order, and
 verify the winner on other seeds. Prices are illustrative: app replica $15 + $6 per worker, cache $50, CDN $40,
 queue $30 + $4 per consumer, each database node $60 + $12 per connection.
+
+### Campaign, XP and badges
+Challenges unlock in order: earn one star (pass every hidden test) to open the next. Two stars need 80% cost
+efficiency, three need 97%. XP comes from your best score per challenge, 40 per star, and a little for each
+prediction (repeating a challenge cannot farm XP). Levels run from Intern to Distinguished Engineer. Progress lives
+in your browser session; use **Save progress** in the sidebar to keep it between visits.
+
+### Themes
+Pick a color theme in the sidebar. Industry filters (E-commerce, Social, Fintech, Gaming) group scenarios and challenges.
 
 ### Predict-then-run
 Before a run you commit four guesses: the busiest tier, its utilization, the p95 latency bucket, and whether the

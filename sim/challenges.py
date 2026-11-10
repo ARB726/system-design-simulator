@@ -73,6 +73,7 @@ class Challenge:
     checks: List[Check]
     budget: float                    # hard monthly cap, dollars
     hints: List[str] = field(default_factory=list)
+    industry: str = ""
 
     @property
     def slo_text(self) -> str:
@@ -234,6 +235,7 @@ def challenges() -> Dict[str, Challenge]:
                   [Event("kill_app", 10, 20, 2)], 40, 600, 0.98, seed=1003),
         ],
         budget=600,
+        industry="Social",
         hints=["Capacity per replica is workers / latency. Do the napkin math before touching the knobs.",
                "A CDN or cache removes load from tiers further in. What happens to the database if the cache is gone?"],
     )
@@ -262,6 +264,7 @@ def challenges() -> Dict[str, Challenge]:
                   [Event("db_slow", 10, 20, 1.5)], 40, 800, 0.98, max_lag_s=15.0, seed=2003),
         ],
         budget=900,
+        industry="Social",
         hints=["Read replicas serve reads only. Look at the read/write mix before buying them.",
                "A queue protects the client from a slow database, but the database still has to drain it."],
     )
@@ -289,7 +292,93 @@ def challenges() -> Dict[str, Challenge]:
                   [Event("cold_cache", 10, 20, 0.2), Event("kill_app", 10, 20, 1)], 45, 800, 0.97, seed=3003),
         ],
         budget=600,
+        industry="E-commerce",
         hints=["Size the database for the miss path, not the happy path: reads x (1 - hit rate) x read time.",
                "Replicas multiply database cost. Compare them with simply buying bigger nodes."],
     )
-    return out
+
+    # --- D: flash sale ----------------------------------------------------
+    out["flash"] = Challenge(
+        id="flash", industry="E-commerce",
+        title="Flash sale: checkout",
+        story=("Half of your 500 requests per second are people browsing and half are placing orders. At noon a "
+               "flash sale triples traffic for a few seconds, and the payment database has been flaky lately. "
+               "Orders must be accepted fast; slightly late bookkeeping is fine."),
+        base=Config(
+            name="Flash sale",
+            app=AppTier(replicas=3, workers=8, latency_ms=25),
+            cache=CacheTier(hit_rate=0.8),
+            db=DBTier(workers=16, read_ms=8, write_ms=30),
+            workload=Workload(rps=500, read_ratio=0.5, duration_s=40, timeout_ms=1000),
+        ),
+        knobs=dict(app_replicas=[2, 3, 4, 5, 6, 7, 8], cache=[True, False], cdn=[False, True],
+                   db_workers=[8, 16, 24, 32], queue=[False, True], consumers=[8, 16, 24]),
+        checks=[
+            Check("Steady traffic", "A normal afternoon: 500 rps.", [], 35, 250, 0.995, max_lag_s=2.0, seed=4001),
+            Check("Flash-sale rush", "Traffic triples for 12 seconds.",
+                  [Event("traffic_spike", 10, 12, 3.0)], 40, 700, 0.97, max_lag_s=12.0, seed=4002),
+            Check("Flaky payment database", "The database runs 1.5x slower for 20 seconds.",
+                  [Event("db_slow", 10, 20, 1.5)], 40, 800, 0.98, max_lag_s=15.0, seed=4003),
+        ],
+        budget=850,
+        hints=["Triple the traffic, triple the napkin math: how many workers does the app tier need at the peak?",
+               "A queue protects order intake, but the database still has to catch up afterwards."],
+    )
+
+    # --- E: payments ledger -----------------------------------------------
+    out["ledger"] = Challenge(
+        id="ledger", industry="Fintech",
+        title="Payments ledger: the hot account",
+        story=("A payments ledger handles 400 requests per second, 60% of them writes, and every write must be "
+               "stored before it is acknowledged (no async queue). Half of all writes hit one very busy merchant "
+               "account. Month-end traffic is 2.5x normal, and the primary can run slow."),
+        base=Config(
+            name="Payments ledger",
+            app=AppTier(replicas=3, workers=8, latency_ms=15),
+            cache=CacheTier(hit_rate=0.7),
+            db=DBTier(workers=8, read_ms=8, write_ms=30, shards=1, hot_share=0.5),
+            workload=Workload(rps=400, read_ratio=0.4, duration_s=40, timeout_ms=1000),
+        ),
+        knobs=dict(app_replicas=[2, 3, 4, 5], db_workers=[8, 16, 24, 32, 48], shards=[1, 2, 4],
+                   read_replicas=[0, 1, 2]),
+        checks=[
+            Check("Steady traffic", "A normal day: 400 rps.", [], 35, 250, 0.995, seed=5001),
+            Check("Month-end burst", "Traffic rises 2.5x for 15 seconds.",
+                  [Event("traffic_spike", 10, 15, 2.5)], 40, 700, 0.97, seed=5002),
+            Check("Slow primary", "Database runs 2x slower for 15 seconds.",
+                  [Event("db_slow", 10, 15, 2.0)], 40, 800, 0.97, seed=5003),
+        ],
+        budget=900,
+        hints=["One merchant sends half the writes to a single shard. Does a third shard help that shard at all?",
+               "Read replicas cannot help with writes. Check what mix of load the busiest node really sees."],
+    )
+
+    # --- F: game launch -----------------------------------------------------
+    out["game"] = Challenge(
+        id="game", industry="Gaming",
+        title="Game launch: the leaderboard",
+        story=("Your game's leaderboard serves 800 requests per second, 90% reads. Launch day brings a surge, a "
+               "bad deploy can empty the cache, and servers can drop out. Players quit when it lags: keep it fast."),
+        base=Config(
+            name="Game launch",
+            app=AppTier(replicas=3, workers=8, latency_ms=12),
+            cache=CacheTier(hit_rate=0.9),
+            db=DBTier(workers=8, read_ms=10, write_ms=25),
+            workload=Workload(rps=800, read_ratio=0.9, duration_s=40, timeout_ms=1000),
+        ),
+        knobs=dict(app_replicas=[2, 3, 4, 5, 6, 7], app_workers=[4, 8, 16], cache=[True, False], cdn=[False, True],
+                   db_workers=[8, 16, 32], read_replicas=[0, 1, 2]),
+        checks=[
+            Check("Steady traffic", "Normal evening: 800 rps.", [], 35, 200, 0.995, seed=6001),
+            Check("Launch surge", "Traffic rises 2.5x for 12 seconds.",
+                  [Event("traffic_spike", 10, 12, 2.5)], 40, 600, 0.97, seed=6002),
+            Check("Bad deploy", "Cache hit rate collapses to 30% and two servers are lost.",
+                  [Event("cold_cache", 10, 18, 0.3), Event("kill_app", 10, 18, 2)], 45, 800, 0.95, seed=6003),
+        ],
+        budget=700,
+        hints=["A CDN removes reads before they reach any of your servers. What does it do to the other tiers' napkin math?",
+               "When the cache is cold, the database sees every read. Do you have the capacity for that?"],
+    )
+
+    order = ["launch", "cache", "writes", "flash", "ledger", "game"]
+    return {k: out[k] for k in order}
