@@ -9,7 +9,7 @@ import pandas as pd
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
-from .analysis import TIER_LABEL, tiers_present
+from .analysis import TIER_LABEL, health, tiers_present
 from .config import Config, app_capacity_rps
 from .engine import SimResult
 
@@ -24,13 +24,14 @@ THEMES = {
 }
 STATUS = {"good": "#0ca30c", "warning": "#fab219", "serious": "#ec835a", "critical": "#d03b3b"}
 STATUS_TEXT = {"good": "✓ OK", "warning": "▲ Warm", "serious": "▲ Hot", "critical": "✕ Saturated"}
-TIER_SLOT = {"app": 0, "cache": 1, "db_primary": 2, "db_replicas": 3}
+TIER_SLOT = {"app": 0, "cache": 1, "db_primary": 2, "db_replicas": 3, "queue": 4}
 STRATEGY_SLOT = {"least_queue": 0, "round_robin": 1, "random": 2, "shared": 3}
 STRATEGY_NAME = {"least_queue": "Least queue", "round_robin": "Round robin", "random": "Random",
                  "shared": "Shared queue"}
 FAIL_COLOR = {"timeout": STATUS["warning"], "dropped": STATUS["serious"],
               "error": STATUS["critical"], "incomplete": "#898781"}
 FONT = 'system-ui, -apple-system, "Segoe UI", sans-serif'
+FAIL_KINDS_PLOT = ["timeout", "dropped", "error", "incomplete"]
 LOG_TICKS = [10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000]
 
 
@@ -62,92 +63,155 @@ def _rounded(x0, y0, x1, y1, r=0.1) -> str:
             f"Q {x0},{y0} {x0 + r},{y0} Z")
 
 
-def architecture_figure(cfg: Config, summ: Dict, theme: str = "light") -> go.Figure:
+def _k(v: float) -> str:
+    """Compact number: 1,234 -> 1.2k."""
+    return f"{v / 1000:.1f}k" if v >= 1000 else f"{v:,.0f}"
+
+
+def architecture_figure(cfg: Config, summ: Optional[Dict], theme: str = "light") -> go.Figure:
+    """Architecture diagram. With summ=None it is a neutral blueprint (no health colors, no flows),
+    used in challenge mode before the design has been graded."""
     c = _t(theme)
     fig = go.Figure()
-    flows = summ["flows"]
-    tiers = summ["tiers"]
-    W, H = 1.5, 1.5
-    X = dict(client=0.2, lb=2.6, app=5.0, cache=7.4, db=9.8)
-    has_cache = cfg.cache.enabled
-    has_rep = cfg.db.read_replicas > 0
-    y_p, y_r = (0.95, -0.95) if has_rep else (0.0, 0.0)
+    flows = summ["flows"] if summ else None
+    tiers = summ["tiers"] if summ else {}
+    a, d, q, x_ = cfg.app, cfg.db, cfg.queue, cfg.cdn
 
-    def box(x, y, title, lines, tier=None, h=H, pips=0):
+    cols = ["client"] + (["cdn"] if x_.enabled else []) + ["lb", "app"] + (["cache"] if cfg.cache.enabled else []) + ["db"]
+    S = 1.75
+    X = {k: 0.2 + i * S for i, k in enumerate(cols)}
+    W, H = 1.3, 1.7
+    n_sh = min(d.shards, 8)
+    bars = n_sh if (d.shards > 1 and summ and summ.get("shards")) else 0
+    has_rep = d.read_replicas > 0
+    hp = 1.25 + 0.15 * bars if has_rep else H + 0.15 * bars
+    hr = 1.25
+    if has_rep:
+        tot = hp + hr + 0.12
+        y_p, y_r = tot / 2 - hp / 2, -(tot / 2 - hr / 2)
+    else:
+        y_p = y_r = 0.0
+    db_top = y_p + hp / 2 if has_rep else hp / 2
+    qh = 1.6 if q.enabled else 0.0
+    top = max(db_top, H / 2) + 0.3 + qh / 2   # y of the write route (the queue box is centered on it)
+
+    def rgba(col, a_):
+        rgb = tuple(int(col[i:i + 2], 16) for i in (1, 3, 5))
+        return f"rgba({rgb[0]},{rgb[1]},{rgb[2]},{a_})"
+
+    def box(x, y, title, lines, tier=None, h=H, pips=0, shard_bars=()):
         x0, x1, y0, y1 = x - W / 2, x + W / 2, y - h / 2, y + h / 2
-        if tier:
-            st = tiers[tier]["status"]
-            col = STATUS[st]
-            rgb = tuple(int(col[i:i + 2], 16) for i in (1, 3, 5))
-            fillc = f"rgba({rgb[0]},{rgb[1]},{rgb[2]},0.16)"
-            badge = f"{STATUS_TEXT[st]} · {tiers[tier]['p90_util']:.0%}"
+        st = tiers.get(tier) if tier else None
+        if st:
+            col = STATUS[st["status"]]
+            fillc = rgba(col, 0.16)
         else:
-            col, fillc, badge = c["muted"], "rgba(137,135,129,0.10)", ""
+            col, fillc = c["muted"], "rgba(137,135,129,0.10)"
         fig.add_shape(type="path", path=_rounded(x0, y0, x1, y1), fillcolor=fillc,
                       line=dict(color=col, width=2), layer="below")
-        fig.add_annotation(x=x, y=y1 - 0.2, text=f"<b>{title}</b>", showarrow=False,
-                           font=dict(size=13, color=c["ink"]))
+        fig.add_annotation(x=x, y=y1 - 0.2, text=f"<b>{title}</b>", showarrow=False, font=dict(size=12, color=c["ink"]))
         for i, ln in enumerate(lines):
-            fig.add_annotation(x=x, y=y1 - 0.46 - i * 0.2, text=ln, showarrow=False,
-                               font=dict(size=11, color=c["ink2"]))
-        if badge:
-            fig.add_annotation(x=x, y=y0 + (0.34 if pips else 0.18), text=f"<b>{badge}</b>", showarrow=False,
-                               font=dict(size=11, color=c["ink"]))
+            fig.add_annotation(x=x, y=y1 - 0.44 - i * 0.19, text=ln, showarrow=False, font=dict(size=10, color=c["ink2"]))
+        if shard_bars:                          # per-shard utilization mini bars
+            top_y = y1 - 0.44 - len(lines) * 0.19 - 0.04
+            for i, u in enumerate(shard_bars[:8]):
+                yy = top_y - i * 0.15
+                bw = (W - 0.5) * min(u, 1.0)
+                bcol = STATUS[health(u)]
+                fig.add_annotation(x=x0 + 0.17, y=yy, text=f"s{i}", showarrow=False, font=dict(size=9, color=c["ink2"]))
+                fig.add_shape(type="rect", x0=x0 + 0.3, x1=x0 + 0.3 + (W - 0.5), y0=yy - 0.045, y1=yy + 0.045,
+                              fillcolor="rgba(137,135,129,0.25)", line=dict(width=0))
+                fig.add_shape(type="rect", x0=x0 + 0.3, x1=x0 + 0.3 + max(bw, 0.01), y0=yy - 0.045, y1=yy + 0.045,
+                              fillcolor=bcol, line=dict(width=0))
+        if st:
+            fig.add_annotation(x=x, y=y0 + (0.46 if pips else 0.36), text=f"<b>{STATUS_TEXT[st['status']]}</b>",
+                               showarrow=False, font=dict(size=10, color=c["ink"]))
+            fig.add_annotation(x=x, y=y0 + (0.30 if pips else 0.18), text=f"p90 {st['p90_util']:.0%}",
+                               showarrow=False, font=dict(size=10, color=c["ink2"]))
         n = min(pips, 8)
         for i in range(n):                      # one pip per replica
-            px = x - (n - 1) * 0.1 + i * 0.2
-            fig.add_shape(type="rect", x0=px - 0.07, x1=px + 0.07, y0=y0 + 0.1, y1=y0 + 0.22,
+            px = x - (n - 1) * 0.09 + i * 0.18
+            fig.add_shape(type="rect", x0=px - 0.06, x1=px + 0.06, y0=y0 + 0.08, y1=y0 + 0.18,
                           fillcolor=col, line=dict(width=0))
 
     def arrow(x0, y0, x1, y1, label=None, dy=0.17):
         fig.add_annotation(x=x1, y=y1, ax=x0, ay=y0, xref="x", yref="y", axref="x", ayref="y", text="",
                            showarrow=True, arrowhead=2, arrowsize=1.1, arrowwidth=1.6, arrowcolor=c["muted"])
-        if label:
+        if label and flows:
             fig.add_annotation(x=(x0 + x1) / 2, y=(y0 + y1) / 2 + dy, text=label, showarrow=False,
-                               font=dict(size=11, color=c["ink2"]))
+                               font=dict(size=10, color=c["ink2"]))
 
-    a, d = cfg.app, cfg.db
     cap = app_capacity_rps(cfg)
-    box(X["client"], 0, "Clients", [f"avg {flows['offered']:,.0f} rps", f"{cfg.workload.read_ratio:.0%} reads"])
-    box(X["lb"], 0, "Load balancer", [dict(least_queue="least queue", round_robin="round robin",
-                                           random="random", shared="shared queue")[a.lb_strategy]])
-    box(X["app"], 0, "App tier", [f"{a.replicas} × {a.workers} workers", f"{a.latency_ms:g} ms each",
-                                  f"cap {cap:,.0f} rps"], "app", pips=a.replicas)
-    if has_cache:
-        hr = summ["measured_hit_rate"]
-        box(X["cache"], 0, "Cache", [f"{(hr if hr is not None else cfg.cache.hit_rate):.0%} hit rate",
-                                     "(measured)" if hr is not None else "(set)", f"{cfg.cache.latency_ms:g} ms lookup"],
-            "cache")
+    f = lambda k: flows[k] if flows else 0.0
+    box(X["client"], 0, "Clients", [f"{_k(cfg.workload.rps)} rps", f"{cfg.workload.read_ratio:.0%} reads"])
+    if x_.enabled:
+        box(X["cdn"], 0, "CDN", [f"{x_.hit_rate:.0%} of reads", f"{x_.latency_ms:g} ms"])
+    box(X["lb"], 0, "Load balancer", [a.lb_strategy.replace("_", " ")])
+    box(X["app"], 0, "App tier", [f"{a.replicas} × {a.workers} workers", f"{a.latency_ms:g} ms each", f"cap {_k(cap)} rps"],
+        "app", pips=a.replicas)
+    if cfg.cache.enabled:
+        hr_ = summ["measured_hit_rate"] if summ else None
+        box(X["cache"], 0, "Cache", [f"{(hr_ if hr_ is not None else cfg.cache.hit_rate):.0%} hit rate",
+                                     "measured" if hr_ is not None else "configured", f"{cfg.cache.latency_ms:g} ms"], "cache")
+    shard_u = summ.get("shards", []) if summ else []
+    shard_txt = f"{d.shards} shards" if d.shards > 1 else None
     if has_rep:
-        box(X["db"], y_p, "DB primary", [f"{d.workers} conns", f"write {d.write_ms:g} ms"], "db_primary", h=1.1)
-        box(X["db"], y_r, f"{d.read_replicas} read replica{'s' * (d.read_replicas > 1)}",
-            [f"{d.workers} conns each", f"read {d.read_ms:g} ms"], "db_replicas", h=1.1)
+        box(X["db"], y_p, "DB primary" if d.shards == 1 else "DB primaries",
+            [shard_txt or f"{d.workers} conns", f"write {d.write_ms:g} ms"], "db_primary", h=hp,
+            shard_bars=shard_u if bars else ())
+        n_rep = d.read_replicas * d.shards
+        box(X["db"], y_r, f"{n_rep} replica{'s' * (n_rep > 1)}", [f"{d.workers} conns each", f"read {d.read_ms:g} ms"],
+            "db_replicas", h=hr)
     else:
-        box(X["db"], 0, "Database", [f"{d.workers} conns", f"read {d.read_ms:g} ms", f"write {d.write_ms:g} ms"],
-            "db_primary")
+        lines = ([shard_txt, f"{d.workers} conns each"] if shard_txt else [f"{d.workers} conns"]) + \
+                ([] if shard_txt else [f"read {d.read_ms:g} ms", f"write {d.write_ms:g} ms"])
+        box(X["db"], 0, "Database", lines, "db_primary", h=hp, shard_bars=shard_u if bars else ())
 
     g = W / 2
-    arrow(X["client"] + g, 0, X["lb"] - g, 0, f"{flows['offered']:,.0f} rps")
-    arrow(X["lb"] + g, 0, X["app"] - g, 0, f"{flows['offered']:,.0f} rps")
-    if has_cache:
-        arrow(X["app"] + g, 0, X["cache"] - g, 0, f"{flows['reads']:,.0f} reads")
-        arrow(X["cache"] + g, 0, X["db"] - g, y_r, f"{flows['db_reads']:,.0f} misses", dy=0.17 if not has_rep else 0.32)
+    prev, nxt = "client", None
+    if x_.enabled:
+        arrow(X["client"] + g, 0, X["cdn"] - g, 0, f"{_k(f('offered'))} rps")
+        arrow(X["cdn"] + g, 0, X["lb"] - g, 0, f"{_k(f('to_app'))} miss")
     else:
-        arrow(X["app"] + g, 0, X["db"] - g, y_r, f"{flows['reads']:,.0f} reads", dy=0.17 if not has_rep else 0.32)
+        arrow(X["client"] + g, 0, X["lb"] - g, 0, f"{_k(f('offered'))} rps")
+    arrow(X["lb"] + g, 0, X["app"] - g, 0, f"{_k(f('to_app'))} rps")
+    if cfg.cache.enabled:
+        arrow(X["app"] + g, 0, X["cache"] - g, 0, f"{_k(f('reads'))} reads")
+        arrow(X["cache"] + g, 0, X["db"] - g, y_r, f"{_k(f('db_reads'))} miss", dy=0.17 if not has_rep else 0.3)
+    else:
+        arrow(X["app"] + g, 0, X["db"] - g, y_r, f"{_k(f('reads'))} reads", dy=0.17 if not has_rep else 0.3)
 
-    # writes bypass the cache: route over the top of the diagram into the primary
-    top = 1.95
-    ytop_db = (y_p + 0.55) if has_rep else H / 2
-    fig.add_shape(type="path", path=f"M {X['app']},{H / 2} L {X['app']},{top} L {X['db']},{top} L {X['db']},{ytop_db + 0.06}",
+    # writes bypass the cache: over the top, optionally through the write queue
+    gap = lambda xa, xb: fig.add_shape(type="path", path=f"M {xa},{top} L {xb},{top}",
+                                       line=dict(color=c["muted"], width=1.6), fillcolor="rgba(0,0,0,0)")
+    fig.add_shape(type="path", path=f"M {X['app']},{H / 2} L {X['app']},{top}",
                   line=dict(color=c["muted"], width=1.6), fillcolor="rgba(0,0,0,0)")
-    fig.add_annotation(x=X["db"], y=ytop_db, ax=X["db"], ay=top - 0.05, xref="x", yref="y", axref="x", ayref="y",
+    if q.enabled:
+        xq = (X["app"] + X["db"]) / 2
+        gap(X["app"], xq - g)
+        qlines = [f"{q.consumers} consumers"]
+        if summ and summ.get("queue"):
+            qlines += [f"lag p95 {summ['queue']['lag_p95_s']:.1f} s", f"peak {_k(summ['queue']['max_depth'])} queued"]
+        box(xq, top, "Write queue", qlines, "queue", h=qh)
+        gap(xq + g, X["db"])
+        label_x = (X["app"] + xq - g) / 2
+    else:
+        gap(X["app"], X["db"])
+        label_x = (X["app"] + X["db"]) / 2
+    fig.add_shape(type="path", path=f"M {X['db']},{top} L {X['db']},{db_top + 0.06}",
+                  line=dict(color=c["muted"], width=1.6), fillcolor="rgba(0,0,0,0)")
+    fig.add_annotation(x=X["db"], y=db_top, ax=X["db"], ay=top - 0.05, xref="x", yref="y", axref="x", ayref="y",
                        text="", showarrow=True, arrowhead=2, arrowsize=1.1, arrowwidth=1.6, arrowcolor=c["muted"])
-    fig.add_annotation(x=(X["app"] + X["db"]) / 2, y=top + 0.17, text=f"{flows['writes']:,.0f} writes (skip cache)",
-                       showarrow=False, font=dict(size=11, color=c["ink2"]))
+    if flows:
+        fig.add_annotation(x=label_x, y=top + 0.17, text=f"{_k(f('writes'))} writes", showarrow=False,
+                           font=dict(size=10, color=c["ink2"]))
 
-    fig.update_xaxes(visible=False, range=[-0.7, 10.9], fixedrange=True)
-    fig.update_yaxes(visible=False, range=[-1.65 if has_rep else -1.0, 2.4], fixedrange=True)
-    fig.update_layout(height=400 if has_rep else 330, paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
+    y_lo = (-(hp + hr + 0.12) / 2 if has_rep else -hp / 2) - 0.2
+    y_lo = min(y_lo, -H / 2 - 0.2)
+    y_hi = top + (qh / 2 + 0.1 if q.enabled else 0.4)
+    fig.update_xaxes(visible=False, range=[-0.6, X["db"] + W / 2 + 0.2], fixedrange=True)
+    fig.update_yaxes(visible=False, range=[y_lo, y_hi], fixedrange=True)
+    fig.update_layout(height=int((y_hi - y_lo) * 92), paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
                       margin=dict(l=4, r=4, t=4, b=4), showlegend=False, dragmode=False,
                       font=dict(family=FONT, color=c["ink2"]))
     return fig
@@ -174,12 +238,19 @@ def _event_bands(fig: go.Figure, cfg: Config, theme: str):
 def timeline_figure(res: SimResult, tl: pd.DataFrame, theme: str = "light") -> go.Figure:
     cfg = res.cfg
     c = _t(theme)
-    fig = make_subplots(rows=4, cols=1, shared_xaxes=True, vertical_spacing=0.07,
-                        row_heights=[0.27, 0.27, 0.25, 0.21],
-                        subplot_titles=("Traffic: offered vs served (requests/s)",
-                                        "Latency (ms); failed requests count as the timeout",
-                                        "Utilization of each tier (% of workers busy)",
-                                        "Failed requests per second"))
+    has_lag = "lag_p95_s" in tl.columns and tl["lag_p95_s"].notna().any()
+    titles = ["Traffic: offered vs served (requests/s)", "Latency (ms); failed requests count as the timeout",
+              "Utilization of each tier (% of workers busy)"]
+    heights = [0.27, 0.27, 0.25]
+    if has_lag:
+        titles.append("Write queue lag (p95 seconds from acknowledge to applied)")
+        heights.append(0.17)
+    titles.append("Failed requests per second")
+    heights.append(0.2)
+    n = len(titles)
+    r_fail = n
+    fig = make_subplots(rows=n, cols=1, shared_xaxes=True, vertical_spacing=0.06 if has_lag else 0.07,
+                        row_heights=heights, subplot_titles=tuple(titles))
     for ann in fig.layout.annotations:
         ann.update(x=0, xanchor="left", font=dict(size=13, color=c["ink"]))
     x = tl.index
@@ -211,21 +282,61 @@ def timeline_figure(res: SimResult, tl: pd.DataFrame, theme: str = "light") -> g
                                  hovertemplate="%{y:.0f}%<extra>" + TIER_LABEL[t] + "</extra>"), row=3, col=1)
     fig.add_hline(y=100, row=3, col=1, line=dict(color=STATUS["critical"], width=1, dash="dot"))
 
-    # 4 failures
+    # 4 write-queue lag
+    if has_lag:
+        fig.add_trace(go.Scatter(x=x, y=tl["lag_p95_s"], name="Queue lag p95", mode="lines",
+                                 line=dict(color=c["series"][TIER_SLOT["queue"]], width=2.2),
+                                 hovertemplate="%{y:.1f} s<extra>Queue lag p95</extra>"), row=4, col=1)
+        fig.update_yaxes(ticksuffix=" s", row=4, col=1)
+
+    # last: failures
     for k in ["timeout", "dropped", "error", "incomplete"]:
         col = f"{k}_rps"
         if col in tl and tl[col].sum() > 0:
             fig.add_trace(go.Bar(x=x, y=tl[col], name=k.capitalize(), marker_color=FAIL_COLOR[k],
-                                 hovertemplate="%{y:,.0f}<extra>" + k.capitalize() + "</extra>"), row=4, col=1)
+                                 hovertemplate="%{y:,.0f}<extra>" + k.capitalize() + "</extra>"), row=r_fail, col=1)
 
-    _layout(fig, theme, 800, top=70, bottom=84, hovermode="x unified", barmode="stack", bargap=0)
-    fig.update_layout(legend=dict(orientation="h", yanchor="top", y=-0.075, xanchor="left", x=0,
+    if not any(f"{k}_rps" in tl and tl[f"{k}_rps"].sum() > 0 for k in FAIL_KINDS_PLOT):
+        yax = fig.layout["yaxis" if r_fail == 1 else f"yaxis{r_fail}"]
+        fig.add_annotation(xref="paper", yref="paper", x=0.5, y=(yax.domain[0] + yax.domain[1]) / 2,
+                           text="No failed requests", showarrow=False, font=dict(size=12, color=c["muted"]))
+    _layout(fig, theme, 900 if has_lag else 800, top=70, bottom=84, hovermode="x unified", barmode="stack", bargap=0)
+    fig.update_layout(legend=dict(orientation="h", yanchor="top", y=-0.07 if has_lag else -0.075, xanchor="left", x=0,
                                   traceorder="normal", bgcolor="rgba(0,0,0,0)"))
     fig.update_yaxes(rangemode="tozero")
     fig.update_yaxes(range=[0, 108], ticksuffix="%", row=3, col=1)
-    fig.update_xaxes(title_text="Simulated time (s)", row=4, col=1)
+    fig.update_xaxes(title_text="Simulated time (s)", row=r_fail, col=1)
     fig.update_xaxes(hoverformat=".0f")
     _event_bands(fig, cfg, theme)
+    return fig
+
+
+def frontier_figure(explored: List[Dict], yours: Optional[Dict], optimum_cost: Optional[float], budget: float,
+                    theme: str = "light") -> go.Figure:
+    """Cost vs checks passed for a sample of the design space, with the student's design and the optimum."""
+    c = _t(theme)
+    fig = go.Figure()
+    rng = np.random.default_rng(3)
+    if explored:
+        xs = [e["cost"] for e in explored]
+        ys = [e["passed"] / e["total"] * 100 + rng.uniform(-2.5, 2.5) for e in explored]
+        fig.add_trace(go.Scatter(x=xs, y=ys, mode="markers", name="Sampled designs",
+                                 marker=dict(size=8, color=c["series"][0], opacity=0.45, line=dict(width=0)),
+                                 hovertemplate="$%{x:,.0f}/mo<extra>Sampled design</extra>"))
+    if optimum_cost:
+        fig.add_trace(go.Scatter(x=[optimum_cost], y=[100], mode="markers", name="Cheapest passing design",
+                                 marker=dict(size=16, symbol="star", color=c["series"][2], line=dict(color=c["surface"], width=1.5)),
+                                 hovertemplate="$%{x:,.0f}/mo<extra>Cheapest passing</extra>"))
+    if yours:
+        fig.add_trace(go.Scatter(x=[yours["cost"]], y=[yours["passed"] / yours["total"] * 100], mode="markers",
+                                 name="Your design",
+                                 marker=dict(size=14, symbol="diamond", color=c["series"][1], line=dict(color=c["surface"], width=2)),
+                                 hovertemplate="$%{x:,.0f}/mo<extra>Your design</extra>"))
+    fig.add_vline(x=budget, line=dict(color=c["muted"], width=1.5, dash="dash"), annotation_text="budget",
+                  annotation_position="top left", annotation_font=dict(size=10, color=c["ink2"]))
+    _layout(fig, theme, 340, top=40)
+    fig.update_xaxes(title_text="Monthly cost ($, illustrative)", tickprefix="$", rangemode="tozero")
+    fig.update_yaxes(title_text="Checks passed", ticksuffix="%", range=[-8, 112], tickvals=[0, 33, 67, 100])
     return fig
 
 

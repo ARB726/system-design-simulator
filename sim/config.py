@@ -26,6 +26,14 @@ EVENT_KINDS: Dict[str, tuple] = {
 
 COLD_CACHE_WARMUP_S = 15.0  # hit rate climbs back linearly after a cold-cache event
 
+# Illustrative monthly prices (USD). Bigger boxes (more workers) cost more; every box has a base price.
+COSTS: Dict[str, float] = dict(
+    app_base=15.0, app_per_worker=6.0,
+    cache=50.0, cdn=40.0,
+    queue_base=30.0, queue_per_consumer=4.0,
+    db_base=60.0, db_per_conn=12.0,
+)
+
 
 @dataclass
 class AppTier:
@@ -45,12 +53,29 @@ class CacheTier:
 
 
 @dataclass
+class CDNTier:
+    enabled: bool = False
+    hit_rate: float = 0.6         # share of reads answered at the edge, never reaching the app
+    latency_ms: float = 8.0
+
+
+@dataclass
+class QueueTier:
+    enabled: bool = False
+    consumers: int = 8            # workers draining the queue into the database
+    max_depth: int = 5000         # backlog limit; beyond it writes are rejected
+    enqueue_ms: float = 2.0       # time to accept (ack) a write
+
+
+@dataclass
 class DBTier:
     workers: int = 16             # connections per node
     read_ms: float = 8.0
     write_ms: float = 25.0
-    read_replicas: int = 0        # 0 = primary serves reads too
+    read_replicas: int = 0        # per shard; 0 = the primary serves reads too
     max_queue: Optional[int] = 500
+    shards: int = 1
+    hot_share: float = 0.0        # share of traffic landing on shard 0 (0 = perfectly even)
 
 
 @dataclass
@@ -90,6 +115,8 @@ class Config:
     name: str = "Custom design"
     app: AppTier = field(default_factory=AppTier)
     cache: CacheTier = field(default_factory=CacheTier)
+    cdn: CDNTier = field(default_factory=CDNTier)
+    queue: QueueTier = field(default_factory=QueueTier)
     db: DBTier = field(default_factory=DBTier)
     workload: Workload = field(default_factory=Workload)
     events: List[Event] = field(default_factory=list)
@@ -105,12 +132,32 @@ def config_from_dict(d: dict) -> Config:
         name=d.get("name", "Custom design"),
         app=AppTier(**d["app"]),
         cache=CacheTier(**d["cache"]),
+        cdn=CDNTier(**d.get("cdn", {})),
+        queue=QueueTier(**d.get("queue", {})),
         db=DBTier(**d["db"]),
         workload=Workload(**d["workload"]),
         events=[Event(**e) for e in d.get("events", [])],
         seed=d.get("seed", 42),
         app_only=d.get("app_only", False),
     )
+
+
+# ---------------------------------------------------------------- cost
+def cost_breakdown(cfg: Config) -> Dict[str, float]:
+    k, a, d = COSTS, cfg.app, cfg.db
+    out = {"App tier": a.replicas * (k["app_base"] + k["app_per_worker"] * a.workers)}
+    if cfg.cache.enabled:
+        out["Cache"] = k["cache"]
+    if cfg.cdn.enabled:
+        out["CDN"] = k["cdn"]
+    if cfg.queue.enabled:
+        out["Write queue"] = k["queue_base"] + k["queue_per_consumer"] * cfg.queue.consumers
+    out["Database"] = d.shards * (1 + d.read_replicas) * (k["db_base"] + k["db_per_conn"] * d.workers)
+    return out
+
+
+def monthly_cost(cfg: Config) -> float:
+    return float(sum(cost_breakdown(cfg).values()))
 
 
 # ---------------------------------------------------------------- back of envelope
@@ -121,21 +168,27 @@ def app_capacity_rps(cfg: Config) -> float:
 
 def expected_utilization(cfg: Config) -> Dict[str, float]:
     """The napkin math an interviewer wants to see: steady-state utilization per tier."""
-    w, a, c, d = cfg.workload, cfg.app, cfg.cache, cfg.db
+    w, a, c, d, q, x = cfg.workload, cfg.app, cfg.cache, cfg.db, cfg.queue, cfg.cdn
     reads = w.rps * w.read_ratio
     writes = w.rps - reads
-    miss = (1.0 - c.hit_rate) if c.enabled else 1.0
-    db_reads = reads * miss
-    out = {"app": w.rps * a.latency_ms / 1000.0 / (a.replicas * a.workers)}
+    cdn_hits = reads * x.hit_rate if (x.enabled and not cfg.app_only) else 0.0
+    reads_app = reads - cdn_hits
+    out = {"app": (reads_app + writes) * a.latency_ms / 1000.0 / (a.replicas * a.workers)}
     if cfg.app_only:
         return out
+    miss = (1.0 - c.hit_rate) if c.enabled else 1.0
+    db_reads = reads_app * miss
     if c.enabled:
-        out["cache"] = reads * c.latency_ms / 1000.0 / c.workers
+        out["cache"] = reads_app * c.latency_ms / 1000.0 / c.workers
+    p_hot = max(1.0 / d.shards, d.hot_share) if d.shards > 1 else 1.0   # busiest shard's share
+    write_busy = writes * d.write_ms / 1000.0
+    if q.enabled:
+        out["queue"] = write_busy / q.consumers
     if d.read_replicas > 0:
-        out["db_primary"] = writes * d.write_ms / 1000.0 / d.workers
-        out["db_replicas"] = db_reads * d.read_ms / 1000.0 / (d.read_replicas * d.workers)
+        out["db_primary"] = p_hot * write_busy / d.workers
+        out["db_replicas"] = p_hot * db_reads * d.read_ms / 1000.0 / (d.read_replicas * d.workers)
     else:
-        out["db_primary"] = (writes * d.write_ms + db_reads * d.read_ms) / 1000.0 / d.workers
+        out["db_primary"] = p_hot * (write_busy + db_reads * d.read_ms / 1000.0) / d.workers
     return out
 
 
@@ -165,8 +218,8 @@ def presets() -> Dict[str, Preset]:
         ),
         "A read-heavy service with a cache in front of the database. It is comfortable at "
         "normal load, then a viral link doubles traffic for 15 seconds.",
-        "Which tier saturates first? Then raise app replicas and re-run. How many do you "
-        "need so the spike stays under 80% utilization?",
+        "Which tier saturates first? Then raise app replicas, or turn on the CDN, and re-run. "
+        "Which is the cheaper way to survive the spike?",
     )
 
     out["Write-heavy: chat messages"] = Preset(
@@ -180,7 +233,38 @@ def presets() -> Dict[str, Preset]:
         ),
         "Half the traffic is writes, and every write must hit the single database primary.",
         "Add read replicas and re-run: reads move away but the primary stays hot. Why? "
-        "What would you change in the write path instead (batching, async queue, sharding)?",
+        "Then try the write queue, or two shards.",
+    )
+
+    out["Async writes: absorb a burst"] = Preset(
+        Config(
+            name="Async writes",
+            app=AppTier(replicas=4, workers=8, latency_ms=15),
+            cache=CacheTier(hit_rate=0.6),
+            queue=QueueTier(enabled=True, consumers=16, max_depth=5000),
+            db=DBTier(workers=16, read_ms=8, write_ms=25),
+            workload=Workload(rps=700, read_ratio=0.4, duration_s=70),
+            events=[Event("traffic_spike", 25, 20, 1.8)],
+        ),
+        "Writes are acknowledged the moment they are queued, so clients stay fast during a burst. "
+        "But the consumers can only drain the queue as fast as the database allows.",
+        "Watch the queue lag during and after the spike. How many consumers keep lag under "
+        "5 seconds, and what does that cost in database load?",
+    )
+
+    out["Sharding: the hot key"] = Preset(
+        Config(
+            name="Hot shard",
+            app=AppTier(replicas=4, workers=8, latency_ms=15),
+            cache=CacheTier(hit_rate=0.5),
+            db=DBTier(workers=6, read_ms=8, write_ms=25, shards=4, hot_share=0.5),
+            workload=Workload(rps=600, read_ratio=0.3, duration_s=60),
+            events=[],
+        ),
+        "Four shards sound like four times the capacity, but half of all traffic hashes to one "
+        "celebrity key, so one shard does most of the work.",
+        "Set the hot-shard share to 0 and re-run to see the even case. Then add shards while the "
+        "skew is on: does it help?",
     )
 
     out["Failure: cache goes cold"] = Preset(
@@ -194,7 +278,7 @@ def presets() -> Dict[str, Preset]:
         ),
         "A 95% hit rate hides how little the database is doing. When the cache restarts, "
         "the full read load lands on a database sized for 5% of it.",
-        "Compare database utilization before and during the event. Try read replicas, then "
+        "Compare database utilization before and during the event. Try read replicas or a CDN, then "
         "think about request coalescing and cache warm-up.",
     )
 
