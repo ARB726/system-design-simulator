@@ -27,6 +27,7 @@ from sim.engine import run
 from sim.experiments import sweep_load, sweep_replicas, validate_mmc
 from sim.predict import BUCKETS, POINTS, Prediction, score_prediction
 from sim.sharecard import design_lines, make_card
+from sim.run_library_ui import library_key, render_library, save_run_form
 from sim.themes import (DEFAULT_THEME, INDUSTRIES, INDUSTRY_EMOJI, PRESET_INDUSTRY, THEMES, accent, tag, theme_css)
 
 st.set_page_config(page_title="System Design Simulator", page_icon=":material/hub:", layout="wide")
@@ -87,10 +88,23 @@ def load_into_state(cfg: Config) -> None:
 
 def on_preset_change() -> None:
     load_into_state(PRESETS[ss.preset].cfg)
+    ss.pop("restored_run", None)
     ss.committed = None
     ss.pred_for = None
     for k in ("exp_rep", "exp_load"):
         ss.pop(k, None)
+
+
+def restore_saved_design(config: dict, name: str) -> None:
+    cfg = config_from_dict(config)
+    load_into_state(cfg)
+    ss.mode = "Sandbox"
+    ss.predict_on = False
+    ss.committed = json.dumps(cfg.to_dict(), sort_keys=True)
+    ss.pred_for = None
+    ss.restored_run = name
+    for key in ("exp_rep", "exp_load", "pred_score"):
+        ss.pop(key, None)
 
 
 def build_cfg() -> Config:
@@ -440,15 +454,22 @@ if MODE == "Sandbox":
     stale = committed != cfg_key
     predict_on = bool(ss.get("predict_on"))
 
-    tab_results, tab_exp, tab_val, tab_about = st.tabs(["Results", "Experiments", "Validation", "How it works"])
+    library = library_key()
+    tab_results, tab_saved, tab_exp, tab_val, tab_about = st.tabs(
+        ["Results", "Saved runs & compare", "Experiments", "Validation", "How it works"])
 
     with tab_results:
         pset = PRESETS[ss.preset]
         with st.container(border=True):
-            st.badge(tag(PRESET_INDUSTRY.get(ss.preset, "")), color="blue")
-            st.subheader(ss.preset.split(": ", 1)[-1])
-            st.markdown(pset.story)
-            st.caption(f":material/lightbulb: Try this: {pset.try_this}")
+            if ss.get("restored_run"):
+                st.badge("Saved design", color="blue")
+                st.subheader(ss.restored_run)
+                st.caption("Loaded into the sandbox. Tune the sidebar and run to explore another design.")
+            else:
+                st.badge(tag(PRESET_INDUSTRY.get(ss.preset, "")), color="blue")
+                st.subheader(ss.preset.split(": ", 1)[-1])
+                st.markdown(pset.story)
+                st.caption(f":material/lightbulb: Try this: {pset.try_this}")
 
         gate = predict_on and ss.get("pred_for") != cfg_key
         if predict_on and not gate:
@@ -489,12 +510,16 @@ if MODE == "Sandbox":
                 show_prediction_score(ss.pred_score)
                 st.divider()
             ccfg = render_results(res, tl, summ, findings, "sb")
+            save_run_form(library, ccfg, summ, findings, stale=stale)
 
             d1, d2, _ = st.columns([1, 1, 2])
             d1.download_button("Download summary (JSON)",
                                json.dumps({"config": ccfg.to_dict(), "summary": summ, "findings": findings}, indent=2,
                                           default=float), file_name="simulation_summary.json", width="stretch")
             d2.download_button("Download timeline (CSV)", tl.round(4).to_csv(), file_name="timeline.csv", width="stretch")
+
+    with tab_saved:
+        render_library(library, restore_saved_design)
 
     with tab_exp:
         base = config_from_dict(json.loads(committed))

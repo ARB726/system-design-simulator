@@ -10,7 +10,7 @@ def test_app_renders_default_scenario():
     at = AppTest.from_file(APP, default_timeout=90).run()
     assert not at.exception
     assert len(at.metric) == 6
-    assert len(at.tabs) == 4
+    assert len(at.tabs) == 5
 
 
 def test_switching_scenarios_does_not_crash():
