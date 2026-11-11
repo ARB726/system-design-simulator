@@ -29,7 +29,7 @@ from sim.predict import BUCKETS, POINTS, Prediction, score_prediction
 from sim.sharecard import design_lines, make_card
 from sim.themes import (DEFAULT_THEME, INDUSTRIES, INDUSTRY_EMOJI, PRESET_INDUSTRY, THEMES, accent, tag, theme_css)
 
-st.set_page_config(page_title="System Design Simulator", page_icon="\U0001F9EA", layout="wide")
+st.set_page_config(page_title="System Design Simulator", page_icon=":material/hub:", layout="wide")
 
 MAX_EV = 4
 PRESETS = presets()
@@ -38,21 +38,6 @@ CHALLENGES = challenges()
 OPTIMA = load_optima()
 FIRST_CHALLENGE = next(iter(CHALLENGES))
 ORDER = list(CHALLENGES)          # campaign order
-
-st.markdown(
-    """
-    <style>
-      .block-container {padding-top: 2.2rem; max-width: 1250px;}
-      [data-testid="stMetric"] {border: 1px solid rgba(137,135,129,.30); border-radius: 12px; padding: 12px 16px;}
-      [data-testid="stMetricLabel"] {opacity: .75;}
-      [data-testid="stMetricValue"] {font-size: 1.55rem;}
-      [data-testid="stMetricValue"] > div {text-overflow: clip; white-space: normal;}
-      h1 {letter-spacing: -0.02em;}
-    </style>
-    """,
-    unsafe_allow_html=True,
-)
-
 
 def current_theme() -> str:
     try:
@@ -209,7 +194,7 @@ def prediction_form(cfg: Config, form_key: str, holds_label: str, allow_skip: bo
     """Returns (submitted, Prediction | None)."""
     tiers = list(expected_utilization(cfg))
     with st.form(form_key):
-        st.markdown("##### Predict before you run")
+        st.subheader("Predict before you run", icon=":material/psychology:")
         st.caption("Do the napkin math first. Points are awarded for matching the simulator; "
                    f"{POINTS['bottleneck']} bottleneck, {POINTS['util']} utilization, {POINTS['p95']} latency, "
                    f"{POINTS['holds']} verdict.")
@@ -219,7 +204,7 @@ def prediction_form(cfg: Config, form_key: str, holds_label: str, allow_skip: bo
         p = c1.radio("Where will steady-state p95 latency land?", BUCKETS, index=1)
         h = c2.radio(holds_label, ["Yes", "No"], index=0, horizontal=True)
         skip = st.checkbox("Skip the prediction", value=False) if allow_skip else False
-        go = st.form_submit_button("Lock prediction and run", type="primary")
+        go = st.form_submit_button("Lock prediction and run", icon=":material/play_arrow:", type="primary", width="stretch")
     if not go:
         return False, None
     if skip:
@@ -250,7 +235,8 @@ def show_prediction_score(ps: dict) -> None:
 
 # ------------------------------------------------------------------ sidebar
 with st.sidebar:
-    st.markdown("### \U0001F9EA Design lab")
+    st.subheader("Design lab", icon=":material/hub:")
+    st.caption("Build intuition. Test your architecture.")
     st.selectbox("Theme", list(THEMES), format_func=lambda n: f"{THEMES[n]['emoji']}  {n}", key="theme")
     st.markdown(theme_css(ss.theme, THEME == "dark"), unsafe_allow_html=True)
     charts.ACCENT = accent(ss.theme, THEME == "dark")
@@ -294,7 +280,7 @@ with st.sidebar:
         if ss.get("predict_on"):
             st.caption("Predict mode: use the form on the Results tab to run.")
         else:
-            run_clicked = st.button("▶  Run simulation", type="primary", width="stretch")
+            run_clicked = st.button("Run simulation", icon=":material/play_arrow:", type="primary", width="stretch")
 
         with st.expander("Workload", expanded=True):
             st.slider("Requests per second", 10, 3000, step=10, key="w_rps")
@@ -377,9 +363,13 @@ with st.sidebar:
             st.error("Over budget. Reduce the design before grading.")
 
 # ================================================================== header
-st.title("System Design Simulator")
-st.caption("Design it. Stress it. See where it breaks. A discrete-event simulation of clients → CDN → load balancer "
-           "→ app replicas → cache → write queue → sharded database, validated against queueing theory.")
+with st.container(horizontal=True):
+    st.badge("SYSTEMS LAB", icon=":material/hub:", color="blue")
+    st.badge(MODE, icon=":material/science:" if MODE == "Sandbox" else ":material/flag:", color="gray")
+st.title("System design simulator")
+st.markdown("Design it. Stress it. **See where it breaks.**")
+st.caption("Explore the tradeoffs between throughput, latency, and cost. "
+           "Tune your architecture in the sidebar, then put it under pressure.")
 
 
 # ================================================================== results renderer
@@ -389,7 +379,9 @@ def render_results(res, tl, summ, findings, key_prefix: str, show_cost: bool = T
         st.warning(wmsg)
     b = summ["bottleneck"]
     bst = summ["tiers"][b]["status"] if b else "good"
-    cols = st.columns(6 if show_cost else 5)
+    st.subheader("Performance overview", icon=":material/monitoring:")
+    metric_row = st.container(horizontal=True)
+    cols = [metric_row.container(border=True, width=180) for _ in range(6 if show_cost else 5)]
     cols[0].metric("Offered load", f"{summ['offered_rps']:,.0f} rps", help="Average over the run, after warm-up.")
     cols[1].metric("Served", f"{summ['served_rps']:,.0f} rps")
     cols[2].metric("Success rate", f"{summ['success_rate']:.1%}",
@@ -401,10 +393,11 @@ def render_results(res, tl, summ, findings, key_prefix: str, show_cost: bool = T
     if show_cost:
         cols[5].metric("Est. cost", f"${monthly_cost(ccfg):,.0f}/mo", help="Illustrative prices; see How it works.")
 
-    st.markdown("#### Architecture")
-    plot(charts.architecture_figure(ccfg, summ, THEME), key=f"{key_prefix}_arch")
-    st.caption("Box color shows each tier's 90th-percentile utilization over the run: "
-               "✓ OK below 70%, ▲ Warm 70–85%, ▲ Hot 85–95%, ✕ Saturated above 95%.")
+    with st.container(border=True):
+        st.subheader("Architecture", icon=":material/account_tree:")
+        st.caption("Follow the request path. Each tier is colored by its 90th-percentile utilization.")
+        plot(charts.architecture_figure(ccfg, summ, THEME), key=f"{key_prefix}_arch")
+        st.caption("OK <70% / Warm 70-85% / Hot 85-95% / Saturated >95%")
 
     st.markdown("#### Live replay")
     plot(charts.replay_figure(res, tl, THEME), key=f"{key_prefix}_replay")
@@ -451,8 +444,11 @@ if MODE == "Sandbox":
 
     with tab_results:
         pset = PRESETS[ss.preset]
-        st.markdown(f'<span class="chip">{tag(PRESET_INDUSTRY.get(ss.preset, ""))}</span>', unsafe_allow_html=True)
-        st.info(f"**Scenario.** {pset.story}\n\n**Try this.** {pset.try_this}")
+        with st.container(border=True):
+            st.badge(tag(PRESET_INDUSTRY.get(ss.preset, "")), color="blue")
+            st.subheader(ss.preset.split(": ", 1)[-1])
+            st.markdown(pset.story)
+            st.caption(f":material/lightbulb: Try this: {pset.try_this}")
 
         gate = predict_on and ss.get("pred_for") != cfg_key
         if predict_on and not gate:
@@ -477,7 +473,7 @@ if MODE == "Sandbox":
                 st.rerun()
         else:
             if stale:
-                st.warning("Settings changed. Press **▶ Run simulation** in the sidebar to apply them.")
+                st.warning("Settings changed. Press **Run simulation** in the sidebar to apply them.")
             with st.spinner("Simulating..."):
                 res, tl, summ, findings = simulate(committed)
             pev = ss.pop("pred_ev", None)
@@ -615,15 +611,15 @@ else:
                     meta = f"Budget ${c.budget:,.0f} · best {best:.0f}/100"
                 else:
                     meta = f"Budget ${c.budget:,.0f} · not played yet"
-                cls = "card" + (" locked" if lock else "") + (" current" if cid == CH.id else "")
-                pad = "🔒 " if lock else ""
-                stars = "★" * n + "☆" * (3 - n)
-                col.markdown(f'<div class="{cls}"><span class="chip">{tag(c.industry)}</span>'
-                             f'<div style="font-weight:600;margin:6px 0 2px">{pad}{c.title}</div>'
-                             f'<div class="stars">{stars}</div><div class="meta">{meta}</div></div>',
-                             unsafe_allow_html=True)
-                col.button("Playing" if cid == CH.id else "Play", key=f"play_{cid}", disabled=lock or cid == CH.id,
-                           on_click=pick_challenge, args=(cid,), width="stretch")
+                with col.container(border=True):
+                    st.badge(tag(c.industry), color="gray" if lock else "blue")
+                    st.markdown(f"**{c.title}**")
+                    st.markdown("\u2605" * n + "\u2606" * (3 - n))
+                    st.caption(meta)
+                    st.button("Playing" if cid == CH.id else "Locked" if lock else "Play challenge",
+                              key=f"play_{cid}", disabled=lock or cid == CH.id,
+                              icon=":material/lock:" if lock else ":material/arrow_forward:",
+                              on_click=pick_challenge, args=(cid,), width="stretch")
         st.divider()
         st.markdown(f'<span class="chip">{tag(CH.industry)}</span>', unsafe_allow_html=True)
         st.subheader(CH.title)

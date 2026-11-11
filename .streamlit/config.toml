@@ -1,5 +1,39 @@
+# Refined neutral foundation, adapted from Streamlit's shadcn theme.
 [theme]
-primaryColor = "#2a78d6"
+base = "light"
+primaryColor = "#1c6fd1"
+font = "sans-serif"
+baseFontSize = 15
+headingFontSizes = ["38px", "28px", "22px", "18px", "16px", "14px"]
+headingFontWeights = [700, 650, 600, 600, 600, 600]
+baseRadius = "12px"
+buttonRadius = "8px"
+showWidgetBorder = true
+showSidebarBorder = true
+linkUnderline = false
+
+[theme.light]
+backgroundColor = "#ffffff"
+secondaryBackgroundColor = "#f3f6fb"
+textColor = "#17243b"
+borderColor = "#dce4ef"
+dataframeHeaderBackgroundColor = "#edf2f8"
+
+[theme.light.sidebar]
+backgroundColor = "#f3f6fb"
+secondaryBackgroundColor = "#ffffff"
+
+[theme.dark]
+primaryColor = "#4a9af0"
+backgroundColor = "#0e1626"
+secondaryBackgroundColor = "#19253a"
+textColor = "#e6edf7"
+borderColor = "#2c3d56"
+dataframeHeaderBackgroundColor = "#19253a"
+
+[theme.dark.sidebar]
+backgroundColor = "#111c2e"
+secondaryBackgroundColor = "#1d2c43"
 
 [browser]
 gatherUsageStats = false

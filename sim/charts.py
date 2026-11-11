@@ -15,11 +15,11 @@ from .engine import SimResult
 
 # ------------------------------------------------------------------ palette
 THEMES = {
-    "light": dict(ink="#0b0b0b", ink2="#52514e", muted="#898781", grid="rgba(137,135,129,0.22)",
-                  surface="#fcfcfb", series=["#2a78d6", "#eb6834", "#1baf7a", "#eda100", "#e87ba4"],
+    "light": dict(ink="#17243b", ink2="#42536d", muted="#66758c", grid="rgba(102,117,140,0.16)",
+                  surface="#ffffff", series=["#2a78d6", "#eb6834", "#1baf7a", "#eda100", "#e87ba4"],
                   pct=["#86b6ef", "#2a78d6", "#104281"]),
-    "dark": dict(ink="#f0efec", ink2="#c3c2b7", muted="#898781", grid="rgba(137,135,129,0.25)",
-                 surface="#1a1a19", series=["#3987e5", "#d95926", "#199e70", "#c98500", "#d55181"],
+    "dark": dict(ink="#e6edf7", ink2="#bdcce0", muted="#90a3be", grid="rgba(144,163,190,0.18)",
+                 surface="#19253a", series=["#3987e5", "#d95926", "#199e70", "#c98500", "#d55181"],
                  pct=["#1c5cab", "#3987e5", "#9ec5f4"]),
 }
 STATUS = {"good": "#0ca30c", "warning": "#fab219", "serious": "#ec835a", "critical": "#d03b3b"}
