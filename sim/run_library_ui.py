@@ -9,11 +9,14 @@ from uuid import uuid4
 import pandas as pd
 import streamlit as st
 
-from .history import RunStore, compare_runs
+from .history import RunStore, StorageError, compare_runs
+from .auth import identity_key, required
 
 
 def library_key() -> str:
     """The bookmark is a bearer link; keys are never used as filesystem paths."""
+    if required():
+        return identity_key(st.user)  # An arbitrary URL can never select another user's library.
     key = st.query_params.get("library", "")
     if not re.fullmatch(r"[a-f0-9]{32}", key):
         key = uuid4().hex
@@ -35,7 +38,7 @@ def save_run_form(library, cfg, summary, findings, stale=False):
                 RunStore().save(library, name, cfg, summary, findings)
             except ValueError as exc:
                 st.error(str(exc))
-            except (OSError, sqlite3.Error):
+            except (OSError, sqlite3.Error, StorageError):
                 st.error("The run library is unavailable. You can still download the current summary below.")
             else:
                 st.success("Run saved. Open Saved runs & compare to review it.")
@@ -43,11 +46,14 @@ def save_run_form(library, cfg, summary, findings, stale=False):
 
 def render_library(library, restore):
     st.subheader("Saved runs & compare", icon=":material/compare_arrows:")
-    st.caption("Bookmark this page to reopen your library. Anyone with its full URL can access and edit it. "
-               "Runs are stored on this server; download backups before changing hosts.")
+    if required():
+        st.caption("Your saved runs are associated with your signed-in account.")
+    else:
+        st.caption("Bookmark this page to reopen your library. Anyone with its full URL can access and edit it. "
+                   "Runs are stored on this server; download backups before changing hosts.")
     try:
         runs = RunStore().list(library)
-    except (OSError, sqlite3.Error, ValueError):
+    except (OSError, sqlite3.Error, ValueError, StorageError):
         st.error("The run library is unavailable. Check that its storage directory is writable.")
         return
     if not runs:
@@ -86,7 +92,7 @@ def render_library(library, restore):
         if st.button("Delete run", disabled=not confirmed, key="delete_run"):
             try:
                 RunStore().delete(library, selected)
-            except (OSError, sqlite3.Error):
+            except (OSError, sqlite3.Error, StorageError):
                 st.error("Could not delete the run. Please try again.")
             else:
                 st.rerun()

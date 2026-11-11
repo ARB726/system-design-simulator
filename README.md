@@ -1,10 +1,12 @@
 # System Design Simulator
 
+[![CI](https://github.com/ARB726/system-design-simulator/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/ARB726/system-design-simulator/actions/workflows/ci.yml)
+
 **Design a system, stress it, and see where it breaks.**
 
 An interactive system-design learning lab built with Python, Streamlit, and SimPy. Explore how application replicas, caching, CDN hits, asynchronous writes, and database sharding affect throughput, latency, reliability, and cost.
 
-Run experiments in a sandbox, solve budget-constrained challenges, and save competing designs to compare their measured tradeoffs. Findings come from simulation results and deterministic rules; no LLM or API key is required.
+Run experiments in a sandbox, solve budget-constrained challenges, and save competing designs to compare their measured tradeoffs. Findings come from simulation results and deterministic rules. The local demo needs no LLM or API key. An optional multi-user deployment adds OIDC sign-in, PostgreSQL libraries, Redis/Celery workers, and a C++ validation kernel.
 
 ## Features
 
@@ -87,7 +89,7 @@ flowchart TB
     Optimizer["tools/optimize.py<br/>Offline optimizer"] --> Optima
 ```
 
-Simulations run synchronously and expensive results are cached with Streamlit. There is no separate API server, worker queue, or external database service in this version.
+In local mode, simulations run synchronously and expensive results are cached with Streamlit. The multi-user deployment runs experiments in bounded Celery workers, uses Redis for transient jobs/results, and stores account-owned snapshots in PostgreSQL. See the [production architecture and runbook](docs/production.md) for the service diagram and deployment instructions.
 
 ## Simulated system architecture
 
@@ -130,6 +132,8 @@ Each snapshot preserves the completed run's configuration, summary, findings, an
 
 ### Library access and persistence
 
+The following describes local demo mode. In the [multi-user deployment](docs/production.md), libraries belong to signed-in OIDC identities and use shared PostgreSQL storage; URL parameters cannot select another account.
+
 - **Bookmark the full URL**, including `?library=...`, to reopen your library after a browser or app restart.
 - Anyone with that URL can read and edit the library. This is link-based access, not account authentication.
 - Each library can hold up to **100 runs**.
@@ -151,7 +155,7 @@ export SYSDESIGN_RUN_DB=/data/sysdesign/runs.sqlite3
 python -m streamlit run app.py
 ```
 
-The server process must be able to write to the directory. Ephemeral hosts can discard the database during redeployment. This version is designed for one app instance with durable storage; multiple replicas do not automatically share history.
+The server process must be able to write to the directory. Ephemeral hosts can discard the database during redeployment. SQLite mode is designed for one app instance with durable storage. Use the PostgreSQL/worker deployment for shared multi-user storage.
 
 ## Challenge campaign
 
@@ -190,11 +194,29 @@ Queueing behavior is checked against Erlang C / M/M/c formulas. The tests pool m
 ## Development and tests
 
 ```bash
-python -m pip install pytest
+python -m pip install -r requirements-dev.txt
 python -m pytest -q
 ```
 
-The suite covers the simulation engine, theoretical validation, challenges and scoring, progress import/export, run persistence and comparison, and Streamlit save/restore/delete flows. Simulation-heavy tests can take several minutes. The latest implementation check passed **84 tests**.
+The suite covers the simulation engine, theoretical validation, challenges and scoring, progress import/export, run persistence and comparison, and Streamlit save/restore/delete flows. Simulation-heavy tests can take several minutes. CI also covers workload limits, authentication gates, job ownership, the C++ kernel, and disposable distributed services.
+
+### Continuous integration
+
+[GitHub Actions](https://github.com/ARB726/system-design-simulator/actions/workflows/ci.yml)
+runs automatically on pushes and pull requests, and can be started manually from the Actions tab.
+Core tests run on Python 3.10 and 3.12; Streamlit interaction tests run separately
+on Python 3.12 using AppTest, without a browser or a running web server.
+
+The workflow checks Python syntax, caches pip downloads, and uploads JUnit XML test reports
+for seven days, including reports from failing test runs. New commits cancel outdated runs
+for the same branch or pull request. CI uses disposable service data and read-only repository permissions; no production secrets are required. A dedicated job compiles C++, exercises PostgreSQL/Redis with a real worker, and builds and smoke-tests the Docker image.
+
+Run the same test groups locally:
+
+```bash
+python -m pytest -m "not ui" -q
+python -m pytest -m ui -q
+```
 
 ## Project structure
 
@@ -205,7 +227,12 @@ The suite covers the simulation engine, theoretical validation, challenges and s
 | `sim/engine.py` | SimPy engine, request routing, tiers, queues, shards, and chaos events |
 | `sim/analysis.py` | Timelines, aggregate results, and rule-based findings |
 | `sim/charts.py` | Plotly architecture diagrams, replay, and experiment charts |
-| `sim/history.py` | SQLite snapshots and deterministic run comparisons |
+| `sim/history.py` | SQLite/PostgreSQL snapshots and deterministic run comparisons |
+| `sim/auth.py`, `sim/jobs.py`, `sim/worker.py` | OIDC ownership, bounded job admission, and Celery workers |
+| `sim/execution.py`, `sim/job_ui.py` | JSON worker protocol and nonblocking UI polling |
+| `sim/limits.py` | Server-side workload and allocation limits |
+| `native/mmc.cpp`, `sim/native.py` | C++ validation kernel and Python adapter |
+| `Dockerfile`, `compose.yml` | Web/worker images, health checks, and service deployment |
 | `sim/run_library_ui.py` | Save, restore, delete, export, and comparison controls |
 | `sim/challenges.py` | Challenge definitions, design knobs, hidden checks, and scoring |
 | `sim/predict.py` | Prediction scoring |
@@ -216,6 +243,24 @@ The suite covers the simulation engine, theoretical validation, challenges and s
 | `tools/optimize.py`, `data/optima.json` | Offline reference-design generation and stored results |
 | `tests/` | Engine, application, persistence, and regression tests |
 
+## Multi-user deployment and C++
+
+See [docs/production.md](docs/production.md) for Docker Compose startup, OIDC configuration,
+worker scaling, storage ownership, operating limits, backups, and rollout verification.
+
+The optional C++17 M/M/c event kernel accelerates the Validation lab. The full topology
+engine remains SimPy. Build and measure it with:
+
+```bash
+python tools/build_native.py
+python tools/benchmark_native.py
+```
+
+The Docker image includes the compiled kernel. No native compiler is needed to run the
+original Python-only demo.
+
 ## Future directions
 
-Potential next steps include authenticated accounts, shared database storage, simulation workers with job progress and cancellation, retry/backoff and rate-limiting scenarios, multi-region models, and classroom assignments. These are future extensions, not features of the current implementation.
+Potential next steps include durable classroom progress, job cancellation and richer progress,
+retry/backoff and rate-limiting scenarios, multi-region models, and classroom assignments.
+Production load tests and operational monitoring should precede public rollout.

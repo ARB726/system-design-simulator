@@ -71,8 +71,13 @@ def sweep_replicas(cfg: Config, replica_values: Iterable[int], strategies: Itera
 
 
 def validate_mmc(c: int = 4, mu: float = 50.0, rhos=(0.3, 0.5, 0.7, 0.8, 0.9), duration_s: float = 300.0,
-                 warmup_s: float = 20.0, seed: int = 7, progress: Progress = None) -> pd.DataFrame:
+                 warmup_s: float = 20.0, seed: int = 7, progress: Progress = None, backend: str = "simpy") -> pd.DataFrame:
     """Compare simulated mean response time with the Erlang C formula for an M/M/c queue."""
+    if backend not in ("simpy", "cpp"):
+        raise ValueError("Unknown validation backend.")
+    rhos = list(rhos)
+    if not 1 <= len(rhos) <= 12:
+        raise ValueError("At most 12 validation points are allowed.")
     rows = []
     for i, rho in enumerate(rhos):
         lam = rho * c * mu
@@ -82,12 +87,17 @@ def validate_mmc(c: int = 4, mu: float = 50.0, rhos=(0.3, 0.5, 0.7, 0.8, 0.9), d
             workload=Workload(rps=lam, read_ratio=1.0, duration_s=duration_s, timeout_ms=None, warmup_s=warmup_s),
             seed=seed + i, app_only=True,
         )
-        res = run(cfg)
-        r = res.requests[res.requests.t >= warmup_s]
-        sim_ms = float(r.latency_ms.mean())
+        if backend == "cpp":
+            from .native import simulate_mmc
+            result = simulate_mmc(c, lam, mu, duration_s, warmup_s, seed + i)
+            sim_ms, requests = result["mean_response_s"] * 1000.0, result["requests"]
+        else:
+            res = run(cfg)
+            r = res.requests[res.requests.t >= warmup_s]
+            sim_ms, requests = float(r.latency_ms.mean()), len(r)
         th_ms = mmc_mean_response(lam, mu, c) * 1000.0
         rows.append({"utilization": rho, "arrival_rps": lam, "simulated_ms": sim_ms,
-                     "theory_ms": th_ms, "error_pct": (sim_ms / th_ms - 1.0) * 100.0, "requests": len(r)})
+                     "theory_ms": th_ms, "error_pct": (sim_ms / th_ms - 1.0) * 100.0, "requests": requests})
         if progress:
             progress((i + 1) / len(list(rhos)), f"utilization {rho:.0%}")
     return pd.DataFrame(rows)

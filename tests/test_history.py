@@ -93,6 +93,7 @@ def test_comparison_handles_zero_baseline_and_async_writes(tmp_path):
     assert result["metrics"][-1]["Change"] == 30
 
 
+@pytest.mark.ui
 def test_saved_run_ui_saves_completed_config_restores_and_deletes(tmp_path, monkeypatch):
     from pathlib import Path
     from streamlit.testing.v1 import AppTest

@@ -23,6 +23,7 @@ import pandas as pd
 import simpy
 
 from .config import COLD_CACHE_WARMUP_S, Config
+from .limits import SimulationLimitError, arrival_limit, validate_config
 
 SAMPLE_DT = 0.25  # seconds between utilization / queue samples
 
@@ -31,6 +32,7 @@ class Events:
     """Time-varying conditions derived from the chaos events (stateless functions of t)."""
 
     def __init__(self, cfg: Config):
+        validate_config(cfg)
         by = lambda k: [e for e in cfg.events if e.kind == k]
         self.spikes = by("traffic_spike")
         self.kills = by("kill_app")
@@ -258,10 +260,14 @@ class Simulation:
     def _arrivals(self):
         env, w = self.env, self.cfg.workload
         lam_max = w.rps * self.ev.max_arrival_factor()
+        attempts = 0
         while True:                           # thinning handles the time-varying rate
             yield env.timeout(self.rng.expovariate(lam_max))
             if env.now >= w.duration_s:
                 return
+            attempts += 1
+            if attempts > arrival_limit():
+                raise SimulationLimitError("The arrival budget was reached. Reduce traffic or duration.")
             if self.rng.random() * lam_max <= w.rps * self.ev.arrival_factor(env.now):
                 env.process(self._request())
 

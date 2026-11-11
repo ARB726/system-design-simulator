@@ -6,6 +6,8 @@ import math
 import os
 import re
 import sqlite3
+import hashlib
+from functools import lru_cache
 from contextlib import contextmanager
 from datetime import datetime, timezone
 from pathlib import Path
@@ -15,15 +17,53 @@ from .analysis import TIER_LABEL
 from .config import Config, monthly_cost
 
 
+class StorageError(RuntimeError):
+    pass
+
+
+SCHEMA = """CREATE TABLE IF NOT EXISTS runs (
+    id TEXT PRIMARY KEY, library TEXT NOT NULL, created_at TEXT NOT NULL, payload TEXT NOT NULL)"""
+
+
+@lru_cache(maxsize=4)
+def _initialize_postgres(url):
+    import psycopg
+    with psycopg.connect(url, connect_timeout=5) as db:
+        # Serialize first-start schema creation across web replicas.
+        db.execute("SELECT pg_advisory_xact_lock(7262026)")
+        db.execute(SCHEMA)
+        db.execute("CREATE INDEX IF NOT EXISTS runs_library ON runs(library, created_at)")
+
+
+class _PostgresConnection:
+    def __init__(self, db):
+        self.db = db
+
+    def execute(self, statement, params=()):
+        return self.db.execute(statement.replace("?", "%s"), params)
+
+
 class RunStore:
     """Small SQLite library. Every operation is scoped to an unguessable library key."""
 
     def __init__(self, path=None):
+        self.url = os.environ.get("SYSDESIGN_DATABASE_URL") if path is None else None
+        if self.url and not self.url.startswith(("postgresql://", "postgres://")):
+            raise StorageError("SYSDESIGN_DATABASE_URL must be a PostgreSQL connection URL.")
         self.path = Path(path or os.environ.get("SYSDESIGN_RUN_DB") or
                          Path(__file__).resolve().parents[1] / ".local" / "runs.sqlite3")
 
     @contextmanager
     def _connect(self):
+        if self.url:
+            import psycopg
+            try:
+                _initialize_postgres(self.url)
+                with psycopg.connect(self.url, connect_timeout=5) as db:
+                    yield _PostgresConnection(db)
+            except psycopg.Error as exc:
+                raise StorageError("Shared run storage is unavailable.") from exc
+            return
         self.path.parent.mkdir(parents=True, exist_ok=True)
         db = sqlite3.connect(self.path, timeout=10)
         try:
@@ -53,7 +93,11 @@ class RunStore:
                       findings=findings)
         payload = json.dumps(record, allow_nan=False, default=float)
         with self._connect() as db:
-            db.execute("BEGIN IMMEDIATE")
+            if self.url:
+                lock = int.from_bytes(hashlib.sha256(library.encode()).digest()[:8], "big", signed=True)
+                db.execute("SELECT pg_advisory_xact_lock(?)", (lock,))
+            else:
+                db.execute("BEGIN IMMEDIATE")
             count = db.execute("SELECT count(*) FROM runs WHERE library = ?", (library,)).fetchone()[0]
             if count >= 100:
                 raise ValueError("This library has 100 runs. Delete an old run before saving another.")

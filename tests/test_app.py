@@ -1,7 +1,10 @@
 """Smoke test: the Streamlit app renders every tab without raising."""
 from pathlib import Path
 
+import pytest
 from streamlit.testing.v1 import AppTest
+
+pytestmark = pytest.mark.ui
 
 APP = str(Path(__file__).resolve().parents[1] / "app.py")
 

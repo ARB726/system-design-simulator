@@ -1,0 +1,164 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  PYTHONUTF8: "1"
+  STREAMLIT_SERVER_HEADLESS: "true"
+  STREAMLIT_BROWSER_GATHER_USAGE_STATS: "false"
+
+jobs:
+  core:
+    name: Core tests / Python ${{ matrix.python }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.10", "3.12"]
+    steps:
+      - name: Check out code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - name: Set up Python
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7
+        with:
+          python-version: ${{ matrix.python }}
+          cache: pip
+          cache-dependency-path: |
+            requirements.txt
+            requirements-production.txt
+            requirements-dev.txt
+      - name: Install dependencies
+        run: python -m pip install -r requirements-dev.txt
+      - name: Check Python syntax
+        run: python -m compileall -q app.py sim tests tools
+      - name: Run engine, theory, persistence, and regression tests
+        env:
+          SYSDESIGN_RUN_DB: ${{ runner.temp }}/sysdesign/runs.sqlite3
+        run: python -m pytest -m "not ui and not services and not native" -q --durations=10 --junitxml=test-results/core.xml
+      - name: Upload test report
+        if: ${{ always() }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: core-python-${{ matrix.python }}
+          path: test-results/core.xml
+          retention-days: 7
+          if-no-files-found: warn
+
+  native-and-services:
+    name: C++ and distributed services
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: sysdesign
+          POSTGRES_DB: sysdesign
+          POSTGRES_PASSWORD: ci-only-password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U sysdesign -d sysdesign"
+          --health-interval 10s --health-timeout 5s --health-retries 10
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s --health-timeout 5s --health-retries 10
+    env:
+      SYSDESIGN_TEST_DATABASE_URL: postgresql://sysdesign:ci-only-password@localhost:5432/sysdesign
+      SYSDESIGN_TEST_REDIS_URL: redis://localhost:6379/15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: |
+            requirements.txt
+            requirements-production.txt
+            requirements-dev.txt
+      - run: python -m pip install -r requirements-dev.txt
+      - name: Compile C++ with warnings as errors
+        run: |
+          mkdir -p .local/bin
+          g++ -O3 -std=c++17 -Wall -Wextra -Werror native/mmc.cpp -o .local/bin/sysdesign-mmc
+      - name: Test native math, shared storage, queue limits, and a real worker
+        run: python -m pytest -m "native or services" -q --junitxml=test-results/services.xml
+      - name: Check C++ with address and undefined-behavior sanitizers
+        run: |
+          g++ -O1 -g -std=c++17 -fsanitize=address,undefined -fno-omit-frame-pointer native/mmc.cpp -o /tmp/sysdesign-mmc-checked
+          printf '0 2\n1 2\n5 1\n' | /tmp/sysdesign-mmc-checked --trace 1 0
+          /tmp/sysdesign-mmc-checked 4 140 50 300 20 7
+      - name: Validate the container build
+        run: docker build -t sysdesign-ci .
+      - name: Validate Compose configuration
+        env:
+          POSTGRES_PASSWORD: ci-only-password
+        run: docker compose config --quiet
+      - name: Check container liveness
+        run: |
+          docker run -d --name sysdesign-ci -p 8501:8501 -e SYSDESIGN_REQUIRE_AUTH=true sysdesign-ci
+          for attempt in $(seq 1 30); do
+            if curl --fail http://localhost:8501/_stcore/health; then exit 0; fi
+            sleep 2
+          done
+          docker logs sysdesign-ci
+          exit 1
+      - name: Upload service test report
+        if: ${{ always() }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: native-and-services
+          path: test-results/services.xml
+          retention-days: 7
+
+  ui:
+    name: Streamlit UI tests / Python 3.12
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - name: Set up Python
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: |
+            requirements.txt
+            requirements-production.txt
+            requirements-dev.txt
+      - name: Install dependencies
+        run: python -m pip install -r requirements-dev.txt
+      - name: Run Streamlit interaction tests
+        env:
+          SYSDESIGN_RUN_DB: ${{ runner.temp }}/sysdesign/runs.sqlite3
+        run: python -m pytest -m ui -q --durations=10 --junitxml=test-results/ui.xml
+      - name: Upload test report
+        if: ${{ always() }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: streamlit-ui-python-3.12
+          path: test-results/ui.xml
+          retention-days: 7
+          if-no-files-found: warn

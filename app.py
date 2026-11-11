@@ -28,9 +28,13 @@ from sim.experiments import sweep_load, sweep_replicas, validate_mmc
 from sim.predict import BUCKETS, POINTS, Prediction, score_prediction
 from sim.sharecard import design_lines, make_card
 from sim.run_library_ui import library_key, render_library, save_run_form
+from sim.auth import enforce_login
+from sim.job_ui import compute
 from sim.themes import (DEFAULT_THEME, INDUSTRIES, INDUSTRY_EMOJI, PRESET_INDUSTRY, THEMES, accent, tag, theme_css)
 
 st.set_page_config(page_title="System Design Simulator", page_icon=":material/hub:", layout="wide")
+
+enforce_login()
 
 MAX_EV = 4
 PRESETS = presets()
@@ -91,7 +95,7 @@ def on_preset_change() -> None:
     ss.pop("restored_run", None)
     ss.committed = None
     ss.pred_for = None
-    for k in ("exp_rep", "exp_load"):
+    for k in ("exp_rep", "exp_load", "pending_rep", "pending_load", "pending_prediction"):
         ss.pop(k, None)
 
 
@@ -103,7 +107,7 @@ def restore_saved_design(config: dict, name: str) -> None:
     ss.committed = json.dumps(cfg.to_dict(), sort_keys=True)
     ss.pred_for = None
     ss.restored_run = name
-    for key in ("exp_rep", "exp_load", "pred_score"):
+    for key in ("exp_rep", "exp_load", "pred_score", "pending_rep", "pending_load", "pending_prediction"):
         ss.pop(key, None)
 
 
@@ -153,7 +157,7 @@ def current_design(cid: str) -> dict:
 
 # ------------------------------------------------------------------ cached simulation
 @st.cache_data(show_spinner=False, max_entries=24)
-def simulate(cfg_json: str):
+def _simulate_local(cfg_json: str):
     c = config_from_dict(json.loads(cfg_json))
     res = run(c)
     tl = timeline(res)
@@ -162,7 +166,7 @@ def simulate(cfg_json: str):
 
 
 @st.cache_data(show_spinner=False, max_entries=48)
-def grade(cid: str, design_json: str):
+def _grade_local(cid: str, design_json: str):
     """Run every hidden check. Returns per-check results and the steady-state summary (the prediction baseline)."""
     ch, design = CHALLENGES[cid], json.loads(design_json)
     out, base = [], None
@@ -177,7 +181,7 @@ def grade(cid: str, design_json: str):
 
 
 @st.cache_data(show_spinner=False, max_entries=12)
-def replay(cid: str, design_json: str, idx: int):
+def _replay_local(cid: str, design_json: str, idx: int):
     from sim.challenges import check_config
     ch, design = CHALLENGES[cid], json.loads(design_json)
     cfg = check_config(ch, design, ch.checks[idx])
@@ -185,6 +189,19 @@ def replay(cid: str, design_json: str, idx: int):
     tl = timeline(res)
     summ = summarize(res, tl)
     return res, tl, summ, diagnose(res, summ, tl)
+
+
+def simulate(cfg_json: str):
+    return compute("simulate", {"config": json.loads(cfg_json)}, lambda: _simulate_local(cfg_json))
+
+
+def grade(cid: str, design_json: str):
+    return compute("grade", {"cid": cid, "design": json.loads(design_json)}, lambda: _grade_local(cid, design_json))
+
+
+def replay(cid: str, design_json: str, idx: int):
+    return compute("replay", {"cid": cid, "design": json.loads(design_json), "index": idx},
+                   lambda: _replay_local(cid, design_json, idx))
 
 
 def plot(fig, key=None):
@@ -480,9 +497,12 @@ if MODE == "Sandbox":
             submitted, pred = prediction_form(cfg, "sb_predict", "Will the design hold under the whole scenario "
                                               "(at least 99% of requests succeed)?", allow_skip=True)
             if submitted:
+                ss.pending_prediction = (cfg_key, pred)
+            pending = ss.get("pending_prediction")
+            if pending and pending[0] == cfg_key:
+                pred = pending[1]
                 res, tl, summ, findings = simulate(cfg_key)
                 ss.committed = cfg_key
-                ss.pred_for = cfg_key
                 ss.pred_score = None
                 if pred is not None:
                     base_cfg = config_from_dict(json.loads(cfg_key))
@@ -491,6 +511,8 @@ if MODE == "Sandbox":
                     ss.pred_score = score_prediction(pred, base_summ, summ["success_rate"] >= 0.99)
                     record_calibration(ss.pred_score)
                     ss.pred_ev = pg.record_prediction(ss.progress, ss.pred_score, ORDER)
+                ss.pred_for = cfg_key
+                ss.pop("pending_prediction", None)
                 st.rerun()
         else:
             if stale:
@@ -535,10 +557,15 @@ if MODE == "Sandbox":
         values = sorted({int(round(v)) for v in np.linspace(lo, hi, min(hi - lo + 1, 7))})
         st.caption(f"{len(values) * max(len(strats), 1)} short simulations at {base.workload.rps:,.0f} rps.")
         if go_rep and strats:
-            bar = st.progress(0.0, text="Simulating...")
-            df = sweep_replicas(base, values, strats, duration_s=20, warmup_s=4, progress=progress_cb(bar))
-            bar.empty()
-            ss.exp_rep = (committed, df)
+            ss.pending_rep = (committed, values, strats)
+        if ss.get("pending_rep"):
+            run_key, run_values, run_strats = ss.pending_rep
+            run_cfg = config_from_dict(json.loads(run_key))
+            df = compute("sweep_replicas", {"config": run_cfg.to_dict(), "replicas": run_values,
+                         "strategies": run_strats},
+                         lambda: sweep_replicas(run_cfg, run_values, run_strats))
+            ss.exp_rep = (run_key, df)
+            ss.pop("pending_rep", None)
         if "exp_rep" in ss:
             key, df = ss.exp_rep
             if key != committed:
@@ -561,11 +588,15 @@ if MODE == "Sandbox":
         mult = c1.slider("Test up to (× current load)", 1.0, 4.0, 2.0, 0.25)
         go_load = c2.button("Run load test", width="stretch")
         if go_load:
-            bar = st.progress(0.0, text="Simulating...")
-            vals = np.linspace(base.workload.rps * 0.2, base.workload.rps * mult, 9)
-            df = sweep_load(base, vals, duration_s=25, warmup_s=5, progress=progress_cb(bar))
-            bar.empty()
-            ss.exp_load = (committed, df)
+            vals = np.linspace(base.workload.rps * 0.2, base.workload.rps * mult, 9).tolist()
+            ss.pending_load = (committed, vals)
+        if ss.get("pending_load"):
+            run_key, run_values = ss.pending_load
+            run_cfg = config_from_dict(json.loads(run_key))
+            df = compute("sweep_load", {"config": run_cfg.to_dict(), "values": run_values},
+                         lambda: sweep_load(run_cfg, run_values))
+            ss.exp_load = (run_key, df)
+            ss.pop("pending_load", None)
         if "exp_load" in ss:
             key, df = ss.exp_load
             if key != committed:
@@ -589,11 +620,17 @@ if MODE == "Sandbox":
         vc = c1.slider("Servers (c)", 1, 16, 4)
         vmu = c2.slider("Service rate per server (rps)", 10, 200, 50, 10)
         go_val = c3.button("Run validation", width="stretch")
+        from sim.native import available as native_available
+        validation_backend = st.selectbox("Validation engine", ["simpy", "cpp"] if native_available() else ["simpy"],
+                                          format_func=lambda v: "C++ event kernel" if v == "cpp" else "Python / SimPy")
         if go_val:
-            bar = st.progress(0.0, text="Simulating...")
-            rhos = (0.3, 0.5, 0.7, 0.8, 0.9)
-            ss.val = (vc, vmu, validate_mmc(vc, float(vmu), rhos, progress=progress_cb(bar)))
-            bar.empty()
+            ss.pending_validation = (vc, float(vmu), validation_backend)
+        if ss.get("pending_validation"):
+            run_c, run_mu, backend = ss.pending_validation
+            vdf = compute("validate_mmc", {"c": run_c, "mu": run_mu, "backend": backend},
+                          lambda: validate_mmc(run_c, run_mu, backend=backend))
+            ss.val = (run_c, run_mu, vdf)
+            ss.pop("pending_validation", None)
         if "val" in ss:
             vc_, vmu_, vdf = ss.val
             plot(charts.validation_figure(vdf, THEME), key="val_fig")
@@ -669,7 +706,12 @@ else:
 
         submitted, pred = prediction_form(dcfg, "ch_predict", "Will your design pass every hidden test?", allow_skip=True)
         if submitted:
+            ss.pending_grade = (CH.id, dj, pred)
+        pending = ss.get("pending_grade")
+        if pending and pending[0] == CH.id and pending[1] == dj:
+            pred = pending[2]
             if cost > CH.budget:
+                ss.pop("pending_grade", None)
                 st.error("Over budget: reduce the design first.")
             else:
                 with st.spinner("Running the hidden tests..."):
@@ -684,6 +726,7 @@ else:
                 events = dict(xp=ev["xp_gained"] + (pev["xp_gained"] if pev else 0), stars=ev["stars_gained"],
                               badges=ev["new_badges"] + (pev["new_badges"] if pev else []),
                               level_up=ev["level_up"] or bool(pev and pev["level_up"]), level=(pev or ev)["level"])
+                ss.pop("pending_grade", None)
                 ss.chal_last = dict(cid=CH.id, dj=dj, design=design, results=results, score=score, ps=ps,
                                     events=events, celebrated=False)
                 st.rerun()

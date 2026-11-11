@@ -1,0 +1,89 @@
+name: sysdesign
+
+x-runtime: &runtime
+  build: .
+  image: sysdesign-sim:local
+  restart: unless-stopped
+  init: true
+  security_opt:
+    - no-new-privileges:true
+  environment: &environment
+    SYSDESIGN_EXECUTION: celery
+    SYSDESIGN_REQUIRE_AUTH: "true"
+    SYSDESIGN_DATABASE_URL: postgresql://sysdesign:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}@postgres:5432/sysdesign
+    SYSDESIGN_REDIS_URL: redis://redis:6379/0
+    SYSDESIGN_MAX_ARRIVALS: "500000"
+    SYSDESIGN_MAX_PENDING: "32"
+    SYSDESIGN_JOBS_PER_USER: "2"
+  logging:
+    driver: json-file
+    options:
+      max-size: "10m"
+      max-file: "3"
+
+services:
+  web:
+    <<: *runtime
+    ports:
+      - "127.0.0.1:8501:8501"
+    volumes:
+      - type: bind
+        source: ${SYSDESIGN_AUTH_FILE:-./.streamlit/secrets.toml}
+        target: /app/.streamlit/secrets.toml
+        read_only: true
+        bind:
+          create_host_path: false
+    depends_on:
+      postgres:
+        condition: service_healthy
+      worker:
+        condition: service_healthy
+    mem_limit: 1g
+
+  worker:
+    <<: *runtime
+    command: ["celery", "-A", "sim.worker:celery_app", "worker", "--loglevel=INFO", "--concurrency=2", "--hostname=celery@%h"]
+    depends_on:
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "celery -A sim.worker:celery_app inspect ping --destination celery@$$HOSTNAME --timeout 3"]
+      interval: 30s
+      timeout: 10s
+      start_period: 30s
+      retries: 3
+    stop_grace_period: 190s
+    mem_limit: 2g
+
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: sysdesign
+      POSTGRES_DB: sysdesign
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sysdesign -d sysdesign"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    mem_limit: 512m
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes", "--maxmemory", "512mb", "--maxmemory-policy", "noeviction"]
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    mem_limit: 768m
+
+volumes:
+  postgres-data:
+  redis-data:

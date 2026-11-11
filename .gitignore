@@ -5,6 +5,10 @@ __pycache__/
 venv/
 .DS_Store
 .local/
+test-results/
+.env
+.env.*
+!.env.example
 
 # Streamlit secrets (needed later for any API keys; never commit them)
 .streamlit/secrets.toml
