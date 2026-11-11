@@ -616,9 +616,11 @@ else:
                 else:
                     meta = f"Budget ${c.budget:,.0f} · not played yet"
                 cls = "card" + (" locked" if lock else "") + (" current" if cid == CH.id else "")
+                pad = "🔒 " if lock else ""
+                stars = "★" * n + "☆" * (3 - n)
                 col.markdown(f'<div class="{cls}"><span class="chip">{tag(c.industry)}</span>'
-                             f'<div style="font-weight:600;margin:6px 0 2px">{"\U0001F512 " if lock else ""}{c.title}</div>'
-                             f'<div class="stars">{"★" * n}{"☆" * (3 - n)}</div><div class="meta">{meta}</div></div>',
+                             f'<div style="font-weight:600;margin:6px 0 2px">{pad}{c.title}</div>'
+                             f'<div class="stars">{stars}</div><div class="meta">{meta}</div></div>',
                              unsafe_allow_html=True)
                 col.button("Playing" if cid == CH.id else "Play", key=f"play_{cid}", disabled=lock or cid == CH.id,
                            on_click=pick_challenge, args=(cid,), width="stretch")
