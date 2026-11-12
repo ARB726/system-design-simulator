@@ -1,0 +1,175 @@
+{
+  "measured_at": "2026-11-12T00:37:49.365991+00:00",
+  "environment": {
+    "python": "3.10.11 (tags/v3.10.11:7d4cc5a, Apr  5 2023, 00:38:17) [MSC v.1929 64 bit (AMD64)]",
+    "platform": "Windows-10-10.0.26200-SP0",
+    "cpu": "Intel64 Family 6 Model 142 Stepping 12, GenuineIntel",
+    "logical_cpus": 8
+  },
+  "workload": {
+    "rps": 500.0,
+    "duration_s": 20.0,
+    "warmup_s": 1,
+    "seed": 7,
+    "rounds": 3,
+    "config": {
+      "name": "Custom design",
+      "app": {
+        "replicas": 3,
+        "workers": 8,
+        "latency_ms": 20.0,
+        "lb_strategy": "least_queue",
+        "max_queue": 200
+      },
+      "cache": {
+        "enabled": true,
+        "hit_rate": 0.85,
+        "latency_ms": 1.0,
+        "workers": 64
+      },
+      "cdn": {
+        "enabled": false,
+        "hit_rate": 0.6,
+        "latency_ms": 8.0
+      },
+      "queue": {
+        "enabled": false,
+        "consumers": 8,
+        "max_depth": 5000,
+        "enqueue_ms": 2.0
+      },
+      "db": {
+        "workers": 16,
+        "read_ms": 8.0,
+        "write_ms": 25.0,
+        "read_replicas": 0,
+        "max_queue": 500,
+        "shards": 1,
+        "hot_share": 0.0
+      },
+      "workload": {
+        "rps": 500.0,
+        "read_ratio": 0.95,
+        "duration_s": 20.0,
+        "timeout_ms": 1000.0,
+        "warmup_s": 1
+      },
+      "events": [],
+      "seed": 7,
+      "app_only": false
+    }
+  },
+  "results": {
+    "full": {
+      "timings": [
+        {
+          "seconds": 2.0419846000004327,
+          "peak_traced_bytes": null,
+          "summary": {
+            "offered_rps": 495.4736842105263,
+            "served_rps": 495.4736842105263,
+            "success_rate": 1.0,
+            "p50_ms": 16.57337667012504,
+            "p95_ms": 65.564085293227,
+            "p99_ms": 100.92033452629686
+          }
+        },
+        {
+          "seconds": 1.9000465999997687,
+          "peak_traced_bytes": null,
+          "summary": {
+            "offered_rps": 495.4736842105263,
+            "served_rps": 495.4736842105263,
+            "success_rate": 1.0,
+            "p50_ms": 16.57337667012504,
+            "p95_ms": 65.564085293227,
+            "p99_ms": 100.92033452629686
+          }
+        },
+        {
+          "seconds": 1.9193451999963145,
+          "peak_traced_bytes": null,
+          "summary": {
+            "offered_rps": 495.4736842105263,
+            "served_rps": 495.4736842105263,
+            "success_rate": 1.0,
+            "p50_ms": 16.57337667012504,
+            "p95_ms": 65.564085293227,
+            "p99_ms": 100.92033452629686
+          }
+        }
+      ],
+      "memory": {
+        "seconds": 5.6817739000034635,
+        "peak_traced_bytes": 3529346,
+        "summary": {
+          "offered_rps": 495.4736842105263,
+          "served_rps": 495.4736842105263,
+          "success_rate": 1.0,
+          "p50_ms": 16.57337667012504,
+          "p95_ms": 65.564085293227,
+          "p99_ms": 100.92033452629686
+        }
+      },
+      "profile": "         3058403 function calls (3058239 primitive calls) in 5.110 seconds\n\n   Ordered by: cumulative time\n   List reduced from 685 to 12 due to restriction <12>\n\n   ncalls  tottime  percall  cumtime  percall filename:lineno(function)\n        1    0.000    0.000    5.110    5.110 benchmark_summary.py:26(<lambda>)\n        1    0.000    0.000    5.083    5.083 engine.py:369(run)\n        1    0.001    0.001    5.082    5.082 engine.py:331(run)\n        1    0.172    0.172    5.048    5.048 core.py:214(run)\n   135975    0.426    0.000    4.875    0.000 core.py:182(step)\n    62372    0.259    0.000    3.733    0.000 events.py:388(_resume)\n    62372    0.077    0.000    3.424    0.000 {method 'send' of 'generator' objects}\n    52371    0.297    0.000    2.864    0.000 engine.py:203(_request)\n    63690    0.306    0.000    2.150    0.000 engine.py:176(_serve)\n    21230    0.087    0.000    0.631    0.000 resource.py:85(__exit__)\n    21230    0.116    0.000    0.489    0.000 base.py:48(__init__)\n    21230    0.044    0.000    0.487    0.000 resource.py:105(__init__)\n\n\n",
+      "median_seconds": 1.9193451999963145
+    },
+    "summary": {
+      "timings": [
+        {
+          "seconds": 2.1509513999990304,
+          "peak_traced_bytes": null,
+          "summary": {
+            "offered_rps": 495.4736842105263,
+            "served_rps": 495.4736842105263,
+            "success_rate": 1.0,
+            "p50_ms": 16.57337667012504,
+            "p95_ms": 65.564085293227,
+            "p99_ms": 100.92033452629686
+          }
+        },
+        {
+          "seconds": 1.8621879999991506,
+          "peak_traced_bytes": null,
+          "summary": {
+            "offered_rps": 495.4736842105263,
+            "served_rps": 495.4736842105263,
+            "success_rate": 1.0,
+            "p50_ms": 16.57337667012504,
+            "p95_ms": 65.564085293227,
+            "p99_ms": 100.92033452629686
+          }
+        },
+        {
+          "seconds": 1.829830499998934,
+          "peak_traced_bytes": null,
+          "summary": {
+            "offered_rps": 495.4736842105263,
+            "served_rps": 495.4736842105263,
+            "success_rate": 1.0,
+            "p50_ms": 16.57337667012504,
+            "p95_ms": 65.564085293227,
+            "p99_ms": 100.92033452629686
+          }
+        }
+      ],
+      "memory": {
+        "seconds": 4.524238599995442,
+        "peak_traced_bytes": 560853,
+        "summary": {
+          "offered_rps": 495.4736842105263,
+          "served_rps": 495.4736842105263,
+          "success_rate": 1.0,
+          "p50_ms": 16.57337667012504,
+          "p95_ms": 65.564085293227,
+          "p99_ms": 100.92033452629686
+        }
+      },
+      "profile": "         3054356 function calls in 5.826 seconds\n\n   Ordered by: cumulative time\n   List reduced from 155 to 12 due to restriction <12>\n\n   ncalls  tottime  percall  cumtime  percall filename:lineno(function)\n        1    0.000    0.000    5.826    5.826 benchmark_summary.py:26(<lambda>)\n        1    0.000    0.000    5.826    5.826 engine.py:373(run_summary)\n        1    0.000    0.000    5.826    5.826 engine.py:331(run)\n        1    0.189    0.189    5.825    5.825 core.py:214(run)\n   135887    0.449    0.000    5.636    0.000 core.py:182(step)\n    62284    0.295    0.000    4.358    0.000 events.py:388(_resume)\n    62284    0.090    0.000    4.002    0.000 {method 'send' of 'generator' objects}\n    52371    0.338    0.000    3.373    0.000 engine.py:203(_request)\n    63690    0.360    0.000    2.509    0.000 engine.py:176(_serve)\n    21230    0.105    0.000    0.743    0.000 resource.py:85(__exit__)\n    21230    0.133    0.000    0.584    0.000 base.py:48(__init__)\n    21230    0.060    0.000    0.568    0.000 resource.py:105(__init__)\n\n\n",
+      "median_seconds": 1.8621879999991506
+    }
+  },
+  "equivalent": true,
+  "speedup": 1.0306935712168641,
+  "peak_traced_reduction_pct": 84.10886889525709
+}

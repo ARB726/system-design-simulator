@@ -16,10 +16,12 @@ from __future__ import annotations
 
 import random
 import time
+from array import array
 from dataclasses import dataclass
 from typing import Callable, List, Optional
 
 import pandas as pd
+import numpy as np
 import simpy
 
 from .config import COLD_CACHE_WARMUP_S, Config
@@ -118,8 +120,12 @@ class SimResult:
 
 
 class Simulation:
-    def __init__(self, cfg: Config):
+    def __init__(self, cfg: Config, *, summary_only: bool = False):
         self.cfg = cfg
+        self.summary_only = summary_only
+        self.latencies = array("d")
+        self.served = 0
+        self.max_latency_ms = 0.0
         self.env = simpy.Environment()
         self.rng = random.Random(cfg.seed)
         self.ev = Events(cfg)
@@ -243,7 +249,18 @@ class Simulation:
         if status == "ok" and deadline is not None and env.now > deadline:
             status = "timeout"                # answered, but too late to matter
         del self.inflight[rid]
-        self.records.append((t0, latency, status, is_read, hit, cdn_hit))
+        self._record(t0, latency, status, is_read, hit, cdn_hit)
+
+    def _record(self, t0, latency, status, is_read, hit, cdn_hit):
+        if not self.summary_only:
+            self.records.append((t0, latency, status, is_read, hit, cdn_hit))
+            return
+        latency_ms = latency * 1000.0
+        self.max_latency_ms = max(self.max_latency_ms, latency_ms)
+        if t0 >= self.cfg.workload.warmup_s:
+            self.served += status == "ok"
+            self.latencies.append(latency_ms if status in ("ok", "incomplete") else
+                                  (self.cfg.workload.timeout_ms or float("nan")))
 
     def _consumer(self):
         """Drain the write queue into the database, one write at a time."""
@@ -254,7 +271,8 @@ class Simulation:
             mean = d.write_ms / 1000.0 * self.ev.db_factor(env.now)
             yield from self._serve(self.db, self._prim(shard), mean, None, bounded=False)
             self.busy_consumers -= 1
-            self.lag.append((env.now, env.now - t_enq))
+            if not self.summary_only:
+                self.lag.append((env.now, env.now - t_enq))
 
     # ---------------------------------------------------------------- processes
     def _arrivals(self):
@@ -310,11 +328,12 @@ class Simulation:
                                                for n in self.db.nodes[s * g + 1:(s + 1) * g])
             self.samples.append(row)
 
-    def run(self) -> SimResult:
+    def run(self) -> SimResult | dict:
         t_start = time.perf_counter()
         w = self.cfg.workload
         self.env.process(self._arrivals())
-        self.env.process(self._sampler())
+        if not self.summary_only:
+            self.env.process(self._sampler())
         if self.store is not None:
             for _ in range(self.cfg.queue.consumers):
                 self.env.process(self._consumer())
@@ -322,7 +341,20 @@ class Simulation:
         self.env.run(until=w.duration_s + tail)
         now = self.env.now
         for t0, is_read in self.inflight.values():   # unfinished work, latency is a lower bound
-            self.records.append((t0, now - t0, "incomplete", is_read, None, False))
+            self._record(t0, now - t0, "incomplete", is_read, None, False)
+
+        if self.summary_only:
+            # Exact quantiles need O(n) scalar latency storage, but no request tuples,
+            # DataFrames, replay samples, or write-lag history. Match full-run failure
+            # penalties, including the pre-warmup maximum when timeouts are disabled.
+            values = np.asarray(self.latencies)
+            values[np.isnan(values)] = self.max_latency_ms
+            count = len(values)
+            quantiles = np.quantile(values, [.5, .95, .99]) if count else [0.0] * 3
+            span = max(w.duration_s - w.warmup_s, 1e-9)
+            return dict(offered_rps=count / span, served_rps=self.served / span,
+                        success_rate=self.served / count if count else 1.0,
+                        p50_ms=float(quantiles[0]), p95_ms=float(quantiles[1]), p99_ms=float(quantiles[2]))
 
         req = pd.DataFrame(self.records, columns=["t", "latency_s", "status", "is_read", "hit", "cdn"])
         req["latency_ms"] = req.latency_s * 1000.0
@@ -336,3 +368,8 @@ class Simulation:
 
 def run(cfg: Config) -> SimResult:
     return Simulation(cfg).run()
+
+
+def run_summary(cfg: Config) -> dict:
+    """Exact sweep statistics using compact latency storage; no replay artifacts."""
+    return Simulation(cfg, summary_only=True).run()

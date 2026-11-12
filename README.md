@@ -48,6 +48,14 @@ Open the local URL printed by Streamlit, normally `http://localhost:8501`.
 
 The app runs simulations locally in the Python server process. It does not provision cloud infrastructure or send real traffic to external databases, caches, or CDNs.
 
+## Performance engineering case study
+
+Load and replica sweeps use an exact summary-only execution path that avoids retaining
+full request tables, replay samples, and write-lag histories. Read the
+[benchmark and engineering tradeoffs](docs/performance.md) for measured allocation
+and runtime comparisons, reproducible commands, profiles, and correctness checks.
+Interactive simulations retain their full traces for visualization and diagnosis.
+
 ## Application architecture
 
 The UI orchestrates the simulation engine, analysis, challenges, and saved-run library. The engine and comparison logic are separate from the Streamlit presentation layer.
