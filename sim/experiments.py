@@ -6,7 +6,7 @@ from typing import Callable, Iterable, Optional
 import pandas as pd
 
 from .config import AppTier, Config, Workload, config_from_dict
-from .engine import SimResult, run
+from .engine import SimResult, run, run_summary
 from .theory import mmc_mean_response
 
 Progress = Optional[Callable[[float, str], None]]
@@ -48,7 +48,7 @@ def sweep_load(cfg: Config, rps_values: Iterable[float], duration_s: float = 25.
     for i, rps in enumerate(vals):
         c = _steady_copy(cfg, duration_s, warmup_s)
         c.workload.rps = float(rps)
-        rows.append({"target_rps": float(rps), **_quick(run(c))})
+        rows.append({"target_rps": float(rps), **run_summary(c)})
         if progress:
             progress((i + 1) / len(vals), f"{rps:,.0f} rps")
     return pd.DataFrame(rows)
@@ -63,7 +63,7 @@ def sweep_replicas(cfg: Config, replica_values: Iterable[int], strategies: Itera
         for n in reps:
             c = _steady_copy(cfg, duration_s, warmup_s)
             c.app.replicas, c.app.lb_strategy = int(n), strat
-            rows.append({"replicas": int(n), "strategy": strat, **_quick(run(c))})
+            rows.append({"replicas": int(n), "strategy": strat, **run_summary(c)})
             done += 1
             if progress:
                 progress(done / total, f"{n} replicas, {strat}")
