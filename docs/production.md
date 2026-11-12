@@ -73,7 +73,13 @@ It is distinct from the authenticated multi-user configuration.
 
 ```bash
 docker compose up -d --scale worker=3
+docker compose up -d --scale batch-worker=2
 ```
+
+`worker` consumes simulations/replays and legacy `celery` messages. `batch-worker`
+consumes grading, sweeps, and validation. Both pools start by default; budget resources
+for both. Dedicated pools reserve interactive execution slots, but admission limits
+remain shared: batches filling the global budget can still reject interactive jobs.
 
 Each worker container runs two prefork processes, so three containers offer six task
 execution slots. Match this to available CPU and memory; adding workers beyond host
@@ -182,3 +188,42 @@ under your target concurrency, result expiry, worker termination, database resto
 and alerts for queue depth, failure rate, memory, and disk usage. Set operational SLOs
 from those measurements. No production concurrency or availability claim is made by
 the included local benchmark or numerical tests.
+
+## Queue metrics and repeatable load testing
+
+Worker logs include JSON `job_finished` events with queue wait, execution seconds,
+job ID, workload kind, queue, and complete/failed outcome. `job_result` reports UTF-8
+JSON payload bytes before metrics are attached. Submission events distinguish
+accepted, rejected, and unavailable submissions. Owners and workload payloads are
+excluded. Aggregate these events in a log collector for latency and failure alerts.
+Queue wait uses wall clocks across hosts: synchronize clocks. Execution duration uses
+a monotonic clock and excludes result-backend persistence. Hard-killed workers cannot
+emit final events; monitor missing completions and admission lease expiry too.
+
+Run the harness against a disposable, configured copy of the stack:
+
+```bash
+docker compose exec -T web python tools/load_test.py --jobs 40 --concurrency 4 --batch-every 4
+docker compose up -d --scale worker=3 --scale batch-worker=2
+docker compose exec -T web python tools/load_test.py --jobs 40 --concurrency 4 --batch-every 4
+```
+
+This submits fixed-seed simulations and three-point sweeps using unique test owners.
+It benchmarks internal queues/workers, excluding OIDC, Streamlit, and PostgreSQL;
+it does not establish user capacity. Each client waits for its job before submitting
+another (closed-loop load). Save JSON with `--output PATH` or redirect stdout on the
+host. Reports include throughput, outcomes, per-workload p50/p95 wait/runtime/result
+bytes, workload parameters, and before/after admitted counts, ready queue depths,
+and Redis process memory. Ready counts exclude reserved/running tasks and assume
+default Redis priorities. Redis memory covers the whole server, not worker peak memory.
+
+The tool exits nonzero for failed, timed-out, or unavailable jobs. Unavailable includes
+busy admission and infrastructure/expiry errors; submission logs distinguish them.
+Timeouts do not cancel jobs. Let workers drain before the next run. Results/ownership
+keys expire normally. Keep admission limits fixed when comparing worker counts;
+increase limits only after measuring queue delay and CPU/memory headroom.
+
+For upgrades, deploy new consumers before producers and drain old workers before
+replacement: old workers cannot accept the new timing keyword. The interactive pool
+consumes legacy `celery` messages. Standalone workers without `-Q` consume all three
+queues for development/testing.

@@ -56,7 +56,8 @@ def test_redis_admission_is_atomic(monkeypatch):
         client.delete(*keys)
 
 
-def test_celery_worker_executes_and_enforces_result_owner(monkeypatch, tmp_path):
+@pytest.mark.parametrize("kind", ["simulate", "sweep_load"])
+def test_celery_worker_executes_and_enforces_result_owner(monkeypatch, tmp_path, kind):
     url = os.environ["SYSDESIGN_TEST_REDIS_URL"]
     monkeypatch.setenv("SYSDESIGN_REDIS_URL", url)
     from sim import jobs, worker
@@ -79,18 +80,37 @@ def test_celery_worker_executes_and_enforces_result_owner(monkeypatch, tmp_path)
             else:
                 pytest.fail("Worker did not become ready")
             cfg = Config(workload=Workload(rps=20, duration_s=10, warmup_s=1))
-            job_id = jobs.submit("simulate", {"config": cfg.to_dict()}, owner)
+            payload = {"config": cfg.to_dict()}
+            if kind == "sweep_load":
+                payload["values"] = [10, 20]
+            job_id = jobs.submit(kind, payload, owner)
             with pytest.raises(jobs.JobError):
                 jobs.poll(job_id, uuid4().hex)
             deadline = time.monotonic() + 60
             while time.monotonic() < deadline:
                 state, result = jobs.poll(job_id, owner)
                 if state == "complete":
-                    assert decode(result)[2]["served_rps"] > 0
+                    if kind == "simulate":
+                        assert decode(result)[2]["served_rps"] > 0
+                    else:
+                        assert len(decode(result)) == 2
+                    assert result["job_metrics"]["queue"] == ("interactive" if kind == "simulate" else "batch")
+                    assert result["job_metrics"]["queue_wait_s"] >= 0
+                    assert result["job_metrics"]["execution_s"] > 0
                     break
                 time.sleep(0.1)
             else:
                 pytest.fail("Worker did not complete the submitted job")
+            if kind == "simulate":
+                benchmark = subprocess.run(
+                    [sys.executable, "tools/load_test.py", "--jobs", "4", "--concurrency", "2",
+                     "--batch-every", "2", "--timeout", "60"],
+                    capture_output=True, text=True, timeout=150)
+                assert benchmark.returncode == 0, benchmark.stdout + benchmark.stderr
+                import json
+                report = json.loads(benchmark.stdout)
+                assert report["outcomes"]["complete"] == 4
+                assert report["queues"]["sweep_load"]["completed"] == 2
         finally:
             process.terminate()
             try:

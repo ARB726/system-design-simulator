@@ -42,12 +42,27 @@ services:
 
   worker:
     <<: *runtime
-    command: ["celery", "-A", "sim.worker:celery_app", "worker", "--loglevel=INFO", "--concurrency=2", "--hostname=celery@%h"]
+    command: ["celery", "-A", "sim.worker:celery_app", "worker", "--loglevel=INFO", "--concurrency=2", "-Q", "interactive,celery", "--hostname=celery@%h"]
     depends_on:
       redis:
         condition: service_healthy
     healthcheck:
       test: ["CMD-SHELL", "celery -A sim.worker:celery_app inspect ping --destination celery@$$HOSTNAME --timeout 3"]
+      interval: 30s
+      timeout: 10s
+      start_period: 30s
+      retries: 3
+    stop_grace_period: 190s
+    mem_limit: 2g
+
+  batch-worker:
+    <<: *runtime
+    command: ["celery", "-A", "sim.worker:celery_app", "worker", "--loglevel=INFO", "--concurrency=2", "-Q", "batch", "--hostname=batch@%h"]
+    depends_on:
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "celery -A sim.worker:celery_app inspect ping --destination batch@$$HOSTNAME --timeout 3"]
       interval: 30s
       timeout: 10s
       start_period: 30s

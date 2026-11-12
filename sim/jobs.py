@@ -43,7 +43,21 @@ def release(job_id, owner):
     pipe.execute()
 
 
+def queue_snapshot():
+    """Operator snapshot; ready counts exclude tasks reserved by workers."""
+    client = redis_client()
+    pipe = client.pipeline()
+    pipe.zcount("sysdesign:active", time.time(), "+inf")
+    for queue in ("interactive", "batch", "celery"):
+        pipe.llen(queue)
+    active, interactive, batch, legacy = pipe.execute()
+    return dict(admitted=active, ready=dict(interactive=interactive, batch=batch, celery=legacy),
+                redis_used_memory_bytes=client.info("memory")["used_memory"])
+
+
 def submit(kind, payload, owner):
+    from .telemetry import emit, queue_for
+    queue = queue_for(kind)
     from .worker import celery_app
     from redis.exceptions import RedisError
     from kombu.exceptions import OperationalError
@@ -55,10 +69,12 @@ def submit(kind, payload, owner):
                                int(os.environ.get("SYSDESIGN_MAX_PENDING", "32")),
                                int(os.environ.get("SYSDESIGN_JOBS_PER_USER", "2")))
         if not admitted:
+            emit("job_rejected", kind=kind, queue=queue)
             raise JobError("The job queue is busy. Wait for a running job to finish and try again.")
         try:
             client.set(f"sysdesign:job:{job_id}", owner, ex=3600)
             celery_app.send_task("sysdesign.execute", args=[kind, payload, owner], task_id=job_id,
+                                 kwargs={"submitted_at": time.time()}, queue=queue,
                                  expires=600, retry=False)
         except Exception:
             # Cleanup is best effort: an outage must not mask the submission error.
@@ -74,7 +90,9 @@ def submit(kind, payload, owner):
     except JobError:
         raise
     except (RedisError, OSError, OperationalError) as exc:
+        emit("job_submission_failed", kind=kind, queue=queue)
         raise JobError("The simulation queue is unavailable. Please try again later.") from exc
+    emit("job_submitted", job_id=job_id, kind=kind, queue=queue)
     return job_id
 
 
