@@ -3,11 +3,11 @@
 base = "light"
 primaryColor = "#1c6fd1"
 font = "sans-serif"
-baseFontSize = 15
-headingFontSizes = ["38px", "28px", "22px", "18px", "16px", "14px"]
+baseFontSize = 16
+headingFontSizes = ["44px", "28px", "22px", "18px", "16px", "14px"]
 headingFontWeights = [700, 650, 600, 600, 600, 600]
-baseRadius = "12px"
-buttonRadius = "8px"
+baseRadius = "16px"
+buttonRadius = "10px"
 showWidgetBorder = true
 showSidebarBorder = true
 linkUnderline = false

@@ -99,6 +99,13 @@ def on_preset_change() -> None:
         ss.pop(k, None)
 
 
+def explore_scenario(name: str) -> None:
+    """Open a guided experiment using the existing preset reset path."""
+    ss.industry = "All"
+    ss.preset = name
+    on_preset_change()
+
+
 def restore_saved_design(config: dict, name: str) -> None:
     cfg = config_from_dict(config)
     load_into_state(cfg)
@@ -397,10 +404,33 @@ with st.sidebar:
 with st.container(horizontal=True):
     st.badge("SYSTEMS LAB", icon=":material/hub:", color="blue")
     st.badge(MODE, icon=":material/science:" if MODE == "Sandbox" else ":material/flag:", color="gray")
-st.title("System design simulator")
-st.markdown("Design it. Stress it. **See where it breaks.**")
-st.caption("Explore the tradeoffs between throughput, latency, and cost. "
-           "Tune your architecture in the sidebar, then put it under pressure.")
+st.title("Build it. Break it. Understand it.")
+st.markdown("Your playground for **system design**. Turn architectural decisions into visible tradeoffs.")
+with st.container(horizontal=True):
+    st.badge("Throughput", icon=":material/speed:", color="blue")
+    st.badge("Latency", icon=":material/timer:", color="violet")
+    st.badge("Cost", icon=":material/payments:", color="green")
+
+with st.expander("Find your next experiment", icon=":material/explore:", expanded=False):
+    if MODE == "Sandbox":
+        st.caption("Pick a question, explore the results, then change one setting and run again. "
+                   "Choosing an experiment replaces the current sandbox settings.")
+        for col, (title, detail, preset, icon) in zip(st.columns(3), [
+            ("Can your cache survive?", "Watch database pressure rise when the cache goes cold.",
+             "Failure: cache goes cold", "ac_unit"),
+            ("Where does scaling stop?", "Compare load-balancing strategies and find the next bottleneck.",
+             "Lab: load balancing strategy", "hub"),
+            ("Can a queue absorb a burst?", "Explore how asynchronous writes trade latency for resilience.",
+             "Async writes: absorb a burst", "waves"),
+        ]):
+            with col.container(border=True):
+                st.markdown(f":material/{icon}: **{title}**")
+                st.caption(detail)
+                st.button("Explore scenario", key=f"explore_{icon}", on_click=explore_scenario,
+                          args=(preset,), icon=":material/arrow_forward:", width="stretch")
+    else:
+        st.markdown("**01 · Design** within the budget. **02 · Predict** how your architecture will behave. "
+                    "**03 · Submit** to reveal the hidden tests and earn your next star.")
 
 
 # ================================================================== results renderer
@@ -411,6 +441,14 @@ def render_results(res, tl, summ, findings, key_prefix: str, show_cost: bool = T
     b = summ["bottleneck"]
     bst = summ["tiers"][b]["status"] if b else "good"
     st.subheader("Performance overview", icon=":material/monitoring:")
+    with st.container(horizontal=True):
+        if summ["success_rate"] >= 0.99:
+            st.badge("99%+ requests served", icon=":material/check_circle:", color="green")
+        else:
+            st.badge("Requests are being lost", icon=":material/warning:", color="orange")
+        if b:
+            st.badge(f"Focus on {TIER_LABEL[b]} · {charts.STATUS_TEXT[bst]}",
+                     icon=":material/troubleshoot:", color="blue")
     metric_row = st.container(horizontal=True)
     cols = [metric_row.container(border=True, width=180) for _ in range(6 if show_cost else 5)]
     cols[0].metric("Offered load", f"{summ['offered_rps']:,.0f} rps", help="Average over the run, after warm-up.")
@@ -430,11 +468,13 @@ def render_results(res, tl, summ, findings, key_prefix: str, show_cost: bool = T
         plot(charts.architecture_figure(ccfg, summ, THEME), key=f"{key_prefix}_arch")
         st.caption("OK <70% / Warm 70-85% / Hot 85-95% / Saturated >95%")
 
-    st.markdown("#### Live replay")
-    plot(charts.replay_figure(res, tl, THEME), key=f"{key_prefix}_replay")
-    st.caption("Press ▶ Play (or drag the slider). Bars change color as each tier heats up; the right panel shows queues filling.")
+    with st.container(border=True):
+        st.subheader("Watch your system under pressure", icon=":material/play_circle:")
+        st.caption("Press Play or drag the time slider to follow the run. Watch tiers heat up and queues fill.")
+        plot(charts.replay_figure(res, tl, THEME), key=f"{key_prefix}_replay")
 
-    st.markdown("#### What the simulation found")
+    st.subheader("What to improve next", icon=":material/lightbulb:")
+    st.caption("Use these findings to choose your next change. Re-run to see whether it helped.")
     show_findings(findings)
 
     st.markdown("#### Timeline")
