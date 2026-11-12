@@ -79,5 +79,45 @@ def theme_css(name: str, dark: bool) -> str:
       .badge {{ display: inline-block; padding: 4px 12px; border-radius: 999px; font-size: .85rem; margin: 3px 6px 3px 0;
                 border: 1px solid {_rgba(a, 0.6)}; background: {_rgba(a, 0.12)}; }}
       .badge.off {{ opacity: .4; border-style: dashed; background: transparent; }}
+      @keyframes lab-reveal {{
+        from {{ opacity: 0; transform: translateY(8px); }}
+        to {{ opacity: 1; transform: translateY(0); }}
+      }}
+      h1 {{ letter-spacing: -0.045em; line-height: 1.15; animation: lab-reveal .5s ease-out both; }}
+      [data-testid="stMetric"] {{
+        border-radius: 12px; padding: 14px;
+        transition: transform .2s ease, box-shadow .2s ease;
+      }}
+      [data-testid="stMetric"]:hover {{
+        transform: translateY(-3px); box-shadow: 0 8px 28px {_rgba(a, .14)};
+      }}
+      [data-testid="stMetricValue"] {{ font-weight: 700; letter-spacing: -.03em; }}
+      [data-testid="stBaseButton-primary"], [data-testid="stBaseButton-primaryFormSubmit"] {{
+        background: linear-gradient(115deg, {a}, {b}); border: none;
+        box-shadow: 0 4px 20px {_rgba(a, .22)};
+        transition: transform .18s ease, box-shadow .18s ease;
+      }}
+      [data-testid="stBaseButton-primary"]:hover,
+      [data-testid="stBaseButton-primaryFormSubmit"]:hover {{
+        transform: translateY(-2px); box-shadow: 0 7px 26px {_rgba(a, .32)};
+      }}
+      [data-testid="stBaseButton-primary"]:active {{ transform: translateY(0); }}
+      button:focus-visible {{ outline: 2px solid {a}; outline-offset: 4px; }}
+      [data-baseweb="tab-list"] {{ gap: 12px; }}
+      button[data-baseweb="tab"] {{
+        padding: 10px 16px; border-radius: 10px 10px 0 0;
+        transition: background-color .2s ease;
+      }}
+      button[data-baseweb="tab"][aria-selected="true"] {{ background: {_rgba(a, .10)}; }}
+      @media (max-width: 640px) {{
+        h1 {{ font-size: 2rem !important; }}
+        button[data-baseweb="tab"] {{ padding: 8px 10px; }}
+      }}
+      @media (prefers-reduced-motion: reduce) {{
+        h1, [data-testid="stMetric"], [data-testid="stBaseButton-primary"],
+        [data-testid="stBaseButton-primaryFormSubmit"], button[data-baseweb="tab"] {{
+          animation: none !important; transition: none !important; transform: none !important;
+        }}
+      }}
     </style>
     """
