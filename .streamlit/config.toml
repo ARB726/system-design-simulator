@@ -1,6 +1,6 @@
 # Refined neutral foundation, adapted from Streamlit's shadcn theme.
 [theme]
-base = "light"
+base = "dark"
 primaryColor = "#1c6fd1"
 font = "sans-serif"
 baseFontSize = 16
@@ -25,15 +25,15 @@ secondaryBackgroundColor = "#ffffff"
 
 [theme.dark]
 primaryColor = "#4a9af0"
-backgroundColor = "#0e1626"
-secondaryBackgroundColor = "#19253a"
+backgroundColor = "#090c14"
+secondaryBackgroundColor = "#141b2b"
 textColor = "#e6edf7"
 borderColor = "#2c3d56"
-dataframeHeaderBackgroundColor = "#19253a"
+dataframeHeaderBackgroundColor = "#141b2b"
 
 [theme.dark.sidebar]
-backgroundColor = "#111c2e"
-secondaryBackgroundColor = "#1d2c43"
+backgroundColor = "#0d111c"
+secondaryBackgroundColor = "#182033"
 
 [browser]
 gatherUsageStats = false
