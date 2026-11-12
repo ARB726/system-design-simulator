@@ -1,5 +1,6 @@
 """Bounded Redis/Celery job admission and ownership checks."""
 import os
+import logging
 import time
 from functools import lru_cache
 from uuid import uuid4
@@ -55,13 +56,20 @@ def submit(kind, payload, owner):
                                int(os.environ.get("SYSDESIGN_JOBS_PER_USER", "2")))
         if not admitted:
             raise JobError("The job queue is busy. Wait for a running job to finish and try again.")
-        client.set(f"sysdesign:job:{job_id}", owner, ex=3600)
         try:
+            client.set(f"sysdesign:job:{job_id}", owner, ex=3600)
             celery_app.send_task("sysdesign.execute", args=[kind, payload, owner], task_id=job_id,
                                  expires=600, retry=False)
         except Exception:
-            release(job_id, owner)
-            client.delete(f"sysdesign:job:{job_id}")
+            # Cleanup is best effort: an outage must not mask the submission error.
+            # The admission leases expire even if Redis cannot accept cleanup.
+            for cleanup in (lambda: release(job_id, owner),
+                            lambda: client.delete(f"sysdesign:job:{job_id}")):
+                try:
+                    cleanup()
+                except Exception:
+                    logging.getLogger(__name__).warning(
+                        "Could not clean up failed job submission; its lease will expire.")
             raise
     except JobError:
         raise
@@ -73,6 +81,7 @@ def submit(kind, payload, owner):
 def poll(job_id, owner):
     from .worker import celery_app
     from redis.exceptions import RedisError
+    from kombu.exceptions import OperationalError
     try:
         # Check ownership before asking the result backend for any result.
         client = redis_client()
@@ -87,5 +96,5 @@ def poll(job_id, owner):
         if client.ttl(f"sysdesign:job:{job_id}") < 2800:
             raise JobError("The job expired before completing. Submit the experiment again.")
         return ("running" if state == "STARTED" else "queued"), None
-    except RedisError as exc:
+    except (RedisError, OSError, OperationalError) as exc:
         raise JobError("The simulation queue is unavailable. Please try again later.") from exc
