@@ -12,3 +12,7 @@ test-results/
 
 # Streamlit secrets (needed later for any API keys; never commit them)
 .streamlit/secrets.toml
+
+.coverage
+htmlcov/
+coverage.json
