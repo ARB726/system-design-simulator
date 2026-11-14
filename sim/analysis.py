@@ -16,7 +16,7 @@ TIER_LABEL = {
     "db_primary": "DB primary",
     "db_replicas": "DB read replicas",
 }
-FAIL_KINDS = ["dropped", "timeout", "error", "incomplete"]
+FAIL_KINDS = ["dropped", "timeout", "error", "incomplete", "rate_limited"]
 
 
 def health(util: float) -> str:
@@ -94,6 +94,11 @@ def summarize(res: SimResult, tl: pd.DataFrame | None = None) -> Dict:
         "writes": (n - len(reads)) / span,
         "db_reads": len(cache_reads) / span * miss,
     }
+    if (cfg.policy.max_retries or cfg.policy.rate_limit_rps is not None) and res.traffic:
+        for key in ("cdn_hits", "to_app", "reads", "writes", "db_reads"):
+            s["flows"][key] = res.traffic[key] / span
+        lookups = res.traffic["cache_lookups"]
+        s["measured_hit_rate"] = res.traffic["cache_hits"] / lookups if lookups else None
 
     tiers = {}
     for t in tiers_present(res):
@@ -124,6 +129,7 @@ def summarize(res: SimResult, tl: pd.DataFrame | None = None) -> Dict:
             "lag_max_s": float(lag.max()) if len(lag) else 0.0,
         }
     s["expected"] = expected_utilization(cfg)
+    s["traffic"] = res.traffic
     return s
 
 
@@ -148,7 +154,7 @@ def diagnose(res: SimResult, s: Dict, tl: pd.DataFrame) -> List[Dict]:
         add("critical" if s["success_rate"] < 0.95 else "serious",
             f"{1 - s['success_rate']:.1%} of requests failed",
             "Breakdown: " + ", ".join(parts) + ". Timeouts mean requests waited too long; drops mean "
-            "a queue overflowed; errors mean a replica died mid-request.")
+            "a queue overflowed; errors mean a replica died mid-request; rate-limited requests were rejected at admission.")
 
     peak_offered = float(tl.offered_rps.rolling(3, min_periods=1).mean().max())
     peak_to_app = peak_offered * (s["flows"]["to_app"] / s["flows"]["offered"]) if s["flows"]["offered"] else peak_offered

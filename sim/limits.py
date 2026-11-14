@@ -29,6 +29,15 @@ def validate_config(cfg):
     if w.timeout_ms is not None:
         number("Timeout", w.timeout_ms, 1, 60000)
     integer("Seed", cfg.seed, 0, 2**63 - 1)
+    p = cfg.policy
+    integer("Read retries", p.max_retries, 0, 3)
+    number("Retry backoff", p.backoff_ms, 1, 5000)
+    number("Backoff multiplier", p.backoff_multiplier, 1, 4)
+    if not isinstance(p.jitter, bool):
+        raise SimulationLimitError("Retry jitter must be a boolean.")
+    if p.rate_limit_rps is not None:
+        number("Admission rate", p.rate_limit_rps, 0.01, 100000)
+    integer("Admission burst", p.burst, 1, 100000)
     integer("App replicas", a.replicas, 1, 64)
     integer("App workers", a.workers, 1, 256)
     integer("Database shards", d.shards, 1, 64)
@@ -67,5 +76,18 @@ def validate_config(cfg):
                 raise SimulationLimitError("Replicas lost must be an integer.")
         if event.kind == "traffic_spike":
             spike_factor *= max(1, event.magnitude)
-    if w.rps * w.duration_s * spike_factor > arrival_limit() * 0.9:
+    if w.rps * w.duration_s * spike_factor * (1 + p.max_retries) > arrival_limit() * 0.9:
         raise SimulationLimitError("This run exceeds the server's arrival budget. Reduce traffic, duration, or spike magnitude.")
+
+
+def validate_batch(configs):
+    """Bound aggregate work as well as each individual simulation."""
+    if not 1 <= len(configs) <= 32:
+        raise SimulationLimitError("An experiment must contain 1 to 32 simulation points.")
+    total = 0.0
+    for cfg in configs:
+        validate_config(cfg)
+        factor = math.prod(max(1, e.magnitude) for e in cfg.events if e.kind == "traffic_spike")
+        total += cfg.workload.rps * cfg.workload.duration_s * factor * (1 + cfg.policy.max_retries)
+    if total > int(os.environ.get("SYSDESIGN_MAX_BATCH_ARRIVALS", "8000000")):
+        raise SimulationLimitError("This experiment exceeds the batch arrival budget. Reduce load, duration, or points.")

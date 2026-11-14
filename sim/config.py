@@ -88,6 +88,16 @@ class Workload:
 
 
 @dataclass
+class TrafficPolicy:
+    max_retries: int = 0  # Read requests only; writes need idempotency semantics.
+    backoff_ms: float = 100.0
+    backoff_multiplier: float = 2.0
+    jitter: bool = True
+    rate_limit_rps: Optional[float] = None  # Token bucket before CDN/app admission.
+    burst: int = 100
+
+
+@dataclass
 class Event:
     kind: str
     start_s: float
@@ -122,6 +132,7 @@ class Config:
     events: List[Event] = field(default_factory=list)
     seed: int = 42
     app_only: bool = False  # used by the M/M/c validation: just the app tier
+    policy: TrafficPolicy = field(default_factory=TrafficPolicy)
 
     def to_dict(self) -> dict:
         return asdict(self)
@@ -139,6 +150,7 @@ def config_from_dict(d: dict) -> Config:
         events=[Event(**e) for e in d.get("events", [])],
         seed=d.get("seed", 42),
         app_only=d.get("app_only", False),
+        policy=TrafficPolicy(**d.get("policy", {})),
     )
 
 

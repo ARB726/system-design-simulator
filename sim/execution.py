@@ -32,7 +32,7 @@ def execute(kind, payload):
         return dict(type="simulation", config=cfg.to_dict(), requests=frame_data(res.requests),
                     series=frame_data(res.series), lag=frame_data(res.lag), timeline=frame_data(tl),
                     summary=summary, findings=diagnose(res, summary, tl), warnings=res.warnings,
-                    runtime_s=res.runtime_s)
+                    runtime_s=res.runtime_s, traffic=res.traffic)
     if kind == "grade":
         from .challenges import challenges, run_check
         ch, results, base = challenges()[payload["cid"]], [], None
@@ -70,5 +70,5 @@ def decode(data):
     if data["type"] == "grade":
         return data["results"], data["summary"]
     res = SimResult(config_from_dict(data["config"]), frame_from(data["requests"]),
-                    frame_from(data["series"]), frame_from(data["lag"]), data["warnings"], data["runtime_s"])
+                    frame_from(data["series"]), frame_from(data["lag"]), data["warnings"], data["runtime_s"], data.get("traffic", {}))
     return res, frame_from(data["timeline"]), data["summary"], data["findings"]

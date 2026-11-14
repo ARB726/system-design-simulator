@@ -17,8 +17,8 @@ from __future__ import annotations
 import random
 import time
 from array import array
-from dataclasses import dataclass
-from typing import Callable, List, Optional
+from dataclasses import dataclass, field
+from typing import Callable, List, Optional, cast
 
 import pandas as pd
 import numpy as np
@@ -128,6 +128,7 @@ class SimResult:
     lag: pd.DataFrame        # write-queue lag per drained write (empty without a queue)
     warnings: List[str]
     runtime_s: float
+    traffic: dict = field(default_factory=dict)
 
 
 class Simulation:
@@ -162,6 +163,11 @@ class Simulation:
         self.samples: list = []
         self.inflight: dict = {}
         self._next_id = 0
+        self.attempt_count = 0
+        self.traffic = dict(logical_requests=0, attempts=0, retries=0, rate_limited_attempts=0,
+                            cdn_hits=0, to_app=0, reads=0, writes=0, db_reads=0, cache_lookups=0, cache_hits=0)
+        self.tokens = float(cfg.policy.burst)
+        self.token_time = 0.0
 
     # ---------------------------------------------------------------- helpers
     def _app_alive(self, t: float) -> int:
@@ -203,6 +209,7 @@ class Simulation:
         return "ok"
 
     def _enqueue(self, shard: int):
+        assert self.store is not None
         q = self.cfg.queue
         if len(self.store.items) >= q.max_depth:
             return "dropped"                  # backlog full: reject the write
@@ -213,20 +220,57 @@ class Simulation:
     # ---------------------------------------------------------------- one request
     def _request(self):
         env, cfg, rng = self.env, self.cfg, self.rng
-        a, c, d = cfg.app, cfg.cache, cfg.db
         rid = self._next_id
         self._next_id += 1
         t0 = env.now
         is_read = rng.random() < cfg.workload.read_ratio
         self.inflight[rid] = (t0, is_read)
+        measured = t0 >= cfg.workload.warmup_s
+        if measured:
+            self.traffic["logical_requests"] += 1
+        for attempt in range(1 + (cfg.policy.max_retries if is_read else 0)):
+            self.attempt_count += 1
+            if self.attempt_count > arrival_limit():
+                raise SimulationLimitError("The request-attempt budget was reached. Reduce traffic or retries.")
+            if measured:
+                self.traffic["attempts"] += 1
+            status, hit, cdn_hit = yield from self._attempt(is_read, measured=measured)
+            if status == "rate_limited" and measured:
+                self.traffic["rate_limited_attempts"] += 1
+            if status == "ok" or not is_read or attempt >= cfg.policy.max_retries:
+                break
+            delay = min(10.0, cfg.policy.backoff_ms / 1000 * cfg.policy.backoff_multiplier ** attempt)
+            if cfg.policy.jitter:
+                delay *= rng.random()
+            if measured:
+                self.traffic["retries"] += 1
+            yield env.timeout(delay)
+        del self.inflight[rid]
+        self._record(t0, env.now - t0, status, is_read, hit, cdn_hit)
+
+    def _attempt(self, is_read, *, measured=False):
+        env, cfg, rng = self.env, self.cfg, self.rng
+        a, c, d = cfg.app, cfg.cache, cfg.db
+        t0 = env.now
+        rate = cfg.policy.rate_limit_rps
+        if rate is not None:
+            self.tokens = min(cfg.policy.burst, self.tokens + (t0 - self.token_time) * rate)
+            self.token_time = t0
+            if self.tokens < 1:
+                return "rate_limited", None, False
+            self.tokens -= 1
         deadline = t0 + self.timeout_s if self.timeout_s else None
         hit, cdn_hit = None, False
 
         if is_read and cfg.cdn.enabled and not cfg.app_only and rng.random() < cfg.cdn.hit_rate:
             cdn_hit = True                    # answered at the edge: no app, cache or database
+            if measured:
+                self.traffic["cdn_hits"] += 1
             yield env.timeout(rng.expovariate(1000.0 / cfg.cdn.latency_ms))
             status = "ok"
         else:
+            if measured:
+                self.traffic["to_app"] += 1
             idx = self.app.pick(0, self._app_alive(t0), a.lb_strategy, rng)
             if idx is None:
                 status = "error"              # every replica is down
@@ -235,32 +279,43 @@ class Simulation:
                                                 self._app_node_alive)
 
             if status == "ok" and not cfg.app_only:
+                assert self.db is not None
                 shard = self._pick_shard()
                 if is_read:
+                    if measured:
+                        self.traffic["reads"] += 1
                     hit = False
                     if self.cache is not None:
                         status = yield from self._serve(self.cache, 0, c.latency_ms / 1000.0, deadline)
                         if status == "ok":
                             hit = rng.random() < self.ev.hit_rate(env.now)
+                            if measured:
+                                self.traffic["cache_lookups"] += 1
+                                self.traffic["cache_hits"] += int(hit)
                     if status == "ok" and not hit:
+                        if measured:
+                            self.traffic["db_reads"] += 1
                         if d.read_replicas > 0:
                             lo = shard * self.group + 1
                             j = self.db.pick(lo, lo + d.read_replicas, "least_queue", rng)
+                            assert j is not None
                         else:
                             j = self._prim(shard)
                         mean = d.read_ms / 1000.0 * self.ev.db_factor(env.now)
                         status = yield from self._serve(self.db, j, mean, deadline)
                 elif self.store is not None:
+                    if measured:
+                        self.traffic["writes"] += 1
                     status = yield from self._enqueue(shard)
                 else:
+                    if measured:
+                        self.traffic["writes"] += 1
                     mean = d.write_ms / 1000.0 * self.ev.db_factor(env.now)
                     status = yield from self._serve(self.db, self._prim(shard), mean, deadline)
 
-        latency = env.now - t0
         if status == "ok" and deadline is not None and env.now > deadline:
             status = "timeout"                # answered, but too late to matter
-        del self.inflight[rid]
-        self._record(t0, latency, status, is_read, hit, cdn_hit)
+        return status, hit, cdn_hit
 
     def _record(self, t0, latency, status, is_read, hit, cdn_hit):
         if not self.summary_only:
@@ -270,11 +325,14 @@ class Simulation:
         self.max_latency_ms = max(self.max_latency_ms, latency_ms)
         if t0 >= self.cfg.workload.warmup_s:
             self.served += status == "ok"
-            self.latencies.append(latency_ms if status in ("ok", "incomplete") else
-                                  (self.cfg.workload.timeout_ms or float("nan")))
+            penalty = self.cfg.workload.timeout_ms or float("nan")
+            if self.cfg.policy.max_retries and self.cfg.workload.timeout_ms:
+                penalty = max(penalty, latency_ms)
+            self.latencies.append(latency_ms if status in ("ok", "incomplete") else penalty)
 
     def _consumer(self):
         """Drain the write queue into the database, one write at a time."""
+        assert self.store is not None and self.db is not None
         env, d = self.env, self.cfg.db
         while True:
             t_enq, shard = yield self.store.get()
@@ -349,6 +407,10 @@ class Simulation:
             for _ in range(self.cfg.queue.consumers):
                 self.env.process(self._consumer())
         tail = (self.timeout_s + 1.0) if self.timeout_s else 0.0
+        if self.cfg.policy.max_retries:
+            p = self.cfg.policy
+            tail += p.max_retries * (self.timeout_s or 0) + sum(
+                min(10.0, p.backoff_ms / 1000 * p.backoff_multiplier ** i) for i in range(p.max_retries))
         self.env.run(until=w.duration_s + tail)
         now = self.env.now
         for t0, is_read in self.inflight.values():   # unfinished work, latency is a lower bound
@@ -370,17 +432,19 @@ class Simulation:
         req = pd.DataFrame(self.records, columns=["t", "latency_s", "status", "is_read", "hit", "cdn"])
         req["latency_ms"] = req.latency_s * 1000.0
         fail_ms = w.timeout_ms if w.timeout_ms else (req.latency_ms.max() if len(req) else 0.0)
+        if self.cfg.policy.max_retries and w.timeout_ms:
+            fail_ms = np.maximum(fail_ms, req.latency_ms)
         req["eff_ms"] = req.latency_ms.where(req.status.isin(["ok", "incomplete"]), fail_ms)
         req = req.drop(columns="latency_s").sort_values("t").reset_index(drop=True)
         ser = pd.DataFrame(self.samples)
         lag = pd.DataFrame(self.lag, columns=["t", "lag_s"])
-        return SimResult(self.cfg, req, ser, lag, self.warnings, time.perf_counter() - t_start)
+        return SimResult(self.cfg, req, ser, lag, self.warnings, time.perf_counter() - t_start, self.traffic)
 
 
 def run(cfg: Config) -> SimResult:
-    return Simulation(cfg).run()
+    return cast(SimResult, Simulation(cfg).run())
 
 
 def run_summary(cfg: Config) -> dict:
     """Exact sweep statistics using compact latency storage; no replay artifacts."""
-    return Simulation(cfg, summary_only=True).run()
+    return cast(dict, Simulation(cfg, summary_only=True).run())
