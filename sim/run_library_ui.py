@@ -73,7 +73,7 @@ def render_library(library, restore):
     def select(label, options, key, index=0):
         if st.session_state.get(key) not in options:
             st.session_state.pop(key, None)
-        return st.selectbox(label, options, index=index, format_func=labels.get, key=key)
+        return st.selectbox(label, options, index=index, format_func=lambda value: labels[value], key=key)
 
     selected = select("Saved run", ids, "library_run")
     run = by_id[selected]
@@ -121,3 +121,8 @@ def render_library(library, restore):
     report = dict(baseline=by_id[baseline_id], candidate=by_id[candidate_id], comparison=comparison)
     st.download_button("Download comparison", json.dumps(report, indent=2),
                        file_name="design_comparison.json", mime="application/json")
+    with st.expander("Check whether the difference holds across seeds"):
+        from .config import config_from_dict
+        from .learning_ui import comparison_panel
+        comparison_panel(config_from_dict(by_id[baseline_id]["config"]),
+                         config_from_dict(by_id[candidate_id]["config"]), "library_seeds")

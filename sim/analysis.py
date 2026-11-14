@@ -146,6 +146,8 @@ def diagnose(res: SimResult, s: Dict, tl: pd.DataFrame) -> List[Dict]:
     cfg = res.cfg
     a, d, w = cfg.app, cfg.db, cfg.workload
     out: List[Dict] = []
+    from .coaching import evidence_findings
+    out.extend(evidence_findings(res, tl, s))
     add = lambda level, title, detail: out.append({"level": level, "title": title, "detail": detail})
 
     fail = s["fail"]

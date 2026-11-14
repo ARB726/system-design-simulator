@@ -339,6 +339,25 @@ def presets() -> Dict[str, Preset]:
         "reach it. What does the CDN do to the napkin math for every tier behind it?",
     )
 
+    out["Resilience: retry storm"] = Preset(
+        Config(name="Retry storm", app=AppTier(replicas=2, workers=4, latency_ms=30, max_queue=20),
+               workload=Workload(rps=350, read_ratio=1, duration_s=45, timeout_ms=150),
+               events=[Event("kill_app", 15, 10, 1)],
+               policy=TrafficPolicy(max_retries=3, backoff_ms=10, backoff_multiplier=1, jitter=False)),
+        "Aggressive read retries add attempts while a replica is down. Extra attempts consume capacity and can amplify overload.",
+        "Compare zero retries with three retries, then increase backoff and enable jitter. "
+        "Watch attempt amplification as well as user-visible success and total latency.",
+    )
+    out["Resilience: protect the database"] = Preset(
+        Config(name="Admission control", app=AppTier(replicas=4, workers=8), cache=CacheTier(enabled=False),
+               db=DBTier(workers=4, read_ms=20, write_ms=30),
+               workload=Workload(rps=600, duration_s=45),
+               policy=TrafficPolicy(rate_limit_rps=150, burst=25)),
+        "A token bucket protects downstream workers by rejecting excess traffic before it enters the system.",
+        "Disable the admission limit and compare database queues. Rejections still count against success: "
+        "a quiet database is not evidence that all users were served.",
+    )
+
     out["Blank canvas"] = Preset(
         Config(name="My design"),
         "Start from sensible defaults and build your own design.",
