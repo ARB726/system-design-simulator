@@ -1,0 +1,248 @@
+{
+  "baseline_revision": "1c7ea851982135e8956823e53d90e91b1563afc4",
+  "python": "3.12.10 (tags/v3.12.10:0cc8128, Apr  8 2025, 12:21:36) [MSC v.1943 64 bit (AMD64)]",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "packages": {
+    "simpy": "4.1.2",
+    "numpy": "2.5.4",
+    "pandas": "3.1.1"
+  },
+  "rounds": 5,
+  "results": {
+    "default": {
+      "config": {
+        "name": "Custom design",
+        "app": {
+          "replicas": 3,
+          "workers": 8,
+          "latency_ms": 20.0,
+          "lb_strategy": "least_queue",
+          "max_queue": 200
+        },
+        "cache": {
+          "enabled": true,
+          "hit_rate": 0.85,
+          "latency_ms": 1.0,
+          "workers": 64
+        },
+        "cdn": {
+          "enabled": false,
+          "hit_rate": 0.6,
+          "latency_ms": 8.0
+        },
+        "queue": {
+          "enabled": false,
+          "consumers": 8,
+          "max_depth": 5000,
+          "enqueue_ms": 2.0
+        },
+        "db": {
+          "workers": 16,
+          "read_ms": 8.0,
+          "write_ms": 25.0,
+          "read_replicas": 0,
+          "max_queue": 500,
+          "shards": 1,
+          "hot_share": 0.0
+        },
+        "workload": {
+          "rps": 500,
+          "read_ratio": 0.95,
+          "duration_s": 20,
+          "timeout_ms": 1000.0,
+          "warmup_s": 1
+        },
+        "events": [],
+        "seed": 7,
+        "app_only": false
+      },
+      "samples_s": {
+        "baseline": [
+          0.6315569999987929,
+          0.6559283999995387,
+          0.620737299999746,
+          0.6067698999995628,
+          0.6230593000000226
+        ],
+        "candidate": [
+          0.5968859999993583,
+          0.6802486999986286,
+          0.5836938000011287,
+          0.5803219999997964,
+          0.6891922000013437
+        ]
+      },
+      "median_s": {
+        "baseline": 0.6230593000000226,
+        "candidate": 0.5968859999993583
+      },
+      "speedup": 1.043849746853993,
+      "metrics_equal": true
+    },
+    "many_replicas": {
+      "config": {
+        "name": "Custom design",
+        "app": {
+          "replicas": 32,
+          "workers": 8,
+          "latency_ms": 20.0,
+          "lb_strategy": "least_queue",
+          "max_queue": 200
+        },
+        "cache": {
+          "enabled": true,
+          "hit_rate": 0.85,
+          "latency_ms": 1.0,
+          "workers": 64
+        },
+        "cdn": {
+          "enabled": false,
+          "hit_rate": 0.6,
+          "latency_ms": 8.0
+        },
+        "queue": {
+          "enabled": false,
+          "consumers": 8,
+          "max_depth": 5000,
+          "enqueue_ms": 2.0
+        },
+        "db": {
+          "workers": 16,
+          "read_ms": 8.0,
+          "write_ms": 25.0,
+          "read_replicas": 0,
+          "max_queue": 500,
+          "shards": 1,
+          "hot_share": 0.0
+        },
+        "workload": {
+          "rps": 1000,
+          "read_ratio": 0.95,
+          "duration_s": 20,
+          "timeout_ms": 1000.0,
+          "warmup_s": 1
+        },
+        "events": [],
+        "seed": 7,
+        "app_only": false
+      },
+      "samples_s": {
+        "baseline": [
+          1.5360819999987143,
+          1.53356260000146,
+          1.543537200001083,
+          1.5098218000002817,
+          1.604782399999749
+        ],
+        "candidate": [
+          1.4043549000016355,
+          1.4781205999988742,
+          1.4139575000008335,
+          1.4227955999995174,
+          1.3987796000001254
+        ]
+      },
+      "median_s": {
+        "baseline": 1.5360819999987143,
+        "candidate": 1.4139575000008335
+      },
+      "speedup": 1.0863707006736827,
+      "metrics_equal": true
+    },
+    "overlapping_events": {
+      "config": {
+        "name": "Custom design",
+        "app": {
+          "replicas": 3,
+          "workers": 8,
+          "latency_ms": 20.0,
+          "lb_strategy": "least_queue",
+          "max_queue": 200
+        },
+        "cache": {
+          "enabled": true,
+          "hit_rate": 0.85,
+          "latency_ms": 1.0,
+          "workers": 64
+        },
+        "cdn": {
+          "enabled": false,
+          "hit_rate": 0.6,
+          "latency_ms": 8.0
+        },
+        "queue": {
+          "enabled": false,
+          "consumers": 8,
+          "max_depth": 5000,
+          "enqueue_ms": 2.0
+        },
+        "db": {
+          "workers": 16,
+          "read_ms": 8.0,
+          "write_ms": 25.0,
+          "read_replicas": 0,
+          "max_queue": 500,
+          "shards": 1,
+          "hot_share": 0.0
+        },
+        "workload": {
+          "rps": 500,
+          "read_ratio": 0.95,
+          "duration_s": 20,
+          "timeout_ms": 1000.0,
+          "warmup_s": 1
+        },
+        "events": [
+          {
+            "kind": "traffic_spike",
+            "start_s": 5,
+            "duration_s": 8,
+            "magnitude": 2
+          },
+          {
+            "kind": "traffic_spike",
+            "start_s": 8,
+            "duration_s": 5,
+            "magnitude": 2
+          },
+          {
+            "kind": "kill_app",
+            "start_s": 8,
+            "duration_s": 3,
+            "magnitude": 1
+          },
+          {
+            "kind": "db_slow",
+            "start_s": 8,
+            "duration_s": 5,
+            "magnitude": 2
+          }
+        ],
+        "seed": 7,
+        "app_only": false
+      },
+      "samples_s": {
+        "baseline": [
+          1.263382699999056,
+          1.2376187999998365,
+          1.1664350000010018,
+          1.2569395000009536,
+          1.2490319999997155
+        ],
+        "candidate": [
+          1.1660314000000653,
+          1.1293939999995928,
+          1.1439750999998068,
+          1.1053850000007515,
+          1.1614547000008315
+        ]
+      },
+      "median_s": {
+        "baseline": 1.2490319999997155,
+        "candidate": 1.1439750999998068
+      },
+      "speedup": 1.0918349534005822,
+      "metrics_equal": true
+    }
+  }
+}

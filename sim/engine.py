@@ -42,14 +42,11 @@ class Events:
         self.slow = by("db_slow")
         self.base_hit = cfg.cache.hit_rate
 
-    @staticmethod
-    def _active(evts, t):
-        return [e for e in evts if e.start_s <= t < e.end_s]
-
     def arrival_factor(self, t: float) -> float:
         f = 1.0
-        for e in self._active(self.spikes, t):
-            f *= e.magnitude
+        for e in self.spikes:
+            if e.start_s <= t < e.end_s:
+                f *= e.magnitude
         return f
 
     def max_arrival_factor(self) -> float:
@@ -59,12 +56,17 @@ class Events:
         return f
 
     def killed(self, t: float) -> int:
-        return sum(int(e.magnitude) for e in self._active(self.kills, t))
+        count = 0
+        for e in self.kills:
+            if e.start_s <= t < e.end_s:
+                count += int(e.magnitude)
+        return count
 
     def db_factor(self, t: float) -> float:
         f = 1.0
-        for e in self._active(self.slow, t):
-            f *= e.magnitude
+        for e in self.slow:
+            if e.start_s <= t < e.end_s:
+                f *= e.magnitude
         return f
 
     def hit_rate(self, t: float) -> float:
@@ -103,9 +105,18 @@ class Tier:
         if strategy == "round_robin":
             self._rr += 1
             return lo + self._rr % n
-        loads = [self.load(i) for i in range(lo, hi)]  # least_queue
-        best = min(loads)
-        ties = [lo + i for i, v in enumerate(loads) if v == best]
+        # Keep only the current minima. Preserve ascending tie order and exactly
+        # one RNG choice for ties, so existing seeds retain their request paths.
+        best = self.load(lo)
+        ties = [lo]
+        for i in range(lo + 1, hi):
+            load = self.load(i)
+            if load < best:
+                best = load
+                ties.clear()
+                ties.append(i)
+            elif load == best:
+                ties.append(i)
         return ties[0] if len(ties) == 1 else rng.choice(ties)
 
 
