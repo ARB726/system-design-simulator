@@ -20,6 +20,8 @@ An interactive learning lab for developers practicing system design. Build a sim
 
 ## Two-minute walkthrough
 
+For an in-app introduction, choose **Start guided walkthrough**. It walks through a cold-cache failure, one capacity change, and a paired comparison across seeds. See the [learning and resilience guide](docs/learning-lab.md) for evidence windows, retry/backoff policies, admission control, and bounded parallel sweeps.
+
 After starting the app locally:
 
 1. In **Sandbox**, choose **Failure: cache goes cold** from **Scenario**, then press **Run simulation**. If prediction mode is enabled, use **Lock prediction and run** to start the run.
@@ -63,7 +65,8 @@ The app runs simulations locally in the Python server process. It does not provi
 - **Tier behavior:** Workers are released before a request enters the next tier. Queue limits and client timeouts affect completion.
 - **Failures and latency:** Timeout, drop, and error outcomes are included in effective latency using the configured timeout. Incomplete work is tracked separately.
 - **Async writes:** Acknowledgement occurs after enqueue; apply lag measures when the database receives the write.
-- **Simplifications:** Network transport latency, retries, replica lag, consistency semantics, and cache invalidation are not modeled.
+- **Retries and admission:** Optional read retries use bounded exponential backoff and jitter; a token bucket can reject excess attempts. Writes are never retried. Attempt amplification and user-visible success are reported separately.
+- **Simplifications:** Network transport latency, replica lag, consistency semantics, write idempotency, and cache invalidation are not modeled.
 - **Costs:** Prices are illustrative. Results support learning and relative comparisons rather than production capacity estimates.
 
 Queueing behavior is checked against Erlang C / M/M/c formulas. The tests pool multiple seeds and check mean response time against theory; scenario tests cover failures, caching, queues, and sharding.
@@ -75,6 +78,7 @@ Queueing behavior is checked against Erlang C / M/M/c formulas. The tests pool m
 | [Architecture](docs/architecture.md) | Application components, request routing, and storage boundaries |
 | [Performance case study](docs/performance.md) | Optimization decisions, benchmark methodology, and correctness checks |
 | [User guide](docs/user-guide.md) | Saved runs, comparisons, persistence, and challenge scoring |
+| [Learning and resilience](docs/learning-lab.md) | Guided experiments, measured evidence, paired seeds, retry storms, and admission control |
 | [Development guide](docs/development.md) | Test commands, CI, source map, and native kernel build |
 | [Production runbook](docs/production.md) | Optional multi-user deployment, ownership, worker limits, and operations |
 

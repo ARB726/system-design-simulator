@@ -29,10 +29,10 @@ STRATEGY_SLOT = {"least_queue": 0, "round_robin": 1, "random": 2, "shared": 3}
 STRATEGY_NAME = {"least_queue": "Least queue", "round_robin": "Round robin", "random": "Random",
                  "shared": "Shared queue"}
 FAIL_COLOR = {"timeout": STATUS["warning"], "dropped": STATUS["serious"],
-              "error": STATUS["critical"], "incomplete": "#898781"}
+              "error": STATUS["critical"], "incomplete": "#898781", "rate_limited": "#8e6fbc"}
 ACCENT: Optional[str] = None     # set by the app: tints neutral diagram boxes with the chosen theme
 FONT = 'system-ui, -apple-system, "Segoe UI", sans-serif'
-FAIL_KINDS_PLOT = ["timeout", "dropped", "error", "incomplete"]
+FAIL_KINDS_PLOT = ["timeout", "dropped", "error", "incomplete", "rate_limited"]
 LOG_TICKS = [10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000]
 
 
@@ -240,7 +240,7 @@ def timeline_figure(res: SimResult, tl: pd.DataFrame, theme: str = "light") -> g
     cfg = res.cfg
     c = _t(theme)
     has_lag = "lag_p95_s" in tl.columns and tl["lag_p95_s"].notna().any()
-    titles = ["Traffic: offered vs served (requests/s)", "Latency (ms); failed requests count as the timeout",
+    titles = ["Traffic: offered vs served (requests/s)", "Latency (ms); failures include timeout penalties",
               "Utilization of each tier (% of workers busy)"]
     heights = [0.27, 0.27, 0.25]
     if has_lag:
@@ -294,8 +294,9 @@ def timeline_figure(res: SimResult, tl: pd.DataFrame, theme: str = "light") -> g
     for k in ["timeout", "dropped", "error", "incomplete"]:
         col = f"{k}_rps"
         if col in tl and tl[col].sum() > 0:
-            fig.add_trace(go.Bar(x=x, y=tl[col], name=k.capitalize(), marker_color=FAIL_COLOR[k],
-                                 hovertemplate="%{y:,.0f}<extra>" + k.capitalize() + "</extra>"), row=r_fail, col=1)
+            label = k.replace("_", " ").capitalize()
+            fig.add_trace(go.Bar(x=x, y=tl[col], name=label, marker_color=FAIL_COLOR[k],
+                                 hovertemplate="%{y:,.0f}<extra>" + label + "</extra>"), row=r_fail, col=1)
 
     if not any(f"{k}_rps" in tl and tl[f"{k}_rps"].sum() > 0 for k in FAIL_KINDS_PLOT):
         yax = fig.layout["yaxis" if r_fail == 1 else f"yaxis{r_fail}"]

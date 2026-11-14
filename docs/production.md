@@ -227,3 +227,13 @@ For upgrades, deploy new consumers before producers and drain old workers before
 replacement: old workers cannot accept the new timing keyword. The interactive pool
 consumes legacy `celery` messages. Standalone workers without `-Q` consume all three
 queues for development/testing.
+
+## Learning experiments and operating limits
+
+Paired comparisons use the `compare_seeds` batch job and preserve the existing account ownership checks. Each design uses the same seed list, workload, and failure schedule. Up to 10 seeds per design are allowed. JSON reports include configurations, per-seed values, and descriptive variation; they do not claim production accuracy.
+
+Deploy updated batch consumers before web producers: older workers do not support the new comparison job type.
+
+`SYSDESIGN_MAX_BATCH_ARRIVALS` bounds aggregate expected attempts across a batch (default 8,000,000). Per-run arrival limits now conservatively include configured read retries; the runtime also caps actual request attempts. Choose lower limits for smaller deployments.
+
+Local sweeps can use subprocesses, capped by `SYSDESIGN_SWEEP_WORKERS` (default 2; hard ceiling 4 and CPU count). Celery execution forces one inner worker, so scale the existing dedicated batch-worker service to change distributed concurrency. This avoids nested pools multiplying host CPU and memory demand. For model details and UI controls, see [the learning guide](learning-lab.md).

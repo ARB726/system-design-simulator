@@ -20,11 +20,13 @@ def _watch(job_id, owner):
     st.info(f"Experiment {state}. Results will appear automatically; you can continue using the sidebar.")
 
 
-def compute(kind, payload, local):
+def compute(kind, payload, local, *, on_error=None):
     if not jobs.enabled():
         try:
             return local()
         except ValueError as exc:
+            if on_error:
+                on_error()
             st.error(str(exc))
             st.stop()
     owner = library_key()
@@ -39,8 +41,11 @@ def compute(kind, payload, local):
         if state == "complete":
             return decode(data)
     except (jobs.JobError, ValueError) as exc:
+        if on_error:
+            requests.pop(key, None)
+            on_error()
         st.error(str(exc))
-        if st.button("Retry experiment", key=f"retry_{key}"):
+        if not on_error and st.button("Retry experiment", key=f"retry_{key}"):
             requests.pop(key, None)
             st.rerun()
         st.stop()

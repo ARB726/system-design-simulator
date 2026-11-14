@@ -2,10 +2,12 @@
 from __future__ import annotations
 
 from typing import Callable, Iterable, Optional
+import statistics
 
 import pandas as pd
 
-from .config import AppTier, Config, Workload, config_from_dict
+from .config import AppTier, Config, Workload, config_from_dict, monthly_cost
+from .batch import summaries
 from .engine import SimResult, run, run_summary
 from .theory import mmc_mean_response
 
@@ -41,33 +43,79 @@ def _steady_copy(cfg: Config, duration_s: float, warmup_s: float) -> Config:
 
 
 def sweep_load(cfg: Config, rps_values: Iterable[float], duration_s: float = 25.0,
-               warmup_s: float = 5.0, progress: Progress = None) -> pd.DataFrame:
+               warmup_s: float = 5.0, progress: Progress = None, workers: int = 1) -> pd.DataFrame:
     """Raise offered load and watch throughput flatten and latency blow up (the 'knee')."""
     vals = list(rps_values)
-    rows = []
-    for i, rps in enumerate(vals):
+    configs = []
+    for rps in vals:
         c = _steady_copy(cfg, duration_s, warmup_s)
         c.workload.rps = float(rps)
-        rows.append({"target_rps": float(rps), **run_summary(c)})
-        if progress:
-            progress((i + 1) / len(vals), f"{rps:,.0f} rps")
+        configs.append(c)
+    metrics = summaries(configs, workers=workers, progress=progress, runner=run_summary)
+    rows = [{"target_rps": float(rps), **result} for rps, result in zip(vals, metrics)]
     return pd.DataFrame(rows)
 
 
 def sweep_replicas(cfg: Config, replica_values: Iterable[int], strategies: Iterable[str],
-                   duration_s: float = 25.0, warmup_s: float = 5.0, progress: Progress = None) -> pd.DataFrame:
+                   duration_s: float = 25.0, warmup_s: float = 5.0, progress: Progress = None,
+                   workers: int = 1) -> pd.DataFrame:
     """Fixed load, vary the number of app replicas and the load-balancing strategy."""
     reps, strats = list(replica_values), list(strategies)
-    total, done, rows = len(reps) * len(strats), 0, []
+    configs, labels = [], []
     for strat in strats:
         for n in reps:
             c = _steady_copy(cfg, duration_s, warmup_s)
             c.app.replicas, c.app.lb_strategy = int(n), strat
-            rows.append({"replicas": int(n), "strategy": strat, **run_summary(c)})
-            done += 1
-            if progress:
-                progress(done / total, f"{n} replicas, {strat}")
+            configs.append(c)
+            labels.append(dict(replicas=int(n), strategy=strat))
+    metrics = summaries(configs, workers=workers, progress=progress, runner=run_summary)
+    rows = [{**label, **result} for label, result in zip(labels, metrics)]
     return pd.DataFrame(rows)
+
+
+def compare_seeds(baseline: Config, candidate: Config, seeds, *, workers=1, progress=None):
+    """Paired runs report model variability; no production-accuracy claim or CI."""
+    try:
+        seeds = list(seeds)
+    except TypeError as exc:
+        raise ValueError("Choose 3 to 10 distinct integer seeds.") from exc
+    if not 3 <= len(seeds) <= 10:
+        raise ValueError("Choose 3 to 10 distinct seeds.")
+    if any(isinstance(seed, bool) or not isinstance(seed, int) or not 0 <= seed <= 2**63 - 1 for seed in seeds):
+        raise ValueError("Seeds must be integers between 0 and 2**63 - 1.")
+    if len(set(seeds)) != len(seeds):
+        raise ValueError("Choose 3 to 10 distinct seeds.")
+    if baseline.workload != candidate.workload or baseline.events != candidate.events or baseline.app_only != candidate.app_only:
+        raise ValueError("Paired comparisons require identical workloads, failure events, and model mode.")
+    configs, labels = [], []
+    for seed in seeds:
+        for label, cfg in (("Baseline", baseline), ("Candidate", candidate)):
+            c = _clone(cfg)
+            c.seed = seed
+            configs.append(c)
+            labels.append(dict(seed=seed, design=label))
+    metrics = summaries(configs, workers=workers, progress=progress, runner=run_summary)
+    rows = [{**label, **result} for label, result in zip(labels, metrics)]
+    def stats(values):
+        return dict(mean=statistics.mean(values), sd=statistics.stdev(values),
+                    minimum=min(values), maximum=max(values))
+    keys = ("served_rps", "success_rate", "p95_ms", "p99_ms")
+    aggregates, deltas = [], []
+    for key in keys:
+        a = [row[key] for row in rows if row["design"] == "Baseline"]
+        b = [row[key] for row in rows if row["design"] == "Candidate"]
+        for label, values in (("Baseline", a), ("Candidate", b)):
+            aggregates.append(dict(design=label, metric=key, **stats(values)))
+        diff = [bv - av for av, bv in zip(a, b)]
+        improved = sum(d < 0 if key.endswith("_ms") else d > 0 for d in diff)
+        deltas.append(dict(metric=key, **stats(diff), improved_seeds=improved,
+                           tied_seeds=sum(d == 0 for d in diff), seeds=len(seeds)))
+    return dict(rows=rows, aggregates=aggregates, deltas=deltas, seeds=seeds,
+                baseline_config=baseline.to_dict(), candidate_config=candidate.to_dict(),
+                baseline_cost=monthly_cost(baseline), candidate_cost=monthly_cost(candidate),
+                caution="Variation across seeds describes uncertainty within this model. "
+                        "It does not establish production accuracy or statistical significance. "
+                        "Each seed is shared across designs; changed routing can consume random numbers differently.")
 
 
 def validate_mmc(c: int = 4, mu: float = 50.0, rhos=(0.3, 0.5, 0.7, 0.8, 0.9), duration_s: float = 300.0,

@@ -21,7 +21,7 @@ from sim.analysis import TIER_LABEL, diagnose, summarize, timeline
 from sim.challenges import (KNOB_HELP, KNOB_LABELS, apply_design, challenges, default_design, design_cost,
                             load_optima, run_check, score_design)
 from sim.config import (EVENT_KINDS, LB_STRATEGIES, AppTier, CacheTier, CDNTier, Config, DBTier, Event, QueueTier,
-                        Workload, app_capacity_rps, config_from_dict, cost_breakdown, expected_utilization,
+                        TrafficPolicy, Workload, app_capacity_rps, config_from_dict, cost_breakdown, expected_utilization,
                         monthly_cost, presets)
 from sim.engine import run
 from sim.experiments import sweep_load, sweep_replicas, validate_mmc
@@ -30,6 +30,10 @@ from sim.sharecard import design_lines, make_card
 from sim.run_library_ui import library_key, render_library, save_run_form
 from sim.auth import enforce_login
 from sim.job_ui import compute
+from sim.learning_ui import coaching_panel, comparison_panel, local_sweep
+from sim.coaching import pressure_evidence, suggest_experiment
+from sim.batch import worker_limit
+from sim import jobs
 from sim.themes import (DEFAULT_THEME, INDUSTRIES, INDUSTRY_EMOJI, PRESET_INDUSTRY, THEMES, accent, tag, theme_css)
 
 st.set_page_config(page_title="System Design Simulator", page_icon=":material/hub:", layout="wide")
@@ -60,7 +64,8 @@ ss.setdefault("industry", "All")
 
 SANDBOX_KEYS = (["preset", "theme", "industry", "progress", "predict_on", "cfg_name", "w_rps", "w_read", "w_dur", "w_timeout", "w_seed", "a_rep", "a_work",
                  "a_lat", "a_lb", "a_maxq", "c_en", "c_hit", "c_lat", "x_en", "x_hit", "x_lat", "q_en", "q_cons",
-                 "q_depth", "d_work", "d_read", "d_write", "d_rep", "d_shards", "d_hot"] +
+                 "q_depth", "d_work", "d_read", "d_write", "d_rep", "d_shards", "d_hot", "c_workers",
+                 "p_retries", "p_backoff", "p_multiplier", "p_jitter", "p_limit", "p_rate", "p_burst", "w_warmup"] +
                 [f"ev{i}_{s}" for i in range(MAX_EV) for s in ("on", "kind", "start", "dur", "mag")])
 # Streamlit drops widget state for widgets that are not drawn; re-assigning keeps it across mode switches.
 for _k in SANDBOX_KEYS + [f"k_{k}" for k in KNOB_LABELS] + ["chal"]:
@@ -73,9 +78,15 @@ def load_into_state(cfg: Config) -> None:
     w, a, c, x, q, d = cfg.workload, cfg.app, cfg.cache, cfg.cdn, cfg.queue, cfg.db
     ss.w_rps, ss.w_read, ss.w_dur = int(w.rps), int(round(w.read_ratio * 100)), int(w.duration_s)
     ss.w_timeout, ss.w_seed = int(w.timeout_ms or 1000), int(cfg.seed)
+    ss.w_warmup = float(w.warmup_s)
     ss.a_rep, ss.a_work, ss.a_lat = int(a.replicas), int(a.workers), float(a.latency_ms)
     ss.a_lb, ss.a_maxq = a.lb_strategy, int(a.max_queue or 200)
     ss.c_en, ss.c_hit, ss.c_lat = bool(c.enabled), int(round(c.hit_rate * 100)), float(c.latency_ms)
+    ss.c_workers = cfg.cache.workers
+    p = cfg.policy
+    ss.p_retries, ss.p_backoff, ss.p_multiplier = p.max_retries, float(p.backoff_ms), float(p.backoff_multiplier)
+    ss.p_jitter, ss.p_limit = p.jitter, p.rate_limit_rps is not None
+    ss.p_rate, ss.p_burst = float(p.rate_limit_rps or 500), p.burst
     ss.x_en, ss.x_hit, ss.x_lat = bool(x.enabled), int(round(x.hit_rate * 100)), float(x.latency_ms)
     ss.q_en, ss.q_cons, ss.q_depth = bool(q.enabled), int(q.consumers), int(q.max_depth)
     ss.d_work, ss.d_read, ss.d_write, ss.d_rep = int(d.workers), float(d.read_ms), float(d.write_ms), int(d.read_replicas)
@@ -95,8 +106,11 @@ def on_preset_change() -> None:
     ss.pop("restored_run", None)
     ss.committed = None
     ss.pred_for = None
+    ss.walkthrough = 0
     for k in ("exp_rep", "exp_load", "pending_rep", "pending_load", "pending_prediction"):
         ss.pop(k, None)
+    for key in ("sb_suggested_pending", "guided_compare_pending", "sb_suggested_result", "guided_compare_result"):
+        ss.pop(key, None)
 
 
 def explore_scenario(name: str) -> None:
@@ -104,6 +118,21 @@ def explore_scenario(name: str) -> None:
     ss.industry = "All"
     ss.preset = name
     on_preset_change()
+
+
+def start_walkthrough():
+    explore_scenario("Failure: cache goes cold")
+    ss.predict_on = False
+    ss.walkthrough = 1
+    ss.pop("walkthrough_baseline", None)
+
+
+def try_guided_change(config, summary, proposal):
+    ss.walkthrough_baseline = dict(config=config, summary=summary)
+    load_into_state(config_from_dict(proposal["candidate"]))
+    ss.committed = None
+    ss.predict_on = False
+    ss.walkthrough = 2
 
 
 def restore_saved_design(config: dict, name: str) -> None:
@@ -114,6 +143,9 @@ def restore_saved_design(config: dict, name: str) -> None:
     ss.committed = json.dumps(cfg.to_dict(), sort_keys=True)
     ss.pred_for = None
     ss.restored_run = name
+    ss.walkthrough = 0
+    for key in ("sb_suggested_pending", "guided_compare_pending", "sb_suggested_result", "guided_compare_result"):
+        ss.pop(key, None)
     for key in ("exp_rep", "exp_load", "pred_score", "pending_rep", "pending_load", "pending_prediction"):
         ss.pop(key, None)
 
@@ -124,13 +156,15 @@ def build_cfg() -> Config:
     return Config(
         name=ss.cfg_name,
         app=AppTier(ss.a_rep, ss.a_work, float(ss.a_lat), ss.a_lb, int(ss.a_maxq)),
-        cache=CacheTier(bool(ss.c_en), ss.c_hit / 100.0, float(ss.c_lat), 64),
+        cache=CacheTier(bool(ss.c_en), ss.c_hit / 100.0, float(ss.c_lat), int(ss.c_workers)),
         cdn=CDNTier(bool(ss.x_en), ss.x_hit / 100.0, float(ss.x_lat)),
         queue=QueueTier(bool(ss.q_en), int(ss.q_cons), int(ss.q_depth), 2.0),
         db=DBTier(ss.d_work, float(ss.d_read), float(ss.d_write), ss.d_rep, 500, int(ss.d_shards),
                   ss.d_hot / 100.0 if ss.d_shards > 1 else 0.0),
-        workload=Workload(float(ss.w_rps), ss.w_read / 100.0, float(ss.w_dur), float(ss.w_timeout), 5.0),
+        workload=Workload(float(ss.w_rps), ss.w_read / 100.0, float(ss.w_dur), float(ss.w_timeout), float(ss.w_warmup)),
         events=events, seed=int(ss.w_seed),
+        policy=TrafficPolicy(int(ss.p_retries), float(ss.p_backoff), float(ss.p_multiplier), bool(ss.p_jitter),
+                             float(ss.p_rate) if ss.p_limit else None, int(ss.p_burst)),
     )
 
 
@@ -326,29 +360,42 @@ with st.sidebar:
             st.slider("Simulated duration (s)", 30, 180, step=10, key="w_dur")
             st.number_input("Client timeout (ms)", 100, 10000, step=100, key="w_timeout")
             st.number_input("Random seed", 0, 10_000, key="w_seed")
+            st.number_input("Warmup (s)", 0.0, float(ss.w_dur) - .001, key="w_warmup")
+
+        with st.expander("Retries and admission control"):
+            st.caption("Retries apply only to reads. Writes require idempotency semantics and are never retried. Each attempt has its own timeout; total latency includes backoff. Backoff is capped at 10 seconds.")
+            st.number_input("Maximum read retries", 0, 3, key="p_retries")
+            st.number_input("Initial backoff (ms)", 1.0, 5000.0, key="p_backoff")
+            st.number_input("Backoff multiplier", 1.0, 4.0, key="p_multiplier")
+            st.checkbox("Full jitter", key="p_jitter")
+            st.checkbox("Limit admission rate", key="p_limit")
+            st.number_input("Admission rate (attempts/s)", .01, 100000.0, key="p_rate")
+            st.number_input("Admission burst (attempts)", 1, 100000, key="p_burst")
+            st.caption("A shared token bucket rejects excess attempts before the CDN and app. Rejections remain failed user requests unless a read retry succeeds.")
         with st.expander("CDN"):
             st.checkbox("Use a CDN", key="x_en", help="Answers a share of reads at the edge.")
             st.slider("Reads served at the edge (%)", 0, 95, step=5, key="x_hit")
             st.slider("Edge latency (ms)", 1.0, 50.0, step=1.0, key="x_lat")
         with st.expander("App tier (horizontal scaling)", expanded=True):
-            st.slider("Replicas", 1, 16, key="a_rep")
+            st.slider("Replicas", 1, 64, key="a_rep")
             st.slider("Workers per replica", 1, 32, key="a_work")
             st.slider("Mean service time (ms)", 1.0, 200.0, step=1.0, key="a_lat")
-            st.selectbox("Load balancing", list(LB_STRATEGIES), format_func=LB_STRATEGIES.get, key="a_lb")
+            st.selectbox("Load balancing", list(LB_STRATEGIES), format_func=lambda value: LB_STRATEGIES[value], key="a_lb")
             st.number_input("Max queue per replica", 10, 2000, step=10, key="a_maxq")
         with st.expander("Cache"):
             st.checkbox("Use a cache", key="c_en")
             st.slider("Hit rate (%)", 0, 100, step=1, key="c_hit")
             st.slider("Lookup time (ms)", 0.5, 20.0, step=0.5, key="c_lat")
+            st.number_input("Cache workers", 1, 1024, key="c_workers")
         with st.expander("Write queue (async writes)"):
             st.checkbox("Queue writes", key="q_en", help="Acknowledge a write once it is queued; apply it later.")
-            st.slider("Consumers", 1, 64, key="q_cons")
+            st.slider("Consumers", 1, 256, key="q_cons")
             st.number_input("Max backlog", 100, 50000, step=500, key="q_depth")
         with st.expander("Database"):
-            st.slider("Connections per node", 1, 64, key="d_work")
+            st.slider("Connections per node", 1, 256, key="d_work")
             st.slider("Read time (ms)", 1.0, 100.0, step=1.0, key="d_read")
             st.slider("Write time (ms)", 1.0, 200.0, step=1.0, key="d_write")
-            st.slider("Read replicas (per shard)", 0, 6, key="d_rep")
+            st.slider("Read replicas (per shard)", 0, 16, key="d_rep")
             st.slider("Shards", 1, 8, key="d_shards")
             if ss.d_shards > 1:
                 st.slider("Traffic on the hottest shard (%)", 0, 95, step=5, key="d_hot",
@@ -456,11 +503,20 @@ def render_results(res, tl, summ, findings, key_prefix: str, show_cost: bool = T
     cols[2].metric("Success rate", f"{summ['success_rate']:.1%}",
                    delta=None if summ["success_rate"] >= 0.99 else f"-{1 - summ['success_rate']:.1%} failed",
                    delta_color="normal")
-    cols[3].metric("p95 latency", f"{summ['p95_ms']:,.0f} ms", help="Failed requests count as the timeout value.")
+    cols[3].metric("p95 latency", f"{summ['p95_ms']:,.0f} ms", help="Failures count at least the configured timeout. With retries, longer observed elapsed time is retained.")
     cols[4].metric("Most loaded tier", TIER_LABEL[b] if b else "-", delta=charts.STATUS_TEXT[bst],
                    delta_color="off", delta_arrow="off")
     if show_cost:
         cols[5].metric("Est. cost", f"${monthly_cost(ccfg):,.0f}/mo", help="Illustrative prices; see How it works.")
+    if ccfg.policy.max_retries or ccfg.policy.rate_limit_rps is not None:
+        traffic = summ.get("traffic", {})
+        logical = traffic.get("logical_requests", 0)
+        attempts = traffic.get("attempts", 0)
+        st.caption(f"Post-warmup request cohort: {logical:,} logical requests, {attempts:,} attempts "
+                   f"({attempts / max(logical, 1):.2f}x amplification), "
+                   f"{traffic.get('retries', 0):,} retries scheduled, "
+                   f"{traffic.get('rate_limited_attempts', 0):,} attempts rejected by admission control. "
+                   "All original requests, including rejections, remain in the success-rate denominator.")
 
     with st.container(border=True):
         st.subheader("Architecture", icon=":material/account_tree:")
@@ -476,6 +532,8 @@ def render_results(res, tl, summ, findings, key_prefix: str, show_cost: bool = T
     st.subheader("What to improve next", icon=":material/lightbulb:")
     st.caption("Use these findings to choose your next change. Re-run to see whether it helped.")
     show_findings(findings)
+    if key_prefix == "sb":
+        coaching_panel(res, tl, summ, key_prefix)
 
     st.markdown("#### Timeline")
     plot(charts.timeline_figure(res, tl, THEME), key=f"{key_prefix}_timeline")
@@ -494,6 +552,8 @@ def render_results(res, tl, summ, findings, key_prefix: str, show_cost: bool = T
         st.dataframe(pd.DataFrame(rows), hide_index=True, width="stretch")
         st.caption("Utilization. Predicted = rps × service time ÷ workers at steady load, with no chaos "
                    "events. Where it disagrees with the simulation, an event or a queueing effect is doing the damage.")
+        if ccfg.policy.max_retries or ccfg.policy.rate_limit_rps is not None:
+            st.caption("Napkin math uses original offered traffic and excludes retries and admission filtering. Use measured utilization to assess the policy.")
         if show_cost:
             with st.expander("Cost breakdown"):
                 bd = cost_breakdown(ccfg)
@@ -512,6 +572,16 @@ if MODE == "Sandbox":
     predict_on = bool(ss.get("predict_on"))
 
     library = library_key()
+    with st.container(border=True):
+        st.subheader("Learn in two minutes", icon=":material/school:")
+        st.write("**1. Observe:** watch a cold cache overload the database. "
+                 "**2. Change one thing:** test a capacity hypothesis. "
+                 "**3. Check:** compare latency, reliability, and cost across seeds.")
+        st.caption("Everything runs in a simulation. Starting the walkthrough replaces the current sandbox settings.")
+        st.button("Start guided walkthrough", key="start_walkthrough", on_click=start_walkthrough,
+                  icon=":material/play_arrow:")
+        if ss.get("walkthrough"):
+            st.button("Leave walkthrough", key="leave_walkthrough", on_click=lambda: ss.update(walkthrough=0))
     tab_results, tab_saved, tab_exp, tab_val, tab_about = st.tabs(
         ["Results", "Saved runs & compare", "Experiments", "Validation", "How it works"])
 
@@ -572,6 +642,27 @@ if MODE == "Sandbox":
                 show_prediction_score(ss.pred_score)
                 st.divider()
             ccfg = render_results(res, tl, summ, findings, "sb")
+            if ss.get("walkthrough") == 1 and not stale:
+                with st.container(border=True):
+                    st.subheader("Step 1: explain the pressure")
+                    st.write("Inspect the measured pressure window above. Compare the database queue with latency during the cold-cache event.")
+                    proposal = suggest_experiment(ccfg, pressure_evidence(res, tl, summ))
+                    if proposal:
+                        st.button("Step 2: try one capacity change", key="guided_change", on_click=try_guided_change,
+                                  args=(ccfg.to_dict(), summ, proposal))
+                    else:
+                        st.info("This run has no measured capacity constraint to change. Inspect its evidence or restart the walkthrough.")
+            if ss.get("walkthrough") == 2 and ss.get("walkthrough_baseline"):
+                with st.container(border=True):
+                    st.subheader("Step 3: check the tradeoff")
+                    original = ss.walkthrough_baseline
+                    st.write(f"Baseline p95: {original['summary']['p95_ms']:.0f} ms; "
+                             f"candidate p95: {summ['p95_ms']:.0f} ms. One run can be lucky; repeat across seeds before drawing a conclusion.")
+                    complete = comparison_panel(config_from_dict(original["config"]), ccfg, "guided_compare")
+                    st.button("Finish walkthrough", key="finish_walkthrough", disabled=not complete,
+                              on_click=lambda: ss.update(walkthrough=3))
+            if ss.get("walkthrough") == 3:
+                st.success("Walkthrough complete: you inspected evidence, changed one setting, and compared across seeds. Save both designs below or explore a resilience scenario next.")
             save_run_form(library, ccfg, summ, findings, stale=stale)
 
             d1, d2, _ = st.columns([1, 1, 2])
@@ -587,23 +678,28 @@ if MODE == "Sandbox":
         base = config_from_dict(json.loads(committed))
         st.markdown("Experiments run on the **current design with chaos events removed**, so they measure steady "
                     "state. Each point is its own short simulation.")
+        parallel_workers = 1 if jobs.enabled() else st.select_slider(
+            "Experiment workers", options=list(range(1, worker_limit() + 1)), value=worker_limit(), key="sweep_workers")
+        st.caption("Progress counts completed points. Small batches may be faster with one worker because subprocess startup has a cost. "
+                   "Distributed deployments use their Celery worker pool without nested process pools.")
 
         st.markdown("### Scaling lab: do more replicas help, and does the load balancer matter?")
         c1, c2, c3 = st.columns([1.4, 1.4, 1])
         strats = c1.multiselect("Strategies to compare", list(LB_STRATEGIES), default=["least_queue", "random", "shared"],
-                                format_func=LB_STRATEGIES.get)
+                                format_func=lambda value: LB_STRATEGIES[value])
         lo, hi = c2.slider("Replica range", 1, 12, (1, 8))
         go_rep = c3.button("Run scaling experiment", width="stretch")
         values = sorted({int(round(v)) for v in np.linspace(lo, hi, min(hi - lo + 1, 7))})
         st.caption(f"{len(values) * max(len(strats), 1)} short simulations at {base.workload.rps:,.0f} rps.")
         if go_rep and strats:
-            ss.pending_rep = (committed, values, strats)
+            ss.pending_rep = (committed, values, strats, parallel_workers)
         if ss.get("pending_rep"):
-            run_key, run_values, run_strats = ss.pending_rep
+            run_key, run_values, run_strats, run_workers = ss.pending_rep
             run_cfg = config_from_dict(json.loads(run_key))
             df = compute("sweep_replicas", {"config": run_cfg.to_dict(), "replicas": run_values,
                          "strategies": run_strats},
-                         lambda: sweep_replicas(run_cfg, run_values, run_strats))
+                         lambda: local_sweep(sweep_replicas, run_cfg, run_values, run_strats, workers=run_workers),
+                         on_error=lambda: ss.pop("pending_rep", None))
             ss.exp_rep = (run_key, df)
             ss.pop("pending_rep", None)
         if "exp_rep" in ss:
@@ -629,12 +725,13 @@ if MODE == "Sandbox":
         go_load = c2.button("Run load test", width="stretch")
         if go_load:
             vals = np.linspace(base.workload.rps * 0.2, base.workload.rps * mult, 9).tolist()
-            ss.pending_load = (committed, vals)
+            ss.pending_load = (committed, vals, parallel_workers)
         if ss.get("pending_load"):
-            run_key, run_values = ss.pending_load
+            run_key, run_values, run_workers = ss.pending_load
             run_cfg = config_from_dict(json.loads(run_key))
             df = compute("sweep_load", {"config": run_cfg.to_dict(), "values": run_values},
-                         lambda: sweep_load(run_cfg, run_values))
+                         lambda: local_sweep(sweep_load, run_cfg, run_values, workers=run_workers),
+                         on_error=lambda: ss.pop("pending_load", None))
             ss.exp_load = (run_key, df)
             ss.pop("pending_load", None)
         if "exp_load" in ss:

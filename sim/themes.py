@@ -27,6 +27,8 @@ PRESET_INDUSTRY = {
     "Gaming: launch-day leaderboard": "Gaming",
     "Lab: load balancing strategy": "Infrastructure",
     "Blank canvas": "Infrastructure",
+    "Resilience: retry storm": "Infrastructure",
+    "Resilience: protect the database": "Infrastructure",
 }
 
 

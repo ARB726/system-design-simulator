@@ -32,7 +32,7 @@ def execute(kind, payload):
         return dict(type="simulation", config=cfg.to_dict(), requests=frame_data(res.requests),
                     series=frame_data(res.series), lag=frame_data(res.lag), timeline=frame_data(tl),
                     summary=summary, findings=diagnose(res, summary, tl), warnings=res.warnings,
-                    runtime_s=res.runtime_s)
+                    runtime_s=res.runtime_s, traffic=res.traffic)
     if kind == "grade":
         from .challenges import challenges, run_check
         ch, results, base = challenges()[payload["cid"]], [], None
@@ -44,7 +44,11 @@ def execute(kind, payload):
                 result.pop("tl")
             results.append(result)
         return dict(type="grade", results=results, summary=base)
-    from .experiments import sweep_load, sweep_replicas, validate_mmc
+    from .experiments import sweep_load, sweep_replicas, validate_mmc, compare_seeds
+    if kind == "compare_seeds":
+        report = compare_seeds(config_from_dict(payload["baseline"]), config_from_dict(payload["candidate"]),
+                               payload["seeds"], workers=1)
+        return dict(type="comparison", report=report)
     if kind == "sweep_load":
         values = payload["values"]
         if not 1 <= len(values) <= 12:
@@ -69,6 +73,8 @@ def decode(data):
         return frame_from(data["frame"])
     if data["type"] == "grade":
         return data["results"], data["summary"]
+    if data["type"] == "comparison":
+        return data["report"]
     res = SimResult(config_from_dict(data["config"]), frame_from(data["requests"]),
-                    frame_from(data["series"]), frame_from(data["lag"]), data["warnings"], data["runtime_s"])
+                    frame_from(data["series"]), frame_from(data["lag"]), data["warnings"], data["runtime_s"], data.get("traffic", {}))
     return res, frame_from(data["timeline"]), data["summary"], data["findings"]

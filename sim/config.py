@@ -88,6 +88,16 @@ class Workload:
 
 
 @dataclass
+class TrafficPolicy:
+    max_retries: int = 0  # Read requests only; writes need idempotency semantics.
+    backoff_ms: float = 100.0
+    backoff_multiplier: float = 2.0
+    jitter: bool = True
+    rate_limit_rps: Optional[float] = None  # Token bucket before CDN/app admission.
+    burst: int = 100
+
+
+@dataclass
 class Event:
     kind: str
     start_s: float
@@ -122,6 +132,7 @@ class Config:
     events: List[Event] = field(default_factory=list)
     seed: int = 42
     app_only: bool = False  # used by the M/M/c validation: just the app tier
+    policy: TrafficPolicy = field(default_factory=TrafficPolicy)
 
     def to_dict(self) -> dict:
         return asdict(self)
@@ -139,6 +150,7 @@ def config_from_dict(d: dict) -> Config:
         events=[Event(**e) for e in d.get("events", [])],
         seed=d.get("seed", 42),
         app_only=d.get("app_only", False),
+        policy=TrafficPolicy(**d.get("policy", {})),
     )
 
 
@@ -325,6 +337,25 @@ def presets() -> Dict[str, Preset]:
         "pages, which is exactly what an edge cache is for.",
         "Run it once, then turn the CDN on. Watch the app tier's utilization and how many requests never "
         "reach it. What does the CDN do to the napkin math for every tier behind it?",
+    )
+
+    out["Resilience: retry storm"] = Preset(
+        Config(name="Retry storm", app=AppTier(replicas=2, workers=4, latency_ms=30, max_queue=20),
+               workload=Workload(rps=350, read_ratio=1, duration_s=45, timeout_ms=150),
+               events=[Event("kill_app", 15, 10, 1)],
+               policy=TrafficPolicy(max_retries=3, backoff_ms=10, backoff_multiplier=1, jitter=False)),
+        "Aggressive read retries add attempts while a replica is down. Extra attempts consume capacity and can amplify overload.",
+        "Compare zero retries with three retries, then increase backoff and enable jitter. "
+        "Watch attempt amplification as well as user-visible success and total latency.",
+    )
+    out["Resilience: protect the database"] = Preset(
+        Config(name="Admission control", app=AppTier(replicas=4, workers=8), cache=CacheTier(enabled=False),
+               db=DBTier(workers=4, read_ms=20, write_ms=30),
+               workload=Workload(rps=600, duration_s=45),
+               policy=TrafficPolicy(rate_limit_rps=150, burst=25)),
+        "A token bucket protects downstream workers by rejecting excess traffic before it enters the system.",
+        "Disable the admission limit and compare database queues. Rejections still count against success: "
+        "a quiet database is not evidence that all users were served.",
     )
 
     out["Blank canvas"] = Preset(
