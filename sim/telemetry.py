@@ -13,6 +13,6 @@ def emit(event, **fields):
 def queue_for(kind):
     if kind in ("simulate", "replay"):
         return "interactive"
-    if kind in ("grade", "sweep_load", "sweep_replicas", "validate_mmc"):
+    if kind in ("grade", "sweep_load", "sweep_replicas", "validate_mmc", "compare_seeds"):
         return "batch"
     raise ValueError("Unknown simulation job type.")
