@@ -134,8 +134,40 @@ void test_cli_seed_reproducibility() {
     check(a.code == 0 && b.code == 0 && a.output == b.output && a.error.empty());
 }
 
+// Independent linear-scan scheduler checks the heap kernel on changing queue
+// depths, ties, idle gaps, and warmup boundaries. Integer-valued times keep the
+// oracle exact rather than relying on a statistical tolerance.
+void test_heap_matches_linear_reference() {
+    for (int servers : {1, 2, 4, 16}) {
+        for (double warmup : {0.0, 10.0, 100.0}) {
+            Kernel kernel(servers, warmup);
+            std::vector<double> available(servers, 0);
+            std::mt19937 rng(1701);
+            double at = 0, response = 0, wait = 0;
+            std::uint64_t measured = 0;
+            for (int i = 0; i < 2000; ++i) {
+                at += rng() % 4;
+                double service = 1 + rng() % 20;
+                auto next = std::min_element(available.begin(), available.end());
+                double start = std::max(at, *next);
+                *next = start + service;
+                if (at >= warmup) {
+                    ++measured;
+                    wait += start - at;
+                    response += start + service - at;
+                }
+                kernel.arrival(at, service);
+                check(kernel.measured == measured);
+                check(kernel.wait == wait && kernel.response == response);
+                check(kernel.available.top() == *std::min_element(available.begin(), available.end()));
+            }
+        }
+    }
+}
+
 int main() {
     int failures = 0;
+    try { test_heap_matches_linear_reference(); std::cout << "PASS test_heap_matches_linear_reference\n"; } catch (const std::exception& e) { ++failures; std::cerr << "FAIL test_heap_matches_linear_reference: " << e.what() << "\n"; }
     try { test_original_regressions(); std::cout << "PASS test_original_regressions\n"; } catch (const std::exception& e) { ++failures; std::cerr << "FAIL test_original_regressions: " << e.what() << "\n"; }
     try { test_idle_server_has_no_wait(); std::cout << "PASS test_idle_server_has_no_wait\n"; } catch (const std::exception& e) { ++failures; std::cerr << "FAIL test_idle_server_has_no_wait: " << e.what() << "\n"; }
     try { test_queue_drains_before_later_arrival(); std::cout << "PASS test_queue_drains_before_later_arrival\n"; } catch (const std::exception& e) { ++failures; std::cerr << "FAIL test_queue_drains_before_later_arrival: " << e.what() << "\n"; }
@@ -170,6 +202,6 @@ int main() {
     try { test_cli_excessive_seed(); std::cout << "PASS test_cli_excessive_seed\n"; } catch (const std::exception& e) { ++failures; std::cerr << "FAIL test_cli_excessive_seed: " << e.what() << "\n"; }
     try { test_cli_arrival_budget(); std::cout << "PASS test_cli_arrival_budget\n"; } catch (const std::exception& e) { ++failures; std::cerr << "FAIL test_cli_arrival_budget: " << e.what() << "\n"; }
     try { test_cli_seed_reproducibility(); std::cout << "PASS test_cli_seed_reproducibility\n"; } catch (const std::exception& e) { ++failures; std::cerr << "FAIL test_cli_seed_reproducibility: " << e.what() << "\n"; }
-    std::cout << "34 tests, " << failures << " failures\n";
+    std::cout << "35 tests, " << failures << " failures\n";
     return failures ? 1 : 0;
 }
