@@ -1,0 +1,91 @@
+{
+  "python": "3.12.10 (tags/v3.12.10:0cc8128, Apr  8 2025, 12:21:36) [MSC v.1943 64 bit (AMD64)]",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "cpu": "Intel64 Family 6 Model 142 Stepping 12, GenuineIntel",
+  "logical_cpus": 8,
+  "config": {
+    "name": "Custom design",
+    "app": {
+      "replicas": 3,
+      "workers": 8,
+      "latency_ms": 20.0,
+      "lb_strategy": "least_queue",
+      "max_queue": 200
+    },
+    "cache": {
+      "enabled": true,
+      "hit_rate": 0.85,
+      "latency_ms": 1.0,
+      "workers": 64
+    },
+    "cdn": {
+      "enabled": false,
+      "hit_rate": 0.6,
+      "latency_ms": 8.0
+    },
+    "queue": {
+      "enabled": false,
+      "consumers": 8,
+      "max_depth": 5000,
+      "enqueue_ms": 2.0
+    },
+    "db": {
+      "workers": 16,
+      "read_ms": 8.0,
+      "write_ms": 25.0,
+      "read_replicas": 0,
+      "max_queue": 500,
+      "shards": 1,
+      "hot_share": 0.0
+    },
+    "workload": {
+      "rps": 900.0,
+      "read_ratio": 0.95,
+      "duration_s": 60.0,
+      "timeout_ms": 1000.0,
+      "warmup_s": 5.0
+    },
+    "events": [],
+    "seed": 7,
+    "app_only": false,
+    "policy": {
+      "max_retries": 0,
+      "backoff_ms": 100.0,
+      "backoff_multiplier": 2.0,
+      "jitter": true,
+      "rate_limit_rps": null,
+      "burst": 100
+    }
+  },
+  "target_rps": [
+    400,
+    600,
+    800,
+    1000,
+    1200,
+    1400
+  ],
+  "duration_s": 25,
+  "warmup_s": 5,
+  "workers": 2,
+  "rounds": 3,
+  "samples_s": {
+    "serial": [
+      13.894903399999748,
+      22.179425099999207,
+      29.69041819999984
+    ],
+    "parallel": [
+      11.603195499999856,
+      12.034602299998369,
+      15.067446500001097
+    ]
+  },
+  "median_s": {
+    "serial": 22.179425099999207,
+    "parallel": 12.034602299998369
+  },
+  "ratio": 1.8429711715527328,
+  "metrics_equal": true,
+  "note": "Includes interpreter/import startup. Local wall-clock observations, not a production capacity claim."
+}

@@ -1,5 +1,7 @@
 # User guide
 
+For the guided first run, bottleneck evidence, multi-seed comparisons, retry/backoff controls, and parallel sweeps, see [Learning and resilience](learning-lab.md).
+
 ## Save, compare, and explain
 
 1. Choose **Sandbox**, configure a scenario, and run the simulation.
