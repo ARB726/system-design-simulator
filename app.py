@@ -33,6 +33,7 @@ from sim.job_ui import compute
 from sim.learning_ui import coaching_panel, comparison_panel, local_sweep
 from sim.coaching import pressure_evidence, suggest_experiment
 from sim.batch import worker_limit
+from sim.motion import traffic_scene
 from sim import jobs
 from sim.themes import (DEFAULT_THEME, INDUSTRIES, INDUSTRY_EMOJI, PRESET_INDUSTRY, THEMES, accent, tag, theme_css)
 
@@ -304,6 +305,8 @@ with st.sidebar:
     st.subheader("Design lab", icon=":material/hub:")
     st.caption("Build intuition. Test your architecture.")
     st.selectbox("Theme", list(THEMES), format_func=lambda n: f"{THEMES[n]['emoji']}  {n}", key="theme")
+    st.toggle("Animate traffic", value=True, key="animate_traffic",
+              help="Decorative request flow. Your system's reduced-motion preference is always respected.")
     st.markdown(theme_css(ss.theme, THEME == "dark"), unsafe_allow_html=True)
     charts.ACCENT = accent(ss.theme, THEME == "dark")
 
@@ -514,6 +517,7 @@ def render_results(res, tl, summ, findings, key_prefix: str, show_cost: bool = T
 
     with st.container(border=True):
         st.subheader("Architecture", icon=":material/account_tree:")
+        st.html(traffic_scene(ccfg, summ, theme=ss.theme, animate=ss.animate_traffic))
         st.caption("Follow the request path. Each tier is colored by its 90th-percentile utilization.")
         plot(charts.architecture_figure(ccfg, summ, THEME), key=f"{key_prefix}_arch")
         st.caption("OK <70% / Warm 70-85% / Hot 85-95% / Saturated >95%")
