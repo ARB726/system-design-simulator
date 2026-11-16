@@ -64,6 +64,7 @@ def traffic_scene(cfg: Config, summary=None, *, theme="Ocean", animate=True) -> 
     .lab-scene strong {{ display:block; font:600 24px system-ui; margin-top:6px; letter-spacing:-.6px; }}
     .lab-scene small {{ color:#a1b4d0; font-size:12px; }}
     .lab-scene .lab-canvas {{ overflow-x:auto; scrollbar-width:thin; }}
+    .lab-scene .lab-scroll-hint {{ display:none; color:#a1b4d0; font:11px system-ui; padding:0 18px 14px; }}
     .lab-scene .lab-track {{ position:relative; display:grid; grid-template-columns:repeat({len(nodes)},minmax(0,1fr));
       gap:28px; min-width:680px; padding:88px 30px 24px; font-family:system-ui,sans-serif; text-align:center; }}
     .lab-scene .lab-node-card {{ border:1px solid var(--node-ink); border-radius:18px; background:#122039; padding:14px 4px 12px; }}
@@ -92,13 +93,15 @@ def traffic_scene(cfg: Config, summary=None, *, theme="Ocean", animate=True) -> 
     @keyframes lab-arrive {{ from {{ opacity:0; transform:translateY(8px); }} to {{ opacity:1; transform:translateY(0); }} }}
     @media(prefers-reduced-motion: reduce) {{ .lab-scene * {{ animation: none !important; }} }}
     @media(max-width:640px) {{ .lab-scene .lab-scene-top {{ padding:20px 18px 0; }}
-      .lab-scene .lab-scene-footer {{ padding:14px 18px; }} .lab-scene .lab-scene-stats {{ gap:20px; }} }}
+      .lab-scene .lab-scene-footer {{ padding:14px 18px; }} .lab-scene .lab-scene-stats {{ gap:20px; }}
+      .lab-scene .lab-scroll-hint {{ display:block; }} }}
     </style>
     <section class="lab-scene" data-motion="{'on' if animate else 'off'}" aria-label="Request flow illustration">
       <div class="lab-scene-top"><div><div class="lab-eyebrow">Architecture / request flow</div>
       <h3>{escape(cfg.name)}</h3></div><div class="lab-scene-stats">{stats}</div></div>
       <div class="lab-canvas" tabindex="0" role="region" aria-label="Request paths; scroll horizontally on small screens">
       <div class="lab-track">{write_route}{''.join(artwork)}</div></div>
+      <div class="lab-scroll-hint">Swipe or scroll the diagram to explore all tiers →</div>
       <div class="lab-scene-footer"><span class="lab-legend">Read path</span>
       {'' if cfg.app_only else '<span class="lab-legend lab-legend-write">Write path</span>'}
       <span>Illustrative motion · not individual request traces</span></div>
