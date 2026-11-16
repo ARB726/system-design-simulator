@@ -18,6 +18,77 @@ An interactive learning lab for developers practicing system design. Build a sim
 - **Separate the engine from delivery:** the same simulation core supports a local demo and an optional authenticated deployment with bounded background jobs and account-owned storage. See the [deployment design](docs/production.md).
 - **Validate the model:** queueing-theory checks, regression tests, Streamlit interaction tests, and distributed-service CI cover the engine and its delivery paths. See [test coverage](docs/testing-coverage.md) and the [development guide](docs/development.md).
 
+## How it works
+
+Think of the simulator as a virtual lab: configure an imaginary service, send requests through it, and watch where work starts waiting. A request is one action, such as opening a short link (a read) or saving a chat message (a write).
+
+There are two architectures to keep separate: **the service being simulated** and **the application running the experiment**. The CDN, cache, and database you configure are simulated resources; running an experiment does not create those services in the cloud.
+
+### The service you design
+
+```mermaid
+flowchart TD
+    Users[User requests] --> Admission[Optional admission control]
+    Admission --> CDN{CDN read hit?}
+    CDN -->|Yes| Response[Respond to user]
+    CDN -->|No| LB[Load balancer]
+    LB --> App[Application replicas and workers]
+    App --> Kind{Read or write?}
+    Kind -->|Read| Cache{Cache hit?}
+    Cache -->|Yes| Response
+    Cache -->|No| ReadDB[Database read replica or primary]
+    ReadDB --> Response
+    Kind -->|Write| Async{Write queue enabled?}
+    Async -->|No| Primary[Write to database primary]
+    Primary --> Response
+    Async -->|Yes| Queue[Accept into bounded queue]
+    Queue --> Response
+    Queue --> Consumers[Background consumers]
+    Consumers --> Apply[Apply write to database primary]
+```
+
+A **replica** is another copy of a server; a **worker** is a slot that can process one request at a time. The load balancer chooses an application replica. Reads can use a cached answer or continue to the database. Writes either wait for the database or receive an acknowledgement after entering the optional queue. Database **shards** divide traffic among separate database groups.
+
+Each choice moves work or changes when it happens:
+
+| Choice | Why use it? | What is the tradeoff? |
+| --- | --- | --- |
+| More application replicas or workers | Process more requests at once | Higher illustrative cost; an overloaded database can still limit the system |
+| CDN | Answer some reads before they reach the application | Additional cost; the model assumes a configured hit rate |
+| Cache | Answer repeated reads without database work | Additional cost; a cold cache suddenly sends more work to the database |
+| Read replicas | Move reads away from the database primary | Additional cost; writes still go to the primary |
+| Shards | Spread reads and writes across database groups | Additional cost; uneven traffic can leave one shard overloaded |
+| Write queue | Absorb a temporary burst and acknowledge writes sooner | The write is applied later; sustained overload grows the backlog until the queue fills |
+| Read retries with backoff and jitter | Try again after a temporary failure, with spaced and randomized delays | More attempts and longer waits; retries can worsen overload |
+| Admission control | Limit attempts entering the system to protect downstream resources | Some attempts are rejected, so smaller queues do not necessarily mean better user success |
+
+For example, when a cache goes cold, more reads reach the database. Its queue can grow, responses slow down, and clients may time out. Adding application servers will not necessarily help that database constraint. The experiment is to identify the pressure, change one thing, and compare success, latency, backlog, and cost. Real cache freshness, replication delay, and cross-shard coordination add further tradeoffs outside this model; see [modeling limitations](#modeling-assumptions-and-limitations).
+
+### The application running the experiment
+
+1. **Configure:** Streamlit controls build a `Config` containing the design, workload, random seed, and failure schedule.
+2. **Simulate:** the SimPy engine advances simulated time from event to event: requests arrive, wait for workers, finish, or time out. A simulated minute does not require a real minute. No external service receives this traffic.
+3. **Analyze:** request outcomes and sampled resource activity become throughput, success rate, latency percentiles, queue timelines, and bottleneck findings. A p95 latency is a value at or below which about 95% of measured latencies fall.
+4. **Explore:** Plotly charts show when pressure develops. Async write acknowledgement latency and write-apply lag are separate, so a quick response does not hide unfinished work.
+5. **Compare:** save configuration/result snapshots and test a candidate under the same workload and failures. Repeating both designs across seeds helps reveal variation within the model; it does not establish production accuracy.
+
+The engine and analysis are separate from the interface, so experiments, challenge checks, and background workers reuse the same core. For the component diagram and source boundaries, see [Architecture](docs/architecture.md).
+
+## Why these technologies?
+
+| Technology | Role and reason for the choice | Tradeoff or boundary |
+| --- | --- | --- |
+| Python | Keeps the simulation, analysis, and experiment logic together in an accessible language | CPU-heavy experiments need bounded workloads and execution resources |
+| SimPy | Represents queues, limited workers, and timed events without provisioning infrastructure | Results depend on simplified arrival, service, and resource models |
+| Streamlit | Connects Python controls, results, and learning exercises in one interactive app | Reruns and browser session state need care; long jobs benefit from background execution |
+| pandas and Plotly | Turn recorded events into tables and interactive charts | Detailed traces and charts consume memory; summary-only experiment paths retain less detail |
+| SQLite | Stores local saved runs in a file, with no database service to operate | The optional account-based deployment uses PostgreSQL for shared storage |
+| PostgreSQL, Redis, and Celery (optional) | Store account-owned snapshots, queue jobs, and run simulations in background processes that can scale separately from the UI | More services to operate; Redis job results expire, while saved PostgreSQL snapshots persist |
+| OIDC (optional) | Uses an identity provider for sign-in and account-scoped access | Requires provider configuration and deployment setup |
+| C++17 (optional) | Provides a standalone event kernel for the narrower mathematical queueing validation lab | Does not implement the full CDN/cache/sharding/failure simulation |
+
+**Local mode** keeps setup small: Streamlit runs simulations synchronously in the Python server process and SQLite stores saved runs. The **optional multi-user deployment** moves execution into bounded Celery workers and uses shared storage. Its real job queue schedules experiments; it is separate from the imaginary write queue inside a simulated design. See the [production runbook](docs/production.md) for deployment requirements and operating limits.
+
 ## Two-minute walkthrough
 
 For an in-app introduction, choose **Start guided walkthrough**. It walks through a cold-cache failure, one capacity change, and a paired comparison across seeds. See the [learning and resilience guide](docs/learning-lab.md) for evidence windows, retry/backoff policies, admission control, and bounded parallel sweeps.
