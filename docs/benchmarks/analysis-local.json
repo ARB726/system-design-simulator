@@ -1,0 +1,186 @@
+{
+  "baseline": "b517932c4b93013c5de7dcca82f04981199222e5",
+  "python": "3.12.10 (tags/v3.12.10:0cc8128, Apr  8 2025, 12:21:36) [MSC v.1943 64 bit (AMD64)]",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "pandas": "3.1.1",
+  "cases": [
+    {
+      "config": {
+        "name": "Custom design",
+        "app": {
+          "replicas": 3,
+          "workers": 8,
+          "latency_ms": 20.0,
+          "lb_strategy": "least_queue",
+          "max_queue": 200
+        },
+        "cache": {
+          "enabled": true,
+          "hit_rate": 0.85,
+          "latency_ms": 1.0,
+          "workers": 64
+        },
+        "cdn": {
+          "enabled": false,
+          "hit_rate": 0.6,
+          "latency_ms": 8.0
+        },
+        "queue": {
+          "enabled": false,
+          "consumers": 8,
+          "max_depth": 5000,
+          "enqueue_ms": 2.0
+        },
+        "db": {
+          "workers": 16,
+          "read_ms": 8.0,
+          "write_ms": 25.0,
+          "read_replicas": 0,
+          "max_queue": 500,
+          "shards": 1,
+          "hot_share": 0.0
+        },
+        "workload": {
+          "rps": 500,
+          "read_ratio": 0.95,
+          "duration_s": 20,
+          "timeout_ms": 1000.0,
+          "warmup_s": 2
+        },
+        "events": [],
+        "seed": 42,
+        "app_only": false,
+        "policy": {
+          "max_retries": 0,
+          "backoff_ms": 100.0,
+          "backoff_multiplier": 2.0,
+          "jitter": true,
+          "rate_limit_rps": null,
+          "burst": 100
+        }
+      },
+      "requests": 9991,
+      "samples_s": {
+        "baseline": [
+          0.02652479999960633,
+          0.031971899999916786,
+          0.03268890000072133,
+          0.03094619999956194,
+          0.03073379999932513
+        ],
+        "candidate": [
+          0.024124700000356825,
+          0.02858829999968293,
+          0.03594560000055935,
+          0.027615299999524723,
+          0.02816900000016176
+        ]
+      },
+      "median_s": {
+        "baseline": 0.03094619999956194,
+        "candidate": 0.02816900000016176
+      },
+      "peak_traced_bytes": {
+        "baseline": 457753,
+        "candidate": 456102
+      },
+      "pipeline_timings": {
+        "simulation_s": 1.1222706999997172,
+        "timeline_s": 0.03349700000035227,
+        "summary_s": 0.0169263999996474,
+        "diagnosis_s": 0.022267199999987497,
+        "pipeline_s": 1.1949612999997044
+      },
+      "exact_match": true
+    },
+    {
+      "config": {
+        "name": "Custom design",
+        "app": {
+          "replicas": 3,
+          "workers": 8,
+          "latency_ms": 20.0,
+          "lb_strategy": "least_queue",
+          "max_queue": 200
+        },
+        "cache": {
+          "enabled": true,
+          "hit_rate": 0.85,
+          "latency_ms": 1.0,
+          "workers": 64
+        },
+        "cdn": {
+          "enabled": false,
+          "hit_rate": 0.6,
+          "latency_ms": 8.0
+        },
+        "queue": {
+          "enabled": false,
+          "consumers": 8,
+          "max_depth": 5000,
+          "enqueue_ms": 2.0
+        },
+        "db": {
+          "workers": 16,
+          "read_ms": 8.0,
+          "write_ms": 25.0,
+          "read_replicas": 0,
+          "max_queue": 500,
+          "shards": 1,
+          "hot_share": 0.0
+        },
+        "workload": {
+          "rps": 2000,
+          "read_ratio": 0.95,
+          "duration_s": 20,
+          "timeout_ms": 1000.0,
+          "warmup_s": 2
+        },
+        "events": [],
+        "seed": 42,
+        "app_only": false,
+        "policy": {
+          "max_retries": 0,
+          "backoff_ms": 100.0,
+          "backoff_multiplier": 2.0,
+          "jitter": true,
+          "rate_limit_rps": null,
+          "burst": 100
+        }
+      },
+      "requests": 39699,
+      "samples_s": {
+        "baseline": [
+          0.031844099999943865,
+          0.03252180000072258,
+          0.030025099999875238,
+          0.03005840000059834,
+          0.03954699999940203
+        ],
+        "candidate": [
+          0.02997159999995347,
+          0.030430200000409968,
+          0.030736699999579287,
+          0.028442200000426965,
+          0.03366390000064712
+        ]
+      },
+      "median_s": {
+        "baseline": 0.031844099999943865,
+        "candidate": 0.030430200000409968
+      },
+      "peak_traced_bytes": {
+        "baseline": 2111992,
+        "candidate": 1670891
+      },
+      "pipeline_timings": {
+        "simulation_s": 3.251625299999432,
+        "timeline_s": 0.030860100000609236,
+        "summary_s": 0.02324499999940599,
+        "diagnosis_s": 0.01855150000028516,
+        "pipeline_s": 3.3242818999997326
+      },
+      "exact_match": true
+    }
+  ]
+}

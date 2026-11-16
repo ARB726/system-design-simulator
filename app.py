@@ -17,13 +17,13 @@ import streamlit as st
 
 from sim import charts
 from sim import progress as pg
-from sim.analysis import TIER_LABEL, diagnose, summarize, timeline
+from sim.analysis import TIER_LABEL
 from sim.challenges import (KNOB_HELP, KNOB_LABELS, apply_design, challenges, default_design, design_cost,
                             load_optima, run_check, score_design)
 from sim.config import (EVENT_KINDS, LB_STRATEGIES, AppTier, CacheTier, CDNTier, Config, DBTier, Event, QueueTier,
                         TrafficPolicy, Workload, app_capacity_rps, config_from_dict, cost_breakdown, expected_utilization,
                         monthly_cost, presets)
-from sim.engine import run
+from sim.execution import analyzed_run
 from sim.experiments import sweep_load, sweep_replicas, validate_mmc
 from sim.predict import BUCKETS, POINTS, Prediction, score_prediction
 from sim.sharecard import design_lines, make_card
@@ -200,10 +200,7 @@ def current_design(cid: str) -> dict:
 @st.cache_data(show_spinner=False, max_entries=24)
 def _simulate_local(cfg_json: str):
     c = config_from_dict(json.loads(cfg_json))
-    res = run(c)
-    tl = timeline(res)
-    summ = summarize(res, tl)
-    return res, tl, summ, diagnose(res, summ, tl)
+    return analyzed_run(c)
 
 
 @st.cache_data(show_spinner=False, max_entries=48)
@@ -226,10 +223,7 @@ def _replay_local(cid: str, design_json: str, idx: int):
     from sim.challenges import check_config
     ch, design = CHALLENGES[cid], json.loads(design_json)
     cfg = check_config(ch, design, ch.checks[idx])
-    res = run(cfg)
-    tl = timeline(res)
-    summ = summarize(res, tl)
-    return res, tl, summ, diagnose(res, summ, tl)
+    return analyzed_run(cfg)
 
 
 def simulate(cfg_json: str):

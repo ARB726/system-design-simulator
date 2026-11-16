@@ -129,6 +129,7 @@ class SimResult:
     warnings: List[str]
     runtime_s: float
     traffic: dict = field(default_factory=dict)
+    timings: dict = field(default_factory=dict)
 
 
 class Simulation:
@@ -430,6 +431,9 @@ class Simulation:
                         p50_ms=float(quantiles[0]), p95_ms=float(quantiles[1]), p99_ms=float(quantiles[2]))
 
         req = pd.DataFrame(self.records, columns=["t", "latency_s", "status", "is_read", "hit", "cdn"])
+        if req.empty:
+            # Empty traces still need numeric quantiles and boolean read masks.
+            req = req.astype({"t": float, "latency_s": float, "is_read": bool, "cdn": bool})
         req["latency_ms"] = req.latency_s * 1000.0
         fail_ms = w.timeout_ms if w.timeout_ms else (req.latency_ms.max() if len(req) else 0.0)
         if self.cfg.policy.max_retries and w.timeout_ms:

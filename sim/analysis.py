@@ -38,15 +38,16 @@ def tiers_present(res: SimResult) -> List[str]:
 def timeline(res: SimResult, bin_s: float = 1.0) -> pd.DataFrame:
     dur = res.cfg.workload.duration_s
     idx = pd.Index(np.arange(0, dur, bin_s), name="t")
-    req = res.requests.assign(bin=(res.requests.t // bin_s) * bin_s)
+    # Only carry columns used by the aggregation, not the full replay trace.
+    req = res.requests[["status", "eff_ms"]].assign(bin=(res.requests.t // bin_s) * bin_s)
     g = req.groupby("bin")
 
     tl = pd.DataFrame(index=idx)
     tl["offered_rps"] = g.size().reindex(idx, fill_value=0) / bin_s
-    tl["served_rps"] = req[req.status == "ok"].groupby("bin").size().reindex(idx, fill_value=0) / bin_s
+    tl["served_rps"] = req.eff_ms[req.status == "ok"].groupby(req.bin).size().reindex(idx, fill_value=0) / bin_s
     for k in FAIL_KINDS:
-        tl[f"{k}_rps"] = req[req.status == k].groupby("bin").size().reindex(idx, fill_value=0) / bin_s
-    q = g.eff_ms.quantile([0.5, 0.95, 0.99]).unstack().reindex(idx)
+        tl[f"{k}_rps"] = req.eff_ms[req.status == k].groupby(req.bin).size().reindex(idx, fill_value=0) / bin_s
+    q = g.eff_ms.quantile([0.5, 0.95, 0.99]).unstack().reindex(index=idx, columns=[0.5, 0.95, 0.99])
     tl["p50"], tl["p95"], tl["p99"] = q[0.5], q[0.95], q[0.99]
 
     ser = res.series.assign(bin=(res.series.t // bin_s) * bin_s)
@@ -69,11 +70,11 @@ def summarize(res: SimResult, tl: pd.DataFrame | None = None) -> Dict:
     steady = tl[tl.index >= w.warmup_s]
 
     n = len(r)
-    ok = r[r.status == "ok"]
+    ok_count = int((r.status == "ok").sum())
     s = {
         "offered_rps": n / span,
-        "served_rps": len(ok) / span,
-        "success_rate": len(ok) / n if n else 1.0,
+        "served_rps": ok_count / span,
+        "success_rate": ok_count / n if n else 1.0,
         "p50_ms": float(r.eff_ms.quantile(0.50)) if n else 0.0,
         "p95_ms": float(r.eff_ms.quantile(0.95)) if n else 0.0,
         "p99_ms": float(r.eff_ms.quantile(0.99)) if n else 0.0,
