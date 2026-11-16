@@ -76,3 +76,6 @@ replay fidelity would require an explicit accuracy contract and separate validat
 
 For job-level throughput, queue latency, and Redis measurements, use the separate
 [mixed-load harness](production.md#queue-metrics-and-repeatable-load-testing).
+
+For full-trace interactive analysis, stage timings, and JSON result preservation, see
+[interactive analysis performance](interactive-performance.md).

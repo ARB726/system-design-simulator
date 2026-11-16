@@ -1,4 +1,6 @@
 """JSON-only worker boundary; no Streamlit or per-user global state."""
+from time import perf_counter
+
 import pandas as pd
 
 from .analysis import diagnose, summarize, timeline
@@ -6,14 +8,35 @@ from .config import config_from_dict
 from .engine import SimResult, run
 
 
+def analyzed_run(cfg):
+    """Shared local/worker pipeline; timings describe computation, not cache hits."""
+    started = perf_counter()
+    res = run(cfg)
+    simulated = perf_counter()
+    tl = timeline(res)
+    timelined = perf_counter()
+    summary = summarize(res, tl)
+    summarized = perf_counter()
+    findings = diagnose(res, summary, tl)
+    finished = perf_counter()
+    res.timings = dict(simulation_s=simulated - started, timeline_s=timelined - simulated,
+                       summary_s=summarized - timelined, diagnosis_s=finished - summarized,
+                       pipeline_s=finished - started)
+    return res, tl, summary, findings
+
+
 def frame_data(frame):
     data = frame.astype(object).where(pd.notnull(frame), None).to_dict(orient="split")
     data["index_name"] = frame.index.name
+    # Preserve numeric/all-null columns and empty boolean masks across JSON.
+    data["dtypes"] = {name: str(dtype) for name, dtype in frame.dtypes.items() if dtype.kind in "biuf"}
     return data
 
 
 def frame_from(data):
     frame = pd.DataFrame(data["data"], columns=data["columns"], index=data["index"])
+    if data.get("dtypes"):
+        frame = frame.astype(data["dtypes"])
     frame.index.name = data.get("index_name")
     return frame
 
@@ -26,13 +49,14 @@ def execute(kind, payload):
             from .challenges import challenges, check_config
             ch = challenges()[payload["cid"]]
             cfg = check_config(ch, payload["design"], ch.checks[payload["index"]])
-        res = run(cfg)
-        tl = timeline(res)
-        summary = summarize(res, tl)
-        return dict(type="simulation", config=cfg.to_dict(), requests=frame_data(res.requests),
+        res, tl, summary, findings = analyzed_run(cfg)
+        started = perf_counter()
+        result = dict(type="simulation", config=cfg.to_dict(), requests=frame_data(res.requests),
                     series=frame_data(res.series), lag=frame_data(res.lag), timeline=frame_data(tl),
-                    summary=summary, findings=diagnose(res, summary, tl), warnings=res.warnings,
+                    summary=summary, findings=findings, warnings=res.warnings,
                     runtime_s=res.runtime_s, traffic=res.traffic)
+        result["timings"] = dict(res.timings, serialization_s=perf_counter() - started)
+        return result
     if kind == "grade":
         from .challenges import challenges, run_check
         ch, results, base = challenges()[payload["cid"]], [], None
@@ -75,6 +99,10 @@ def decode(data):
         return data["results"], data["summary"]
     if data["type"] == "comparison":
         return data["report"]
+    started = perf_counter()
     res = SimResult(config_from_dict(data["config"]), frame_from(data["requests"]),
                     frame_from(data["series"]), frame_from(data["lag"]), data["warnings"], data["runtime_s"], data.get("traffic", {}))
-    return res, frame_from(data["timeline"]), data["summary"], data["findings"]
+    tl = frame_from(data["timeline"])
+    res.timings = dict(data.get("timings", {}))
+    res.timings["decode_s"] = perf_counter() - started
+    return res, tl, data["summary"], data["findings"]
