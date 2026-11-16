@@ -995,7 +995,7 @@ design holds. They are scored against the steady-state run (without chaos events
 describes. The point is calibration: do you build intuition before you reach for a tool?
 
 ### Limits (stated honestly)
-- No network latency, no retries, no replication lag on read replicas, no consistency model, and requests in a tier
+- No network latency, no write retries, no replication lag on read replicas, no consistency model, and requests in a tier
   are independent. Cache invalidation on writes is not modeled.
 - Fixed parameters and made-up prices: it shows *where* a design breaks and roughly *when*, not production numbers.
 - The optimizer searches a small grid and screens designs with steady-state math, so "cheapest" means cheapest in that
