@@ -79,3 +79,6 @@ For job-level throughput, queue latency, and Redis measurements, use the separat
 
 For full-trace interactive analysis, stage timings, and JSON result preservation, see
 [interactive analysis performance](interactive-performance.md).
+
+For engine profiles, cached operational limits, and dynamic dispatch of sweep points,
+see [engine profiling and scheduling](engine-and-scheduling.md).
