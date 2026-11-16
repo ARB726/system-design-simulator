@@ -1,5 +1,5 @@
 """Bounded subprocess batches, safe when called from a Streamlit script on Windows."""
-from concurrent.futures import FIRST_COMPLETED, ThreadPoolExecutor, as_completed, wait
+from concurrent.futures import FIRST_COMPLETED, ThreadPoolExecutor, wait
 from contextlib import ExitStack, suppress
 import json
 import logging
@@ -97,20 +97,6 @@ class _Worker:
         self.close()
 
 
-def _chunk(points):
-    try:
-        result = subprocess.run([sys.executable, "-m", "sim.sweep_worker"],
-                                input=json.dumps([(i, cfg.to_dict()) for i, cfg in points]),
-                                capture_output=True, text=True, timeout=180,
-                                cwd=Path(__file__).resolve().parents[1])
-    except (subprocess.TimeoutExpired, OSError) as exc:
-        raise ValueError("An experiment worker timed out or could not start. Try fewer points or one worker.") from exc
-    if result.returncode:
-        logging.getLogger(__name__).error("Sweep subprocess failed: %s", result.stderr[-2000:])
-        raise ValueError("An experiment worker failed; reduce the batch or check server logs.")
-    return json.loads(result.stdout)
-
-
 def summaries(configs, *, workers=1, progress=None, runner=None):
     validate_batch(configs)
     if isinstance(workers, bool) or not isinstance(workers, int) or not 1 <= workers <= worker_limit():
@@ -122,16 +108,30 @@ def summaries(configs, *, workers=1, progress=None, runner=None):
             if progress:
                 progress((i + 1) / len(configs), f"{i + 1}/{len(configs)} points complete")
         return rows
-    # One persistent subprocess per chunk amortizes interpreter/import startup.
-    # Threads only coordinate child processes; simulation CPU work is isolated.
-    chunks = [list(enumerate(configs))[i::workers] for i in range(min(workers, len(configs)))]
+    # Reuse child interpreters; dispatch the next point to whichever finishes first.
+    points = iter(enumerate(configs))
     done = 0
-    with ThreadPoolExecutor(max_workers=workers) as pool:
-        futures = [pool.submit(_chunk, chunk) for chunk in chunks]
-        for future in as_completed(futures):
-            for index, result in future.result():
-                rows[index] = result
-                done += 1
-            if progress:
-                progress(done / len(configs), f"{done}/{len(configs)} points complete")
+    with ExitStack() as stack:
+        children = [stack.enter_context(_Worker()) for _ in range(min(workers, len(configs)))]
+        with ThreadPoolExecutor(max_workers=len(children)) as pool:
+            pending = {pool.submit(child.run, next(points)): child for child in children}
+            try:
+                while pending:
+                    completed, _ = wait(pending, return_when=FIRST_COMPLETED)
+                    for future in completed:
+                        child = pending.pop(future)
+                        index, result = future.result()
+                        rows[index] = result
+                        done += 1
+                        if progress:
+                            progress(done / len(configs), f"{done}/{len(configs)} points complete")
+                        point = next(points, None)
+                        if point is not None:
+                            pending[pool.submit(child.run, point)] = child
+            except BaseException:
+                # Kill peers before joining executor threads; a failed point must
+                # not wait for other children to consume their lifetime budgets.
+                for child in children:
+                    child.close()
+                raise
     return rows
