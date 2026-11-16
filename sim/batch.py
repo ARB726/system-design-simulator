@@ -63,7 +63,7 @@ class _Worker:
             if line is None:
                 raise ValueError("Worker exited without a result")
             returned_index, result = json.loads(line)
-            if returned_index != index or not isinstance(result, dict):
+            if type(returned_index) is not int or returned_index != index or not isinstance(result, dict):
                 raise ValueError("Worker returned an invalid result")
             return index, result
         except Empty as exc:
