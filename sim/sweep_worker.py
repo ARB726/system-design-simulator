@@ -8,6 +8,13 @@ from .limits import validate_batch
 
 
 def main():
+    if sys.argv[1:] == ["--stream"]:
+        for line in sys.stdin:
+            index, data = json.loads(line)
+            cfg = config_from_dict(data)
+            validate_batch([cfg])
+            print(json.dumps([index, run_summary(cfg)], allow_nan=False), flush=True)
+        return
     points = json.load(sys.stdin)
     configs = [config_from_dict(data) for _, data in points]
     validate_batch(configs)
