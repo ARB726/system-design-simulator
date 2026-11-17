@@ -37,7 +37,8 @@ def health():
 
 @app.get('/api/settings')
 def settings():
-    return dict(auth='cognito' if os.getenv('STORAGE_MODE') == 'aws' else 'local', client_id=os.getenv('COGNITO_CLIENT_ID'), domain=os.getenv('COGNITO_DOMAIN'), issuer=os.getenv('COGNITO_ISSUER'))
+    from .ai import available
+    return dict(auth='cognito' if os.getenv('STORAGE_MODE') == 'aws' else 'local', client_id=os.getenv('COGNITO_CLIENT_ID'), domain=os.getenv('COGNITO_DOMAIN'), issuer=os.getenv('COGNITO_ISSUER'), ai_enabled=available())
 
 
 class Credentials(BaseModel):
@@ -114,6 +115,20 @@ def experiment(job_id: str, user: str = Depends(owner)):
 class Archive(BaseModel):
     version: int
     experiments: list[dict] = Field(max_length=100)
+
+
+def explanation_source(job_id: str, user: str = Depends(owner)):
+    job = store().get(user, job_id)
+    if not job:
+        raise HTTPException(404, 'Experiment not found.')
+    return job, user
+
+
+@app.post('/api/experiments/{job_id}/explanation')
+async def explain_experiment(source=Depends(explanation_source)):
+    from .ai import explain
+    job, user = source
+    return await explain(job, user)
 
 
 @app.post('/api/import')
