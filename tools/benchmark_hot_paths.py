@@ -6,6 +6,7 @@ both paths are warmed and measurement order alternates to reduce order bias.
 from __future__ import annotations
 
 import argparse
+import gc
 import importlib.metadata
 import json
 from pathlib import Path
@@ -27,6 +28,7 @@ def main():
     parser.add_argument("--baseline-ref", default="origin/main")
     parser.add_argument("--rounds", type=int, default=5)
     parser.add_argument("--output", type=Path, default=Path(".local/hot-path-benchmark.json"))
+    parser.add_argument("--suite", choices=("default", "resilience"), default="default")
     args = parser.parse_args()
     if args.rounds < 3:
         parser.error("Use at least three timing rounds.")
@@ -45,27 +47,41 @@ def main():
                                              Event("kill_app", 8, 3, 1), Event("db_slow", 8, 5, 2)]),
     }
     results = {}
+    if args.suite == "resilience":
+        from tools.profile_engine import cases as profile_cases
+        cases = profile_cases()
     for name, cfg in cases.items():
         paths = {"baseline": baseline.run_summary, "candidate": run_summary}
         expected = baseline.run_summary(cfg)
         assert run_summary(cfg) == expected, f"Metric mismatch: {name}"
         samples = {mode: [] for mode in paths}
+        cpu_samples = {mode: [] for mode in paths}
         for round_index in range(args.rounds):
             order = list(paths) if round_index % 2 == 0 else list(reversed(paths))
             for mode in order:
+                # SimPy leaves cyclic event graphs. Start each sample at the same
+                # collection boundary instead of charging a prior path's garbage.
+                gc.collect()
                 start = time.perf_counter()
+                cpu_start = time.process_time()
                 actual = paths[mode](cfg)
+                cpu_elapsed = time.process_time() - cpu_start
                 elapsed = time.perf_counter() - start
                 assert actual == expected, f"Metric mismatch: {name}/{mode}"
                 samples[mode].append(elapsed)
+                cpu_samples[mode].append(cpu_elapsed)
         medians = {mode: statistics.median(values) for mode, values in samples.items()}
+        cpu_medians = {mode: statistics.median(values) for mode, values in cpu_samples.items()}
         results[name] = dict(config=cfg.to_dict(), samples_s=samples, median_s=medians,
+                             cpu_samples_s=cpu_samples, median_cpu_s=cpu_medians,
+                             cpu_ratio=cpu_medians["baseline"] / cpu_medians["candidate"],
                              speedup=medians["baseline"] / medians["candidate"], metrics_equal=True)
         print(f"{name}: baseline={medians['baseline']:.4f}s candidate={medians['candidate']:.4f}s "
               f"ratio={results[name]['speedup']:.3f}x", flush=True)
     report = dict(baseline_revision=revision, python=sys.version, platform=platform.platform(),
                   packages={name: importlib.metadata.version(name) for name in ("simpy", "numpy", "pandas")},
                   rounds=args.rounds, results=results)
+    report["measurement"] = "GC collected before each timed sample; automatic GC stays enabled during execution. CPU time excludes descheduling; wall time includes it."
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
 
