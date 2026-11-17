@@ -1,0 +1,90 @@
+name: Full-stack checks
+
+on:
+  push:
+    paths:
+      - "fullstack/**"
+      - "sim/**"
+      - "tests/test_fullstack.py"
+      - "tools/run_fullstack.py"
+      - "tools/package_fullstack.py"
+      - ".github/workflows/fullstack.yml"
+  pull_request:
+    paths:
+      - "fullstack/**"
+      - "sim/**"
+      - "tests/test_fullstack.py"
+      - "tools/run_fullstack.py"
+      - "tools/package_fullstack.py"
+      - ".github/workflows/fullstack.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: fullstack-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  fullstack:
+    name: API, production build, and browser workflow
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      PYTHONUTF8: "1"
+      NEXT_TELEMETRY_DISABLED: "1"
+      PLAYWRIGHT_CHANNEL: chromium
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: fullstack/backend/requirements.txt
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: fullstack/frontend/package-lock.json
+      - name: Install backend and test dependencies
+        run: python -m pip install -r fullstack/backend/requirements.txt 'pytest>=8,<10' 'httpx>=0.28,<1'
+      - name: Test API ownership, workers, and recovery
+        run: python -m pytest tests/test_fullstack.py -q --junitxml=test-results/fullstack.xml
+      - name: Install frontend dependencies
+        working-directory: fullstack/frontend
+        run: npm ci
+      - name: Check frontend types
+        working-directory: fullstack/frontend
+        run: npm run typecheck
+      - name: Build the exported website
+        working-directory: fullstack/frontend
+        run: npm run build
+      - name: Install Chromium
+        working-directory: fullstack/frontend
+        run: npx playwright install --with-deps chromium
+      - name: Start the local application
+        run: |
+          python tools/run_fullstack.py > /tmp/systems-lab.log 2>&1 &
+          for attempt in $(seq 1 30); do
+            if curl --fail http://127.0.0.1:8000/api/health; then exit 0; fi
+            sleep 2
+          done
+          cat /tmp/systems-lab.log
+          exit 1
+      - name: Test browser simulation, comparison, export, and import
+        working-directory: fullstack/frontend
+        run: npm run test:e2e
+      - name: Upload test evidence
+        if: ${{ always() }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: fullstack-test-evidence
+          path: |
+            test-results/fullstack.xml
+            fullstack/frontend/test-results/
+            .local/fullstack-*.png
+          retention-days: 7
+          if-no-files-found: ignore
