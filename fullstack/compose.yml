@@ -17,6 +17,8 @@ services:
       ALLOW_LOCAL_AUTH_NETWORK: "true"
       ALLOWED_ORIGINS: http://localhost:8080,http://127.0.0.1:8080
       SYSDESIGN_MAX_ARRIVALS: "150000"
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OPENAI_MODEL: ${OPENAI_MODEL:-}
     depends_on:
       postgres: {condition: service_healthy}
     restart: unless-stopped
@@ -25,7 +27,10 @@ services:
       context: ..
       dockerfile: fullstack/backend/Dockerfile
     command: ["python", "-m", "fullstack.backend.worker"]
-    environment: *env
+    environment:
+      <<: *env
+      OPENAI_API_KEY: ""
+      OPENAI_MODEL: ""
     depends_on:
       postgres: {condition: service_healthy}
     restart: unless-stopped
