@@ -4,4 +4,4 @@ export type Result = {type:string;summary?:{success_rate:number;served_rps:numbe
 export type Job = {id:string;created:number;updated:number;status:string;payload:{name:string;config:Config;kind:string;challenge?:string};result?:Result;error?:string};
 export type Preset = {name:string;story:string;try_this:string;config:Config};
 export type Challenge = {id:string;title:string;story:string;config:Config;knobs:Record<string,(number|boolean)[]>;budget:number;slo:string;hints:string[]};
-export type Settings = {auth:string;client_id?:string;domain?:string;issuer?:string};
+export type Settings = {auth:string;client_id?:string;domain?:string;issuer?:string;ai_enabled?:boolean};
