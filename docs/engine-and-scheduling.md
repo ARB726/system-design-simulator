@@ -27,6 +27,7 @@ Run benchmarks without competing test runners or application servers. Scheduling
 ./.venv/Scripts/python.exe tools/benchmark_hot_paths.py --baseline-ref 87157cb --suite resilience --rounds 5 --output .local/engine-budget.json
 ./.venv/Scripts/python.exe tools/benchmark_scheduling.py --baseline-ref 87157cb --rounds 3 --output .local/scheduling.json
 ./.venv/Scripts/python.exe -m pytest tests/test_batch_scheduling.py tests/test_engine_budget.py tests/test_experiments.py tests/test_resilience.py tests/test_limits.py -q
+./.venv/Scripts/python.exe -m pytest tests/test_sweep_protocol.py tests/test_worker_lifecycle.py tests/test_worker_failures.py tests/test_scheduling_bounds.py -q
 ```
 
 Engine timing samples begin after explicit garbage collection so one path does not inherit the previous path's cyclic SimPy event graphs; automatic collection remains enabled during execution. Process CPU time and wall time are recorded separately. Measurements cover one machine and one seed per workload; they are observations, not production capacity claims or confidence intervals.
