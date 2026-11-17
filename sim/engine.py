@@ -142,6 +142,9 @@ class Simulation:
         self.env = simpy.Environment()
         self.rng = random.Random(cfg.seed)
         self.ev = Events(cfg)
+        # Operational limits are fixed for a run; avoid environment lookups for
+        # every arrival proposal and retry attempt.
+        self.arrival_budget = arrival_limit()
         self.warnings: List[str] = []
         a, c, d, w = cfg.app, cfg.cache, cfg.db, cfg.workload
 
@@ -231,7 +234,7 @@ class Simulation:
             self.traffic["logical_requests"] += 1
         for attempt in range(1 + (cfg.policy.max_retries if is_read else 0)):
             self.attempt_count += 1
-            if self.attempt_count > arrival_limit():
+            if self.attempt_count > self.arrival_budget:
                 raise SimulationLimitError("The request-attempt budget was reached. Reduce traffic or retries.")
             if measured:
                 self.traffic["attempts"] += 1
@@ -354,7 +357,7 @@ class Simulation:
             if env.now >= w.duration_s:
                 return
             attempts += 1
-            if attempts > arrival_limit():
+            if attempts > self.arrival_budget:
                 raise SimulationLimitError("The arrival budget was reached. Reduce traffic or duration.")
             if self.rng.random() * lam_max <= w.rps * self.ev.arrival_factor(env.now):
                 env.process(self._request())

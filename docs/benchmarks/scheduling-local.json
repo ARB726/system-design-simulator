@@ -1,0 +1,703 @@
+{
+  "baseline_revision": "87157cbb6958b368e01d9c6bed62cec81723044e",
+  "python": "3.12.10 (tags/v3.12.10:0cc8128, Apr  8 2025, 12:21:36) [MSC v.1943 64 bit (AMD64)]",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "logical_cpus": 8,
+  "workers": 2,
+  "rounds": 3,
+  "cases": {
+    "balanced": {
+      "configs": [
+        {
+          "name": "Custom design",
+          "app": {
+            "replicas": 3,
+            "workers": 8,
+            "latency_ms": 20.0,
+            "lb_strategy": "least_queue",
+            "max_queue": 200
+          },
+          "cache": {
+            "enabled": true,
+            "hit_rate": 0.85,
+            "latency_ms": 1.0,
+            "workers": 64
+          },
+          "cdn": {
+            "enabled": false,
+            "hit_rate": 0.6,
+            "latency_ms": 8.0
+          },
+          "queue": {
+            "enabled": false,
+            "consumers": 8,
+            "max_depth": 5000,
+            "enqueue_ms": 2.0
+          },
+          "db": {
+            "workers": 16,
+            "read_ms": 8.0,
+            "write_ms": 25.0,
+            "read_replicas": 0,
+            "max_queue": 500,
+            "shards": 1,
+            "hot_share": 0.0
+          },
+          "workload": {
+            "rps": 500,
+            "read_ratio": 0.95,
+            "duration_s": 10,
+            "timeout_ms": 1000.0,
+            "warmup_s": 1
+          },
+          "events": [],
+          "seed": 7,
+          "app_only": false,
+          "policy": {
+            "max_retries": 0,
+            "backoff_ms": 100.0,
+            "backoff_multiplier": 2.0,
+            "jitter": true,
+            "rate_limit_rps": null,
+            "burst": 100
+          }
+        },
+        {
+          "name": "Custom design",
+          "app": {
+            "replicas": 3,
+            "workers": 8,
+            "latency_ms": 20.0,
+            "lb_strategy": "least_queue",
+            "max_queue": 200
+          },
+          "cache": {
+            "enabled": true,
+            "hit_rate": 0.85,
+            "latency_ms": 1.0,
+            "workers": 64
+          },
+          "cdn": {
+            "enabled": false,
+            "hit_rate": 0.6,
+            "latency_ms": 8.0
+          },
+          "queue": {
+            "enabled": false,
+            "consumers": 8,
+            "max_depth": 5000,
+            "enqueue_ms": 2.0
+          },
+          "db": {
+            "workers": 16,
+            "read_ms": 8.0,
+            "write_ms": 25.0,
+            "read_replicas": 0,
+            "max_queue": 500,
+            "shards": 1,
+            "hot_share": 0.0
+          },
+          "workload": {
+            "rps": 500,
+            "read_ratio": 0.95,
+            "duration_s": 10,
+            "timeout_ms": 1000.0,
+            "warmup_s": 1
+          },
+          "events": [],
+          "seed": 7,
+          "app_only": false,
+          "policy": {
+            "max_retries": 0,
+            "backoff_ms": 100.0,
+            "backoff_multiplier": 2.0,
+            "jitter": true,
+            "rate_limit_rps": null,
+            "burst": 100
+          }
+        },
+        {
+          "name": "Custom design",
+          "app": {
+            "replicas": 3,
+            "workers": 8,
+            "latency_ms": 20.0,
+            "lb_strategy": "least_queue",
+            "max_queue": 200
+          },
+          "cache": {
+            "enabled": true,
+            "hit_rate": 0.85,
+            "latency_ms": 1.0,
+            "workers": 64
+          },
+          "cdn": {
+            "enabled": false,
+            "hit_rate": 0.6,
+            "latency_ms": 8.0
+          },
+          "queue": {
+            "enabled": false,
+            "consumers": 8,
+            "max_depth": 5000,
+            "enqueue_ms": 2.0
+          },
+          "db": {
+            "workers": 16,
+            "read_ms": 8.0,
+            "write_ms": 25.0,
+            "read_replicas": 0,
+            "max_queue": 500,
+            "shards": 1,
+            "hot_share": 0.0
+          },
+          "workload": {
+            "rps": 500,
+            "read_ratio": 0.95,
+            "duration_s": 10,
+            "timeout_ms": 1000.0,
+            "warmup_s": 1
+          },
+          "events": [],
+          "seed": 7,
+          "app_only": false,
+          "policy": {
+            "max_retries": 0,
+            "backoff_ms": 100.0,
+            "backoff_multiplier": 2.0,
+            "jitter": true,
+            "rate_limit_rps": null,
+            "burst": 100
+          }
+        },
+        {
+          "name": "Custom design",
+          "app": {
+            "replicas": 3,
+            "workers": 8,
+            "latency_ms": 20.0,
+            "lb_strategy": "least_queue",
+            "max_queue": 200
+          },
+          "cache": {
+            "enabled": true,
+            "hit_rate": 0.85,
+            "latency_ms": 1.0,
+            "workers": 64
+          },
+          "cdn": {
+            "enabled": false,
+            "hit_rate": 0.6,
+            "latency_ms": 8.0
+          },
+          "queue": {
+            "enabled": false,
+            "consumers": 8,
+            "max_depth": 5000,
+            "enqueue_ms": 2.0
+          },
+          "db": {
+            "workers": 16,
+            "read_ms": 8.0,
+            "write_ms": 25.0,
+            "read_replicas": 0,
+            "max_queue": 500,
+            "shards": 1,
+            "hot_share": 0.0
+          },
+          "workload": {
+            "rps": 500,
+            "read_ratio": 0.95,
+            "duration_s": 10,
+            "timeout_ms": 1000.0,
+            "warmup_s": 1
+          },
+          "events": [],
+          "seed": 7,
+          "app_only": false,
+          "policy": {
+            "max_retries": 0,
+            "backoff_ms": 100.0,
+            "backoff_multiplier": 2.0,
+            "jitter": true,
+            "rate_limit_rps": null,
+            "burst": 100
+          }
+        },
+        {
+          "name": "Custom design",
+          "app": {
+            "replicas": 3,
+            "workers": 8,
+            "latency_ms": 20.0,
+            "lb_strategy": "least_queue",
+            "max_queue": 200
+          },
+          "cache": {
+            "enabled": true,
+            "hit_rate": 0.85,
+            "latency_ms": 1.0,
+            "workers": 64
+          },
+          "cdn": {
+            "enabled": false,
+            "hit_rate": 0.6,
+            "latency_ms": 8.0
+          },
+          "queue": {
+            "enabled": false,
+            "consumers": 8,
+            "max_depth": 5000,
+            "enqueue_ms": 2.0
+          },
+          "db": {
+            "workers": 16,
+            "read_ms": 8.0,
+            "write_ms": 25.0,
+            "read_replicas": 0,
+            "max_queue": 500,
+            "shards": 1,
+            "hot_share": 0.0
+          },
+          "workload": {
+            "rps": 500,
+            "read_ratio": 0.95,
+            "duration_s": 10,
+            "timeout_ms": 1000.0,
+            "warmup_s": 1
+          },
+          "events": [],
+          "seed": 7,
+          "app_only": false,
+          "policy": {
+            "max_retries": 0,
+            "backoff_ms": 100.0,
+            "backoff_multiplier": 2.0,
+            "jitter": true,
+            "rate_limit_rps": null,
+            "burst": 100
+          }
+        },
+        {
+          "name": "Custom design",
+          "app": {
+            "replicas": 3,
+            "workers": 8,
+            "latency_ms": 20.0,
+            "lb_strategy": "least_queue",
+            "max_queue": 200
+          },
+          "cache": {
+            "enabled": true,
+            "hit_rate": 0.85,
+            "latency_ms": 1.0,
+            "workers": 64
+          },
+          "cdn": {
+            "enabled": false,
+            "hit_rate": 0.6,
+            "latency_ms": 8.0
+          },
+          "queue": {
+            "enabled": false,
+            "consumers": 8,
+            "max_depth": 5000,
+            "enqueue_ms": 2.0
+          },
+          "db": {
+            "workers": 16,
+            "read_ms": 8.0,
+            "write_ms": 25.0,
+            "read_replicas": 0,
+            "max_queue": 500,
+            "shards": 1,
+            "hot_share": 0.0
+          },
+          "workload": {
+            "rps": 500,
+            "read_ratio": 0.95,
+            "duration_s": 10,
+            "timeout_ms": 1000.0,
+            "warmup_s": 1
+          },
+          "events": [],
+          "seed": 7,
+          "app_only": false,
+          "policy": {
+            "max_retries": 0,
+            "backoff_ms": 100.0,
+            "backoff_multiplier": 2.0,
+            "jitter": true,
+            "rate_limit_rps": null,
+            "burst": 100
+          }
+        }
+      ],
+      "samples_s": {
+        "static": [
+          4.088819199998397,
+          6.932887299999493,
+          4.7729820999993535
+        ],
+        "dynamic": [
+          4.345342999999048,
+          7.153525800000352,
+          4.618685999999798
+        ]
+      },
+      "median_s": {
+        "static": 4.7729820999993535,
+        "dynamic": 4.618685999999798
+      },
+      "ratio": 1.033406925692624,
+      "exact_match": true
+    },
+    "uneven": {
+      "configs": [
+        {
+          "name": "Custom design",
+          "app": {
+            "replicas": 3,
+            "workers": 8,
+            "latency_ms": 20.0,
+            "lb_strategy": "least_queue",
+            "max_queue": 200
+          },
+          "cache": {
+            "enabled": true,
+            "hit_rate": 0.85,
+            "latency_ms": 1.0,
+            "workers": 64
+          },
+          "cdn": {
+            "enabled": false,
+            "hit_rate": 0.6,
+            "latency_ms": 8.0
+          },
+          "queue": {
+            "enabled": false,
+            "consumers": 8,
+            "max_depth": 5000,
+            "enqueue_ms": 2.0
+          },
+          "db": {
+            "workers": 16,
+            "read_ms": 8.0,
+            "write_ms": 25.0,
+            "read_replicas": 0,
+            "max_queue": 500,
+            "shards": 1,
+            "hot_share": 0.0
+          },
+          "workload": {
+            "rps": 1500,
+            "read_ratio": 0.95,
+            "duration_s": 10,
+            "timeout_ms": 1000.0,
+            "warmup_s": 1
+          },
+          "events": [],
+          "seed": 7,
+          "app_only": false,
+          "policy": {
+            "max_retries": 0,
+            "backoff_ms": 100.0,
+            "backoff_multiplier": 2.0,
+            "jitter": true,
+            "rate_limit_rps": null,
+            "burst": 100
+          }
+        },
+        {
+          "name": "Custom design",
+          "app": {
+            "replicas": 3,
+            "workers": 8,
+            "latency_ms": 20.0,
+            "lb_strategy": "least_queue",
+            "max_queue": 200
+          },
+          "cache": {
+            "enabled": true,
+            "hit_rate": 0.85,
+            "latency_ms": 1.0,
+            "workers": 64
+          },
+          "cdn": {
+            "enabled": false,
+            "hit_rate": 0.6,
+            "latency_ms": 8.0
+          },
+          "queue": {
+            "enabled": false,
+            "consumers": 8,
+            "max_depth": 5000,
+            "enqueue_ms": 2.0
+          },
+          "db": {
+            "workers": 16,
+            "read_ms": 8.0,
+            "write_ms": 25.0,
+            "read_replicas": 0,
+            "max_queue": 500,
+            "shards": 1,
+            "hot_share": 0.0
+          },
+          "workload": {
+            "rps": 50,
+            "read_ratio": 0.95,
+            "duration_s": 10,
+            "timeout_ms": 1000.0,
+            "warmup_s": 1
+          },
+          "events": [],
+          "seed": 7,
+          "app_only": false,
+          "policy": {
+            "max_retries": 0,
+            "backoff_ms": 100.0,
+            "backoff_multiplier": 2.0,
+            "jitter": true,
+            "rate_limit_rps": null,
+            "burst": 100
+          }
+        },
+        {
+          "name": "Custom design",
+          "app": {
+            "replicas": 3,
+            "workers": 8,
+            "latency_ms": 20.0,
+            "lb_strategy": "least_queue",
+            "max_queue": 200
+          },
+          "cache": {
+            "enabled": true,
+            "hit_rate": 0.85,
+            "latency_ms": 1.0,
+            "workers": 64
+          },
+          "cdn": {
+            "enabled": false,
+            "hit_rate": 0.6,
+            "latency_ms": 8.0
+          },
+          "queue": {
+            "enabled": false,
+            "consumers": 8,
+            "max_depth": 5000,
+            "enqueue_ms": 2.0
+          },
+          "db": {
+            "workers": 16,
+            "read_ms": 8.0,
+            "write_ms": 25.0,
+            "read_replicas": 0,
+            "max_queue": 500,
+            "shards": 1,
+            "hot_share": 0.0
+          },
+          "workload": {
+            "rps": 1500,
+            "read_ratio": 0.95,
+            "duration_s": 10,
+            "timeout_ms": 1000.0,
+            "warmup_s": 1
+          },
+          "events": [],
+          "seed": 7,
+          "app_only": false,
+          "policy": {
+            "max_retries": 0,
+            "backoff_ms": 100.0,
+            "backoff_multiplier": 2.0,
+            "jitter": true,
+            "rate_limit_rps": null,
+            "burst": 100
+          }
+        },
+        {
+          "name": "Custom design",
+          "app": {
+            "replicas": 3,
+            "workers": 8,
+            "latency_ms": 20.0,
+            "lb_strategy": "least_queue",
+            "max_queue": 200
+          },
+          "cache": {
+            "enabled": true,
+            "hit_rate": 0.85,
+            "latency_ms": 1.0,
+            "workers": 64
+          },
+          "cdn": {
+            "enabled": false,
+            "hit_rate": 0.6,
+            "latency_ms": 8.0
+          },
+          "queue": {
+            "enabled": false,
+            "consumers": 8,
+            "max_depth": 5000,
+            "enqueue_ms": 2.0
+          },
+          "db": {
+            "workers": 16,
+            "read_ms": 8.0,
+            "write_ms": 25.0,
+            "read_replicas": 0,
+            "max_queue": 500,
+            "shards": 1,
+            "hot_share": 0.0
+          },
+          "workload": {
+            "rps": 50,
+            "read_ratio": 0.95,
+            "duration_s": 10,
+            "timeout_ms": 1000.0,
+            "warmup_s": 1
+          },
+          "events": [],
+          "seed": 7,
+          "app_only": false,
+          "policy": {
+            "max_retries": 0,
+            "backoff_ms": 100.0,
+            "backoff_multiplier": 2.0,
+            "jitter": true,
+            "rate_limit_rps": null,
+            "burst": 100
+          }
+        },
+        {
+          "name": "Custom design",
+          "app": {
+            "replicas": 3,
+            "workers": 8,
+            "latency_ms": 20.0,
+            "lb_strategy": "least_queue",
+            "max_queue": 200
+          },
+          "cache": {
+            "enabled": true,
+            "hit_rate": 0.85,
+            "latency_ms": 1.0,
+            "workers": 64
+          },
+          "cdn": {
+            "enabled": false,
+            "hit_rate": 0.6,
+            "latency_ms": 8.0
+          },
+          "queue": {
+            "enabled": false,
+            "consumers": 8,
+            "max_depth": 5000,
+            "enqueue_ms": 2.0
+          },
+          "db": {
+            "workers": 16,
+            "read_ms": 8.0,
+            "write_ms": 25.0,
+            "read_replicas": 0,
+            "max_queue": 500,
+            "shards": 1,
+            "hot_share": 0.0
+          },
+          "workload": {
+            "rps": 1500,
+            "read_ratio": 0.95,
+            "duration_s": 10,
+            "timeout_ms": 1000.0,
+            "warmup_s": 1
+          },
+          "events": [],
+          "seed": 7,
+          "app_only": false,
+          "policy": {
+            "max_retries": 0,
+            "backoff_ms": 100.0,
+            "backoff_multiplier": 2.0,
+            "jitter": true,
+            "rate_limit_rps": null,
+            "burst": 100
+          }
+        },
+        {
+          "name": "Custom design",
+          "app": {
+            "replicas": 3,
+            "workers": 8,
+            "latency_ms": 20.0,
+            "lb_strategy": "least_queue",
+            "max_queue": 200
+          },
+          "cache": {
+            "enabled": true,
+            "hit_rate": 0.85,
+            "latency_ms": 1.0,
+            "workers": 64
+          },
+          "cdn": {
+            "enabled": false,
+            "hit_rate": 0.6,
+            "latency_ms": 8.0
+          },
+          "queue": {
+            "enabled": false,
+            "consumers": 8,
+            "max_depth": 5000,
+            "enqueue_ms": 2.0
+          },
+          "db": {
+            "workers": 16,
+            "read_ms": 8.0,
+            "write_ms": 25.0,
+            "read_replicas": 0,
+            "max_queue": 500,
+            "shards": 1,
+            "hot_share": 0.0
+          },
+          "workload": {
+            "rps": 50,
+            "read_ratio": 0.95,
+            "duration_s": 10,
+            "timeout_ms": 1000.0,
+            "warmup_s": 1
+          },
+          "events": [],
+          "seed": 7,
+          "app_only": false,
+          "policy": {
+            "max_retries": 0,
+            "backoff_ms": 100.0,
+            "backoff_multiplier": 2.0,
+            "jitter": true,
+            "rate_limit_rps": null,
+            "burst": 100
+          }
+        }
+      ],
+      "samples_s": {
+        "static": [
+          13.39579009999943,
+          30.17254630000025,
+          15.537304400000721
+        ],
+        "dynamic": [
+          8.156940700000632,
+          9.803359100000307,
+          13.74802550000095
+        ]
+      },
+      "median_s": {
+        "static": 15.537304400000721,
+        "dynamic": 9.803359100000307
+      },
+      "ratio": 1.5848959771350448,
+      "exact_match": true
+    }
+  },
+  "note": "Both schedulers use the current engine/worker. Includes child startup and JSON IPC; isolates scheduling, not engine changes."
+}

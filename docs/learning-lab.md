@@ -43,13 +43,13 @@ Admission control can protect downstream queues while rejecting users. A lower q
 
 ## Run bounded parallel sweeps
 
-In **Experiments**, choose **Experiment workers**, then run a load or scaling sweep. Local parallel execution uses a bounded number of subprocesses. Each child handles a chunk of points, avoiding a fresh interpreter for every point; results are restored to their input order. Progress updates as chunks finish. Small batches can be slower in parallel because of interpreter and import startup.
+In **Experiments**, choose **Experiment workers**, then run a load or scaling sweep. Local parallel execution uses a bounded number of persistent subprocesses. As each child finishes a point, it receives the next available point, avoiding idle workers waiting for a slow fixed chunk. Results are restored to their input order, and progress updates after each point. Small batches can be slower in parallel because of interpreter and import startup.
 
 `SYSDESIGN_SWEEP_WORKERS` sets the local per-experiment ceiling (default 2, capped at 4 and CPU count). Celery jobs always execute their points sequentially inside an existing worker; deployment-level concurrency belongs to the Celery pool, so jobs do not create nested process pools.
 
-All points are validated before work starts. Batches allow at most 32 points and an aggregate expected arrival/attempt budget of 8,000,000, configurable with `SYSDESIGN_MAX_BATCH_ARRIVALS`. The estimate conservatively includes retry amplification and the product of spike magnitudes. Existing per-run limits and the runtime attempt cap still apply. A subprocess chunk has a 180-second wall-clock timeout; errors surface in the UI. Reducing load, duration, points, or workers can help constrained hosts.
+All points are validated before work starts. Batches allow at most 32 points and an aggregate expected arrival/attempt budget of 8,000,000, configurable with `SYSDESIGN_MAX_BATCH_ARRIVALS`. The estimate conservatively includes retry amplification and the product of spike magnitudes. Existing per-run limits and the runtime attempt cap still apply. Each subprocess has a 180-second wall-clock lifetime budget including startup and all assigned points; assigning another point does not reset it. On failure, remaining children are terminated and reaped before returning the error. Reducing load, duration, points, or workers can help constrained hosts.
 
-## Local sweep benchmark
+## Earlier local sweep benchmark
 
 For six load points from 400 to 1,400 requests/s, each simulating 25 seconds with a 5-second warmup and seed 7:
 
@@ -58,7 +58,7 @@ For six load points from 400 to 1,400 requests/s, each simulating 25 seconds wit
 | Sequential | 22.18 s |
 | Two subprocess workers | 12.03 s |
 
-The observed baseline/candidate ratio was **1.84x**. Three timing rounds alternated execution order after warming both paths. Every point matched exactly in all runs. Timing includes child interpreter/import startup; the Streamlit verification server and test runners were stopped before measuring. This is one local workload, not a production capacity claim. See [raw samples and environment details](benchmarks/sweeps-local.json).
+The observed baseline/candidate ratio was **1.84x** for the earlier static-chunk implementation. Three timing rounds alternated execution order after warming both paths. Every point matched exactly in all runs. Timing includes child interpreter/import startup; the Streamlit verification server and test runners were stopped before measuring. This is one local workload, not a production capacity claim. See [raw samples and environment details](benchmarks/sweeps-local.json). The current implementation dispatches points dynamically; see [engine profiling and scheduling](engine-and-scheduling.md) for its separate comparison.
 
 Reproduce from the repository root with at least two CPUs available:
 
