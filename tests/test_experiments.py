@@ -1,5 +1,7 @@
 import json
-import subprocess
+import io
+from queue import Empty
+from time import perf_counter
 from types import SimpleNamespace
 from unittest.mock import Mock
 
@@ -106,9 +108,12 @@ def test_traffic_counts_survive_worker_roundtrip():
 @pytest.mark.parametrize("failure", ["timeout", "exit"])
 def test_parallel_worker_errors_are_actionable(monkeypatch, failure):
     import sim.batch as batch
-    if failure == "timeout":
-        monkeypatch.setattr(batch.subprocess, "run", Mock(side_effect=subprocess.TimeoutExpired("worker", 180)))
-    else:
-        monkeypatch.setattr(batch.subprocess, "run", Mock(return_value=SimpleNamespace(returncode=1, stderr="test worker failure")))
+    child = batch._Worker.__new__(batch._Worker)
+    child.started = perf_counter()
+    child.process = SimpleNamespace(stdin=io.StringIO())
+    child.stderr = io.StringIO("test worker failure")
+    child.messages = Mock()
+    child.messages.get.side_effect = Empty if failure == "timeout" else None
+    child.messages.get.return_value = None
     with pytest.raises(ValueError, match="worker"):
-        batch._chunk([(0, small())])
+        child.run((0, small()))
