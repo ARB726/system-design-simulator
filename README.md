@@ -156,5 +156,5 @@ Queueing behavior is checked against Erlang C / M/M/c formulas. The tests pool m
 ## Future directions
 
 Potential next steps include durable classroom progress, job cancellation and richer progress,
-retry/backoff and rate-limiting scenarios, multi-region models, and classroom assignments.
+multi-region models, and classroom assignments.
 Production load tests and operational monitoring should precede public rollout.

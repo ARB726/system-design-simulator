@@ -45,4 +45,3 @@ def test_failed_real_children_are_reaped(monkeypatch, script):
     finally:
         child.close()
     assert child.process.poll() is not None and not child.reader.is_alive()
-

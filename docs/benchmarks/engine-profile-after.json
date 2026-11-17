@@ -1,0 +1,2092 @@
+{
+  "python": "3.12.10 (tags/v3.12.10:0cc8128, Apr  8 2025, 12:21:36) [MSC v.1943 64 bit (AMD64)]",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "packages": {
+    "simpy": "4.1.2",
+    "numpy": "2.5.4",
+    "pandas": "3.1.1"
+  },
+  "note": "One seed per workload. cProfile adds overhead; overlapping cumulative times cannot be summed.",
+  "cases": {
+    "baseline": {
+      "config": {
+        "name": "Custom design",
+        "app": {
+          "replicas": 3,
+          "workers": 8,
+          "latency_ms": 20.0,
+          "lb_strategy": "least_queue",
+          "max_queue": 200
+        },
+        "cache": {
+          "enabled": true,
+          "hit_rate": 0.85,
+          "latency_ms": 1.0,
+          "workers": 64
+        },
+        "cdn": {
+          "enabled": false,
+          "hit_rate": 0.6,
+          "latency_ms": 8.0
+        },
+        "queue": {
+          "enabled": false,
+          "consumers": 8,
+          "max_depth": 5000,
+          "enqueue_ms": 2.0
+        },
+        "db": {
+          "workers": 16,
+          "read_ms": 8.0,
+          "write_ms": 25.0,
+          "read_replicas": 0,
+          "max_queue": 500,
+          "shards": 1,
+          "hot_share": 0.0
+        },
+        "workload": {
+          "rps": 500,
+          "read_ratio": 0.95,
+          "duration_s": 20,
+          "timeout_ms": 1000.0,
+          "warmup_s": 2
+        },
+        "events": [],
+        "seed": 7,
+        "app_only": false,
+        "policy": {
+          "max_retries": 0,
+          "backoff_ms": 100.0,
+          "backoff_multiplier": 2.0,
+          "jitter": true,
+          "rate_limit_rps": null,
+          "burst": 100
+        }
+      },
+      "unprofiled_s": 2.1135954999990645,
+      "metrics": {
+        "offered_rps": 496.55555555555554,
+        "served_rps": 496.55555555555554,
+        "success_rate": 1.0,
+        "p50_ms": 16.55182171719094,
+        "p95_ms": 65.63050955985625,
+        "p99_ms": 100.67498862991829
+      },
+      "arrival_limit_calls": 2,
+      "top_own": [
+        {
+          "file": "core.py",
+          "line": 182,
+          "function": "step",
+          "primitive_calls": 135887,
+          "calls": 135887,
+          "own_s": 0.46040420000000004,
+          "cumulative_s": 5.3173762
+        },
+        {
+          "file": "engine.py",
+          "line": 197,
+          "function": "_serve",
+          "primitive_calls": 63690,
+          "calls": 63690,
+          "own_s": 0.44077890000000003,
+          "cumulative_s": 2.421386
+        },
+        {
+          "file": "engine.py",
+          "line": 255,
+          "function": "_attempt",
+          "primitive_calls": 52371,
+          "calls": 52371,
+          "own_s": 0.2720204,
+          "cumulative_s": 3.0498748
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<built-in method _heapq.heappop>",
+          "primitive_calls": 135887,
+          "calls": 135887,
+          "own_s": 0.2552782,
+          "cumulative_s": 0.2552782
+        },
+        {
+          "file": "core.py",
+          "line": 165,
+          "function": "schedule",
+          "primitive_calls": 135888,
+          "calls": 135888,
+          "own_s": 0.24650370000000002,
+          "cumulative_s": 0.48148440000000003
+        },
+        {
+          "file": "events.py",
+          "line": 388,
+          "function": "_resume",
+          "primitive_calls": 62284,
+          "calls": 62284,
+          "own_s": 0.2101414,
+          "cumulative_s": 4.0355407
+        },
+        {
+          "file": "core.py",
+          "line": 214,
+          "function": "run",
+          "primitive_calls": 1,
+          "calls": 1,
+          "own_s": 0.18416970000000002,
+          "cumulative_s": 5.5015561
+        },
+        {
+          "file": "engine.py",
+          "line": 225,
+          "function": "_request",
+          "primitive_calls": 52371,
+          "calls": 52371,
+          "own_s": 0.17575970000000002,
+          "cumulative_s": 3.3124209000000002
+        },
+        {
+          "file": "events.py",
+          "line": 519,
+          "function": "__init__",
+          "primitive_calls": 21230,
+          "calls": 21230,
+          "own_s": 0.16885080000000002,
+          "cumulative_s": 0.2523241
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<method 'append' of 'list' objects>",
+          "primitive_calls": 255931,
+          "calls": 255931,
+          "own_s": 0.1651338,
+          "cumulative_s": 0.1651338
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<built-in method _heapq.heappush>",
+          "primitive_calls": 135888,
+          "calls": 135888,
+          "own_s": 0.1627307,
+          "cumulative_s": 0.1627307
+        },
+        {
+          "file": "base.py",
+          "line": 48,
+          "function": "__init__",
+          "primitive_calls": 21230,
+          "calls": 21230,
+          "own_s": 0.1276228,
+          "cumulative_s": 0.5306294
+        },
+        {
+          "file": "engine.py",
+          "line": 351,
+          "function": "_arrivals",
+          "primitive_calls": 9913,
+          "calls": 9913,
+          "own_s": 0.1252634,
+          "cumulative_s": 0.33065700000000003
+        },
+        {
+          "file": "base.py",
+          "line": 99,
+          "function": "__init__",
+          "primitive_calls": 21230,
+          "calls": 21230,
+          "own_s": 0.12297390000000001,
+          "cumulative_s": 0.4780378
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<method 'send' of 'generator' objects>",
+          "primitive_calls": 62284,
+          "calls": 62284,
+          "own_s": 0.1088337,
+          "cumulative_s": 3.7519116
+        },
+        {
+          "file": "base.py",
+          "line": 255,
+          "function": "_trigger_get",
+          "primitive_calls": 42460,
+          "calls": 42460,
+          "own_s": 0.10764370000000001,
+          "cumulative_s": 0.3389025
+        },
+        {
+          "file": "base.py",
+          "line": 217,
+          "function": "_trigger_put",
+          "primitive_calls": 42460,
+          "calls": 42460,
+          "own_s": 0.1051567,
+          "cumulative_s": 0.3878921
+        },
+        {
+          "file": "events.py",
+          "line": 171,
+          "function": "succeed",
+          "primitive_calls": 63690,
+          "calls": 63690,
+          "own_s": 0.1004073,
+          "cumulative_s": 0.35795960000000004
+        },
+        {
+          "file": "resource.py",
+          "line": 85,
+          "function": "__exit__",
+          "primitive_calls": 21230,
+          "calls": 21230,
+          "own_s": 0.09774300000000001,
+          "cumulative_s": 0.7050345
+        },
+        {
+          "file": "events.py",
+          "line": 230,
+          "function": "__init__",
+          "primitive_calls": 52372,
+          "calls": 52372,
+          "own_s": 0.0939295,
+          "cumulative_s": 0.2479876
+        },
+        {
+          "file": "engine.py",
+          "line": 96,
+          "function": "pick",
+          "primitive_calls": 9911,
+          "calls": 9911,
+          "own_s": 0.0864187,
+          "cumulative_s": 0.26834260000000004
+        },
+        {
+          "file": "events.py",
+          "line": 569,
+          "function": "_build_value",
+          "primitive_calls": 21230,
+          "calls": 21230,
+          "own_s": 0.08556520000000001,
+          "cumulative_s": 0.31114420000000004
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<built-in method builtins.len>",
+          "primitive_calls": 207083,
+          "calls": 207083,
+          "own_s": 0.0825112,
+          "cumulative_s": 0.0825112
+        },
+        {
+          "file": "events.py",
+          "line": 576,
+          "function": "_remove_check_callbacks",
+          "primitive_calls": 21230,
+          "calls": 21230,
+          "own_s": 0.08099260000000001,
+          "cumulative_s": 0.1232778
+        },
+        {
+          "file": "resource.py",
+          "line": 213,
+          "function": "_do_put",
+          "primitive_calls": 21232,
+          "calls": 21232,
+          "own_s": 0.08025940000000001,
+          "cumulative_s": 0.2378191
+        }
+      ],
+      "top_cumulative": [
+        {
+          "file": "engine.py",
+          "line": 455,
+          "function": "run_summary",
+          "primitive_calls": 1,
+          "calls": 1,
+          "own_s": 5.9000000000000004e-05,
+          "cumulative_s": 5.5032455
+        },
+        {
+          "file": "engine.py",
+          "line": 404,
+          "function": "run",
+          "primitive_calls": 1,
+          "calls": 1,
+          "own_s": 0.0001162,
+          "cumulative_s": 5.502545100000001
+        },
+        {
+          "file": "core.py",
+          "line": 214,
+          "function": "run",
+          "primitive_calls": 1,
+          "calls": 1,
+          "own_s": 0.18416970000000002,
+          "cumulative_s": 5.5015561
+        },
+        {
+          "file": "core.py",
+          "line": 182,
+          "function": "step",
+          "primitive_calls": 135887,
+          "calls": 135887,
+          "own_s": 0.46040420000000004,
+          "cumulative_s": 5.3173762
+        },
+        {
+          "file": "events.py",
+          "line": 388,
+          "function": "_resume",
+          "primitive_calls": 62284,
+          "calls": 62284,
+          "own_s": 0.2101414,
+          "cumulative_s": 4.0355407
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<method 'send' of 'generator' objects>",
+          "primitive_calls": 62284,
+          "calls": 62284,
+          "own_s": 0.1088337,
+          "cumulative_s": 3.7519116
+        },
+        {
+          "file": "engine.py",
+          "line": 225,
+          "function": "_request",
+          "primitive_calls": 52371,
+          "calls": 52371,
+          "own_s": 0.17575970000000002,
+          "cumulative_s": 3.3124209000000002
+        },
+        {
+          "file": "engine.py",
+          "line": 255,
+          "function": "_attempt",
+          "primitive_calls": 52371,
+          "calls": 52371,
+          "own_s": 0.2720204,
+          "cumulative_s": 3.0498748
+        },
+        {
+          "file": "engine.py",
+          "line": 197,
+          "function": "_serve",
+          "primitive_calls": 63690,
+          "calls": 63690,
+          "own_s": 0.44077890000000003,
+          "cumulative_s": 2.421386
+        },
+        {
+          "file": "resource.py",
+          "line": 85,
+          "function": "__exit__",
+          "primitive_calls": 21230,
+          "calls": 21230,
+          "own_s": 0.09774300000000001,
+          "cumulative_s": 0.7050345
+        },
+        {
+          "file": "base.py",
+          "line": 48,
+          "function": "__init__",
+          "primitive_calls": 21230,
+          "calls": 21230,
+          "own_s": 0.1276228,
+          "cumulative_s": 0.5306294
+        },
+        {
+          "file": "resource.py",
+          "line": 105,
+          "function": "__init__",
+          "primitive_calls": 21230,
+          "calls": 21230,
+          "own_s": 0.0462435,
+          "cumulative_s": 0.5242813000000001
+        },
+        {
+          "file": "core.py",
+          "line": 165,
+          "function": "schedule",
+          "primitive_calls": 135888,
+          "calls": 135888,
+          "own_s": 0.24650370000000002,
+          "cumulative_s": 0.48148440000000003
+        },
+        {
+          "file": "base.py",
+          "line": 99,
+          "function": "__init__",
+          "primitive_calls": 21230,
+          "calls": 21230,
+          "own_s": 0.12297390000000001,
+          "cumulative_s": 0.4780378
+        },
+        {
+          "file": "base.py",
+          "line": 217,
+          "function": "_trigger_put",
+          "primitive_calls": 42460,
+          "calls": 42460,
+          "own_s": 0.1051567,
+          "cumulative_s": 0.3878921
+        },
+        {
+          "file": "events.py",
+          "line": 171,
+          "function": "succeed",
+          "primitive_calls": 63690,
+          "calls": 63690,
+          "own_s": 0.1004073,
+          "cumulative_s": 0.35795960000000004
+        },
+        {
+          "file": "base.py",
+          "line": 255,
+          "function": "_trigger_get",
+          "primitive_calls": 42460,
+          "calls": 42460,
+          "own_s": 0.10764370000000001,
+          "cumulative_s": 0.3389025
+        },
+        {
+          "file": "engine.py",
+          "line": 351,
+          "function": "_arrivals",
+          "primitive_calls": 9913,
+          "calls": 9913,
+          "own_s": 0.1252634,
+          "cumulative_s": 0.33065700000000003
+        },
+        {
+          "file": "events.py",
+          "line": 209,
+          "function": "__or__",
+          "primitive_calls": 21230,
+          "calls": 21230,
+          "own_s": 0.0597463,
+          "cumulative_s": 0.3120704
+        },
+        {
+          "file": "events.py",
+          "line": 569,
+          "function": "_build_value",
+          "primitive_calls": 21230,
+          "calls": 21230,
+          "own_s": 0.08556520000000001,
+          "cumulative_s": 0.31114420000000004
+        },
+        {
+          "file": "engine.py",
+          "line": 96,
+          "function": "pick",
+          "primitive_calls": 9911,
+          "calls": 9911,
+          "own_s": 0.0864187,
+          "cumulative_s": 0.26834260000000004
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<built-in method _heapq.heappop>",
+          "primitive_calls": 135887,
+          "calls": 135887,
+          "own_s": 0.2552782,
+          "cumulative_s": 0.2552782
+        },
+        {
+          "file": "events.py",
+          "line": 519,
+          "function": "__init__",
+          "primitive_calls": 21230,
+          "calls": 21230,
+          "own_s": 0.16885080000000002,
+          "cumulative_s": 0.2523241
+        },
+        {
+          "file": "events.py",
+          "line": 230,
+          "function": "__init__",
+          "primitive_calls": 52372,
+          "calls": 52372,
+          "own_s": 0.0939295,
+          "cumulative_s": 0.2479876
+        },
+        {
+          "file": "resource.py",
+          "line": 213,
+          "function": "_do_put",
+          "primitive_calls": 21232,
+          "calls": 21232,
+          "own_s": 0.08025940000000001,
+          "cumulative_s": 0.2378191
+        }
+      ]
+    },
+    "overload": {
+      "config": {
+        "name": "Custom design",
+        "app": {
+          "replicas": 1,
+          "workers": 2,
+          "latency_ms": 20.0,
+          "lb_strategy": "least_queue",
+          "max_queue": 200
+        },
+        "cache": {
+          "enabled": true,
+          "hit_rate": 0.85,
+          "latency_ms": 1.0,
+          "workers": 64
+        },
+        "cdn": {
+          "enabled": false,
+          "hit_rate": 0.6,
+          "latency_ms": 8.0
+        },
+        "queue": {
+          "enabled": false,
+          "consumers": 8,
+          "max_depth": 5000,
+          "enqueue_ms": 2.0
+        },
+        "db": {
+          "workers": 16,
+          "read_ms": 8.0,
+          "write_ms": 25.0,
+          "read_replicas": 0,
+          "max_queue": 500,
+          "shards": 1,
+          "hot_share": 0.0
+        },
+        "workload": {
+          "rps": 1500,
+          "read_ratio": 0.95,
+          "duration_s": 20,
+          "timeout_ms": 100,
+          "warmup_s": 2
+        },
+        "events": [],
+        "seed": 7,
+        "app_only": false,
+        "policy": {
+          "max_retries": 0,
+          "backoff_ms": 100.0,
+          "backoff_multiplier": 2.0,
+          "jitter": true,
+          "rate_limit_rps": null,
+          "burst": 100
+        }
+      },
+      "unprofiled_s": 1.8341934999989462,
+      "metrics": {
+        "offered_rps": 1506.611111111111,
+        "served_rps": 1.1111111111111112,
+        "success_rate": 0.0007374903204395442,
+        "p50_ms": 100.0,
+        "p95_ms": 100.0,
+        "p99_ms": 100.0
+      },
+      "arrival_limit_calls": 2,
+      "top_own": [
+        {
+          "file": "core.py",
+          "line": 182,
+          "function": "step",
+          "primitive_calls": 196318,
+          "calls": 196318,
+          "own_s": 0.5303953,
+          "cumulative_s": 6.796659
+        },
+        {
+          "file": "engine.py",
+          "line": 197,
+          "function": "_serve",
+          "primitive_calls": 69242,
+          "calls": 69242,
+          "own_s": 0.3996353,
+          "cumulative_s": 2.5116955
+        },
+        {
+          "file": "engine.py",
+          "line": 225,
+          "function": "_request",
+          "primitive_calls": 66900,
+          "calls": 66900,
+          "own_s": 0.3806201,
+          "cumulative_s": 3.5586604000000004
+        },
+        {
+          "file": "core.py",
+          "line": 165,
+          "function": "schedule",
+          "primitive_calls": 196319,
+          "calls": 196319,
+          "own_s": 0.32148400000000005,
+          "cumulative_s": 0.6014816000000001
+        },
+        {
+          "file": "events.py",
+          "line": 388,
+          "function": "_resume",
+          "primitive_calls": 96988,
+          "calls": 96988,
+          "own_s": 0.30735670000000004,
+          "cumulative_s": 5.1226513
+        },
+        {
+          "file": "engine.py",
+          "line": 255,
+          "function": "_attempt",
+          "primitive_calls": 66900,
+          "calls": 66900,
+          "own_s": 0.3064042,
+          "cumulative_s": 2.9699699
+        },
+        {
+          "file": "engine.py",
+          "line": 351,
+          "function": "_arrivals",
+          "primitive_calls": 30088,
+          "calls": 30088,
+          "own_s": 0.2999075,
+          "cumulative_s": 0.8566025
+        },
+        {
+          "file": "core.py",
+          "line": 214,
+          "function": "run",
+          "primitive_calls": 1,
+          "calls": 1,
+          "own_s": 0.2817754,
+          "cumulative_s": 7.0784402
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<built-in method _heapq.heappop>",
+          "primitive_calls": 196318,
+          "calls": 196318,
+          "own_s": 0.2555929,
+          "cumulative_s": 0.2555929
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<method 'send' of 'generator' objects>",
+          "primitive_calls": 96988,
+          "calls": 96988,
+          "own_s": 0.2339582,
+          "cumulative_s": 4.6492211
+        },
+        {
+          "file": "events.py",
+          "line": 519,
+          "function": "__init__",
+          "primitive_calls": 32428,
+          "calls": 32428,
+          "own_s": 0.2290677,
+          "cumulative_s": 0.3170229
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<built-in method _heapq.heappush>",
+          "primitive_calls": 196319,
+          "calls": 196319,
+          "own_s": 0.1795301,
+          "cumulative_s": 0.1795301
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<method 'append' of 'list' objects>",
+          "primitive_calls": 332965,
+          "calls": 332965,
+          "own_s": 0.1786667,
+          "cumulative_s": 0.1786667
+        },
+        {
+          "file": "base.py",
+          "line": 48,
+          "function": "__init__",
+          "primitive_calls": 32428,
+          "calls": 32428,
+          "own_s": 0.17822500000000002,
+          "cumulative_s": 0.4272848
+        },
+        {
+          "file": "base.py",
+          "line": 217,
+          "function": "_trigger_put",
+          "primitive_calls": 64856,
+          "calls": 64856,
+          "own_s": 0.1517061,
+          "cumulative_s": 0.36909190000000003
+        },
+        {
+          "file": "base.py",
+          "line": 99,
+          "function": "__init__",
+          "primitive_calls": 32428,
+          "calls": 32428,
+          "own_s": 0.1511124,
+          "cumulative_s": 0.7129827000000001
+        },
+        {
+          "file": "events.py",
+          "line": 569,
+          "function": "_build_value",
+          "primitive_calls": 32428,
+          "calls": 32428,
+          "own_s": 0.1333887,
+          "cumulative_s": 0.4586563
+        },
+        {
+          "file": "resource.py",
+          "line": 85,
+          "function": "__exit__",
+          "primitive_calls": 32428,
+          "calls": 32428,
+          "own_s": 0.1304033,
+          "cumulative_s": 1.0283702000000001
+        },
+        {
+          "file": "resource.py",
+          "line": 219,
+          "function": "_do_get",
+          "primitive_calls": 32428,
+          "calls": 32428,
+          "own_s": 0.12777670000000002,
+          "cumulative_s": 0.3365127
+        },
+        {
+          "file": "base.py",
+          "line": 255,
+          "function": "_trigger_get",
+          "primitive_calls": 36814,
+          "calls": 36814,
+          "own_s": 0.1154516,
+          "cumulative_s": 0.5067400000000001
+        },
+        {
+          "file": "events.py",
+          "line": 576,
+          "function": "_remove_check_callbacks",
+          "primitive_calls": 32428,
+          "calls": 32428,
+          "own_s": 0.11370880000000001,
+          "cumulative_s": 0.19031820000000002
+        },
+        {
+          "file": "engine.py",
+          "line": 324,
+          "function": "_record",
+          "primitive_calls": 30086,
+          "calls": 30086,
+          "own_s": 0.107812,
+          "cumulative_s": 0.1733045
+        },
+        {
+          "file": "events.py",
+          "line": 230,
+          "function": "__init__",
+          "primitive_calls": 66901,
+          "calls": 66901,
+          "own_s": 0.1034202,
+          "cumulative_s": 0.27354320000000004
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<built-in method builtins.next>",
+          "primitive_calls": 196319,
+          "calls": 196319,
+          "own_s": 0.1004675,
+          "cumulative_s": 0.1004675
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<method 'remove' of 'list' objects>",
+          "primitive_calls": 90645,
+          "calls": 90645,
+          "own_s": 0.09787330000000001,
+          "cumulative_s": 0.09787330000000001
+        }
+      ],
+      "top_cumulative": [
+        {
+          "file": "engine.py",
+          "line": 455,
+          "function": "run_summary",
+          "primitive_calls": 1,
+          "calls": 1,
+          "own_s": 2.9800000000000003e-05,
+          "cumulative_s": 7.079602
+        },
+        {
+          "file": "engine.py",
+          "line": 404,
+          "function": "run",
+          "primitive_calls": 1,
+          "calls": 1,
+          "own_s": 0.00010240000000000001,
+          "cumulative_s": 7.0791579
+        },
+        {
+          "file": "core.py",
+          "line": 214,
+          "function": "run",
+          "primitive_calls": 1,
+          "calls": 1,
+          "own_s": 0.2817754,
+          "cumulative_s": 7.0784402
+        },
+        {
+          "file": "core.py",
+          "line": 182,
+          "function": "step",
+          "primitive_calls": 196318,
+          "calls": 196318,
+          "own_s": 0.5303953,
+          "cumulative_s": 6.796659
+        },
+        {
+          "file": "events.py",
+          "line": 388,
+          "function": "_resume",
+          "primitive_calls": 96988,
+          "calls": 96988,
+          "own_s": 0.30735670000000004,
+          "cumulative_s": 5.1226513
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<method 'send' of 'generator' objects>",
+          "primitive_calls": 96988,
+          "calls": 96988,
+          "own_s": 0.2339582,
+          "cumulative_s": 4.6492211
+        },
+        {
+          "file": "engine.py",
+          "line": 225,
+          "function": "_request",
+          "primitive_calls": 66900,
+          "calls": 66900,
+          "own_s": 0.3806201,
+          "cumulative_s": 3.5586604000000004
+        },
+        {
+          "file": "engine.py",
+          "line": 255,
+          "function": "_attempt",
+          "primitive_calls": 66900,
+          "calls": 66900,
+          "own_s": 0.3064042,
+          "cumulative_s": 2.9699699
+        },
+        {
+          "file": "engine.py",
+          "line": 197,
+          "function": "_serve",
+          "primitive_calls": 69242,
+          "calls": 69242,
+          "own_s": 0.3996353,
+          "cumulative_s": 2.5116955
+        },
+        {
+          "file": "resource.py",
+          "line": 85,
+          "function": "__exit__",
+          "primitive_calls": 32428,
+          "calls": 32428,
+          "own_s": 0.1304033,
+          "cumulative_s": 1.0283702000000001
+        },
+        {
+          "file": "engine.py",
+          "line": 351,
+          "function": "_arrivals",
+          "primitive_calls": 30088,
+          "calls": 30088,
+          "own_s": 0.2999075,
+          "cumulative_s": 0.8566025
+        },
+        {
+          "file": "resource.py",
+          "line": 105,
+          "function": "__init__",
+          "primitive_calls": 32428,
+          "calls": 32428,
+          "own_s": 0.0713829,
+          "cumulative_s": 0.7843656
+        },
+        {
+          "file": "base.py",
+          "line": 99,
+          "function": "__init__",
+          "primitive_calls": 32428,
+          "calls": 32428,
+          "own_s": 0.1511124,
+          "cumulative_s": 0.7129827000000001
+        },
+        {
+          "file": "core.py",
+          "line": 165,
+          "function": "schedule",
+          "primitive_calls": 196319,
+          "calls": 196319,
+          "own_s": 0.32148400000000005,
+          "cumulative_s": 0.6014816000000001
+        },
+        {
+          "file": "base.py",
+          "line": 255,
+          "function": "_trigger_get",
+          "primitive_calls": 36814,
+          "calls": 36814,
+          "own_s": 0.1154516,
+          "cumulative_s": 0.5067400000000001
+        },
+        {
+          "file": "events.py",
+          "line": 569,
+          "function": "_build_value",
+          "primitive_calls": 32428,
+          "calls": 32428,
+          "own_s": 0.1333887,
+          "cumulative_s": 0.4586563
+        },
+        {
+          "file": "base.py",
+          "line": 48,
+          "function": "__init__",
+          "primitive_calls": 32428,
+          "calls": 32428,
+          "own_s": 0.17822500000000002,
+          "cumulative_s": 0.4272848
+        },
+        {
+          "file": "events.py",
+          "line": 209,
+          "function": "__or__",
+          "primitive_calls": 32428,
+          "calls": 32428,
+          "own_s": 0.0740871,
+          "cumulative_s": 0.39111
+        },
+        {
+          "file": "base.py",
+          "line": 217,
+          "function": "_trigger_put",
+          "primitive_calls": 64856,
+          "calls": 64856,
+          "own_s": 0.1517061,
+          "cumulative_s": 0.36909190000000003
+        },
+        {
+          "file": "resource.py",
+          "line": 219,
+          "function": "_do_get",
+          "primitive_calls": 32428,
+          "calls": 32428,
+          "own_s": 0.12777670000000002,
+          "cumulative_s": 0.3365127
+        },
+        {
+          "file": "events.py",
+          "line": 519,
+          "function": "__init__",
+          "primitive_calls": 32428,
+          "calls": 32428,
+          "own_s": 0.2290677,
+          "cumulative_s": 0.3170229
+        },
+        {
+          "file": "events.py",
+          "line": 171,
+          "function": "succeed",
+          "primitive_calls": 69242,
+          "calls": 69242,
+          "own_s": 0.09315820000000001,
+          "cumulative_s": 0.3123957
+        },
+        {
+          "file": "events.py",
+          "line": 230,
+          "function": "__init__",
+          "primitive_calls": 66901,
+          "calls": 66901,
+          "own_s": 0.1034202,
+          "cumulative_s": 0.27354320000000004
+        },
+        {
+          "file": "events.py",
+          "line": 333,
+          "function": "__init__",
+          "primitive_calls": 30087,
+          "calls": 30087,
+          "own_s": 0.0802887,
+          "cumulative_s": 0.2559366
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<built-in method _heapq.heappop>",
+          "primitive_calls": 196318,
+          "calls": 196318,
+          "own_s": 0.2555929,
+          "cumulative_s": 0.2555929
+        }
+      ]
+    },
+    "retries": {
+      "config": {
+        "name": "Custom design",
+        "app": {
+          "replicas": 1,
+          "workers": 2,
+          "latency_ms": 20.0,
+          "lb_strategy": "least_queue",
+          "max_queue": 200
+        },
+        "cache": {
+          "enabled": true,
+          "hit_rate": 0.85,
+          "latency_ms": 1.0,
+          "workers": 64
+        },
+        "cdn": {
+          "enabled": false,
+          "hit_rate": 0.6,
+          "latency_ms": 8.0
+        },
+        "queue": {
+          "enabled": false,
+          "consumers": 8,
+          "max_depth": 5000,
+          "enqueue_ms": 2.0
+        },
+        "db": {
+          "workers": 16,
+          "read_ms": 8.0,
+          "write_ms": 25.0,
+          "read_replicas": 0,
+          "max_queue": 500,
+          "shards": 1,
+          "hot_share": 0.0
+        },
+        "workload": {
+          "rps": 1000,
+          "read_ratio": 0.95,
+          "duration_s": 20,
+          "timeout_ms": 100,
+          "warmup_s": 2
+        },
+        "events": [],
+        "seed": 7,
+        "app_only": false,
+        "policy": {
+          "max_retries": 3,
+          "backoff_ms": 100.0,
+          "backoff_multiplier": 2.0,
+          "jitter": true,
+          "rate_limit_rps": null,
+          "burst": 100
+        }
+      },
+      "unprofiled_s": 6.662605700001222,
+      "metrics": {
+        "offered_rps": 1001.1111111111111,
+        "served_rps": 2.0,
+        "success_rate": 0.001997780244173141,
+        "p50_ms": 548.9909817907771,
+        "p95_ms": 831.6255087150464,
+        "p99_ms": 928.0054433187456
+      },
+      "arrival_limit_calls": 2,
+      "top_own": [
+        {
+          "file": "engine.py",
+          "line": 225,
+          "function": "_request",
+          "primitive_calls": 124293,
+          "calls": 124293,
+          "own_s": 0.8922577,
+          "cumulative_s": 6.1838167
+        },
+        {
+          "file": "core.py",
+          "line": 182,
+          "function": "step",
+          "primitive_calls": 254407,
+          "calls": 254407,
+          "own_s": 0.7908991000000001,
+          "cumulative_s": 10.386887
+        },
+        {
+          "file": "engine.py",
+          "line": 197,
+          "function": "_serve",
+          "primitive_calls": 126700,
+          "calls": 126700,
+          "own_s": 0.6436831000000001,
+          "cumulative_s": 3.7221173000000003
+        },
+        {
+          "file": "engine.py",
+          "line": 255,
+          "function": "_attempt",
+          "primitive_calls": 124293,
+          "calls": 124293,
+          "own_s": 0.6416742000000001,
+          "cumulative_s": 4.7486655
+        },
+        {
+          "file": "events.py",
+          "line": 388,
+          "function": "_resume",
+          "primitive_calls": 144321,
+          "calls": 144321,
+          "own_s": 0.4963344,
+          "cumulative_s": 7.7872706
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<built-in method _heapq.heappop>",
+          "primitive_calls": 254407,
+          "calls": 254407,
+          "own_s": 0.4840281,
+          "cumulative_s": 0.4840281
+        },
+        {
+          "file": "core.py",
+          "line": 165,
+          "function": "schedule",
+          "primitive_calls": 254408,
+          "calls": 254408,
+          "own_s": 0.42914820000000004,
+          "cumulative_s": 0.8153155000000001
+        },
+        {
+          "file": "core.py",
+          "line": 214,
+          "function": "run",
+          "primitive_calls": 1,
+          "calls": 1,
+          "own_s": 0.4267401,
+          "cumulative_s": 10.813637400000001
+        },
+        {
+          "file": "events.py",
+          "line": 519,
+          "function": "__init__",
+          "primitive_calls": 42789,
+          "calls": 42789,
+          "own_s": 0.342472,
+          "cumulative_s": 0.47672370000000003
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<method 'append' of 'list' objects>",
+          "primitive_calls": 473399,
+          "calls": 473399,
+          "own_s": 0.2887023,
+          "cumulative_s": 0.2887023
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<built-in method _heapq.heappush>",
+          "primitive_calls": 254408,
+          "calls": 254408,
+          "own_s": 0.2559441,
+          "cumulative_s": 0.2559441
+        },
+        {
+          "file": "base.py",
+          "line": 48,
+          "function": "__init__",
+          "primitive_calls": 42789,
+          "calls": 42789,
+          "own_s": 0.2514518,
+          "cumulative_s": 0.6171404
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<method 'send' of 'generator' objects>",
+          "primitive_calls": 144321,
+          "calls": 144321,
+          "own_s": 0.2499771,
+          "cumulative_s": 7.1205658000000005
+        },
+        {
+          "file": "engine.py",
+          "line": 351,
+          "function": "_arrivals",
+          "primitive_calls": 20028,
+          "calls": 20028,
+          "own_s": 0.24558410000000003,
+          "cumulative_s": 0.686772
+        },
+        {
+          "file": "base.py",
+          "line": 99,
+          "function": "__init__",
+          "primitive_calls": 42789,
+          "calls": 42789,
+          "own_s": 0.22612710000000003,
+          "cumulative_s": 1.0026884
+        },
+        {
+          "file": "base.py",
+          "line": 217,
+          "function": "_trigger_put",
+          "primitive_calls": 85578,
+          "calls": 85578,
+          "own_s": 0.21785100000000002,
+          "cumulative_s": 0.5433389000000001
+        },
+        {
+          "file": "events.py",
+          "line": 230,
+          "function": "__init__",
+          "primitive_calls": 124294,
+          "calls": 124294,
+          "own_s": 0.2040827,
+          "cumulative_s": 0.5540828
+        },
+        {
+          "file": "events.py",
+          "line": 569,
+          "function": "_build_value",
+          "primitive_calls": 42789,
+          "calls": 42789,
+          "own_s": 0.1996299,
+          "cumulative_s": 0.6852433
+        },
+        {
+          "file": "resource.py",
+          "line": 85,
+          "function": "__exit__",
+          "primitive_calls": 42789,
+          "calls": 42789,
+          "own_s": 0.19881310000000002,
+          "cumulative_s": 1.4826965
+        },
+        {
+          "file": "events.py",
+          "line": 576,
+          "function": "_remove_check_callbacks",
+          "primitive_calls": 42789,
+          "calls": 42789,
+          "own_s": 0.18443420000000002,
+          "cumulative_s": 0.28810020000000003
+        },
+        {
+          "file": "base.py",
+          "line": 255,
+          "function": "_trigger_get",
+          "primitive_calls": 47269,
+          "calls": 47269,
+          "own_s": 0.17785810000000002,
+          "cumulative_s": 0.6917380000000001
+        },
+        {
+          "file": "engine.py",
+          "line": 177,
+          "function": "_app_alive",
+          "primitive_calls": 79097,
+          "calls": 79097,
+          "own_s": 0.1689265,
+          "cumulative_s": 0.3130597
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<built-in method builtins.max>",
+          "primitive_calls": 159933,
+          "calls": 159933,
+          "own_s": 0.1660899,
+          "cumulative_s": 0.1660899
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<method 'remove' of 'list' objects>",
+          "primitive_calls": 121575,
+          "calls": 121575,
+          "own_s": 0.1565032,
+          "cumulative_s": 0.1565032
+        },
+        {
+          "file": "resource.py",
+          "line": 213,
+          "function": "_do_put",
+          "primitive_calls": 83168,
+          "calls": 83168,
+          "own_s": 0.1440254,
+          "cumulative_s": 0.2349688
+        }
+      ],
+      "top_cumulative": [
+        {
+          "file": "engine.py",
+          "line": 455,
+          "function": "run_summary",
+          "primitive_calls": 1,
+          "calls": 1,
+          "own_s": 4.77e-05,
+          "cumulative_s": 10.817426300000001
+        },
+        {
+          "file": "engine.py",
+          "line": 404,
+          "function": "run",
+          "primitive_calls": 1,
+          "calls": 1,
+          "own_s": 0.0002234,
+          "cumulative_s": 10.816010200000001
+        },
+        {
+          "file": "core.py",
+          "line": 214,
+          "function": "run",
+          "primitive_calls": 1,
+          "calls": 1,
+          "own_s": 0.4267401,
+          "cumulative_s": 10.813637400000001
+        },
+        {
+          "file": "core.py",
+          "line": 182,
+          "function": "step",
+          "primitive_calls": 254407,
+          "calls": 254407,
+          "own_s": 0.7908991000000001,
+          "cumulative_s": 10.386887
+        },
+        {
+          "file": "events.py",
+          "line": 388,
+          "function": "_resume",
+          "primitive_calls": 144321,
+          "calls": 144321,
+          "own_s": 0.4963344,
+          "cumulative_s": 7.7872706
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<method 'send' of 'generator' objects>",
+          "primitive_calls": 144321,
+          "calls": 144321,
+          "own_s": 0.2499771,
+          "cumulative_s": 7.1205658000000005
+        },
+        {
+          "file": "engine.py",
+          "line": 225,
+          "function": "_request",
+          "primitive_calls": 124293,
+          "calls": 124293,
+          "own_s": 0.8922577,
+          "cumulative_s": 6.1838167
+        },
+        {
+          "file": "engine.py",
+          "line": 255,
+          "function": "_attempt",
+          "primitive_calls": 124293,
+          "calls": 124293,
+          "own_s": 0.6416742000000001,
+          "cumulative_s": 4.7486655
+        },
+        {
+          "file": "engine.py",
+          "line": 197,
+          "function": "_serve",
+          "primitive_calls": 126700,
+          "calls": 126700,
+          "own_s": 0.6436831000000001,
+          "cumulative_s": 3.7221173000000003
+        },
+        {
+          "file": "resource.py",
+          "line": 85,
+          "function": "__exit__",
+          "primitive_calls": 42789,
+          "calls": 42789,
+          "own_s": 0.19881310000000002,
+          "cumulative_s": 1.4826965
+        },
+        {
+          "file": "resource.py",
+          "line": 105,
+          "function": "__init__",
+          "primitive_calls": 42789,
+          "calls": 42789,
+          "own_s": 0.0967978,
+          "cumulative_s": 1.0994862
+        },
+        {
+          "file": "base.py",
+          "line": 99,
+          "function": "__init__",
+          "primitive_calls": 42789,
+          "calls": 42789,
+          "own_s": 0.22612710000000003,
+          "cumulative_s": 1.0026884
+        },
+        {
+          "file": "core.py",
+          "line": 165,
+          "function": "schedule",
+          "primitive_calls": 254408,
+          "calls": 254408,
+          "own_s": 0.42914820000000004,
+          "cumulative_s": 0.8153155000000001
+        },
+        {
+          "file": "base.py",
+          "line": 255,
+          "function": "_trigger_get",
+          "primitive_calls": 47269,
+          "calls": 47269,
+          "own_s": 0.17785810000000002,
+          "cumulative_s": 0.6917380000000001
+        },
+        {
+          "file": "engine.py",
+          "line": 351,
+          "function": "_arrivals",
+          "primitive_calls": 20028,
+          "calls": 20028,
+          "own_s": 0.24558410000000003,
+          "cumulative_s": 0.686772
+        },
+        {
+          "file": "events.py",
+          "line": 569,
+          "function": "_build_value",
+          "primitive_calls": 42789,
+          "calls": 42789,
+          "own_s": 0.1996299,
+          "cumulative_s": 0.6852433
+        },
+        {
+          "file": "base.py",
+          "line": 48,
+          "function": "__init__",
+          "primitive_calls": 42789,
+          "calls": 42789,
+          "own_s": 0.2514518,
+          "cumulative_s": 0.6171404
+        },
+        {
+          "file": "events.py",
+          "line": 209,
+          "function": "__or__",
+          "primitive_calls": 42789,
+          "calls": 42789,
+          "own_s": 0.11804490000000001,
+          "cumulative_s": 0.5947686000000001
+        },
+        {
+          "file": "events.py",
+          "line": 230,
+          "function": "__init__",
+          "primitive_calls": 124294,
+          "calls": 124294,
+          "own_s": 0.2040827,
+          "cumulative_s": 0.5540828
+        },
+        {
+          "file": "base.py",
+          "line": 217,
+          "function": "_trigger_put",
+          "primitive_calls": 85578,
+          "calls": 85578,
+          "own_s": 0.21785100000000002,
+          "cumulative_s": 0.5433389000000001
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<built-in method _heapq.heappop>",
+          "primitive_calls": 254407,
+          "calls": 254407,
+          "own_s": 0.4840281,
+          "cumulative_s": 0.4840281
+        },
+        {
+          "file": "events.py",
+          "line": 519,
+          "function": "__init__",
+          "primitive_calls": 42789,
+          "calls": 42789,
+          "own_s": 0.342472,
+          "cumulative_s": 0.47672370000000003
+        },
+        {
+          "file": "events.py",
+          "line": 171,
+          "function": "succeed",
+          "primitive_calls": 90058,
+          "calls": 90058,
+          "own_s": 0.14238420000000002,
+          "cumulative_s": 0.45963400000000004
+        },
+        {
+          "file": "resource.py",
+          "line": 219,
+          "function": "_do_get",
+          "primitive_calls": 42789,
+          "calls": 42789,
+          "own_s": 0.1386743,
+          "cumulative_s": 0.43860170000000004
+        },
+        {
+          "file": "events.py",
+          "line": 591,
+          "function": "_check",
+          "primitive_calls": 45101,
+          "calls": 45101,
+          "own_s": 0.1272195,
+          "cumulative_s": 0.3609238
+        }
+      ]
+    },
+    "queued_writes": {
+      "config": {
+        "name": "Custom design",
+        "app": {
+          "replicas": 3,
+          "workers": 8,
+          "latency_ms": 20.0,
+          "lb_strategy": "least_queue",
+          "max_queue": 200
+        },
+        "cache": {
+          "enabled": true,
+          "hit_rate": 0.85,
+          "latency_ms": 1.0,
+          "workers": 64
+        },
+        "cdn": {
+          "enabled": false,
+          "hit_rate": 0.6,
+          "latency_ms": 8.0
+        },
+        "queue": {
+          "enabled": true,
+          "consumers": 8,
+          "max_depth": 5000,
+          "enqueue_ms": 2.0
+        },
+        "db": {
+          "workers": 16,
+          "read_ms": 8.0,
+          "write_ms": 25.0,
+          "read_replicas": 0,
+          "max_queue": 500,
+          "shards": 1,
+          "hot_share": 0.0
+        },
+        "workload": {
+          "rps": 700,
+          "read_ratio": 0.2,
+          "duration_s": 20,
+          "timeout_ms": 1000.0,
+          "warmup_s": 2
+        },
+        "events": [],
+        "seed": 7,
+        "app_only": false,
+        "policy": {
+          "max_retries": 0,
+          "backoff_ms": 100.0,
+          "backoff_multiplier": 2.0,
+          "jitter": true,
+          "rate_limit_rps": null,
+          "burst": 100
+        }
+      },
+      "unprofiled_s": 1.987969100000555,
+      "metrics": {
+        "offered_rps": 695.6666666666666,
+        "served_rps": 695.6666666666666,
+        "success_rate": 1.0,
+        "p50_ms": 16.124362451897856,
+        "p95_ms": 60.71071257162209,
+        "p99_ms": 93.74328281295224
+      },
+      "arrival_limit_calls": 2,
+      "top_own": [
+        {
+          "file": "core.py",
+          "line": 182,
+          "function": "step",
+          "primitive_calls": 177708,
+          "calls": 177708,
+          "own_s": 0.5056453000000001,
+          "cumulative_s": 6.833471100000001
+        },
+        {
+          "file": "events.py",
+          "line": 388,
+          "function": "_resume",
+          "primitive_calls": 105518,
+          "calls": 105518,
+          "own_s": 0.3649742,
+          "cumulative_s": 5.466146
+        },
+        {
+          "file": "engine.py",
+          "line": 255,
+          "function": "_attempt",
+          "primitive_calls": 70139,
+          "calls": 70139,
+          "own_s": 0.36222960000000004,
+          "cumulative_s": 3.1785126000000004
+        },
+        {
+          "file": "engine.py",
+          "line": 197,
+          "function": "_serve",
+          "primitive_calls": 72661,
+          "calls": 72661,
+          "own_s": 0.3549972,
+          "cumulative_s": 2.3761078
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<built-in method _heapq.heappop>",
+          "primitive_calls": 177708,
+          "calls": 177708,
+          "own_s": 0.33174800000000004,
+          "cumulative_s": 0.33174800000000004
+        },
+        {
+          "file": "core.py",
+          "line": 165,
+          "function": "schedule",
+          "primitive_calls": 177717,
+          "calls": 177717,
+          "own_s": 0.3312644,
+          "cumulative_s": 0.6588566
+        },
+        {
+          "file": "engine.py",
+          "line": 225,
+          "function": "_request",
+          "primitive_calls": 70139,
+          "calls": 70139,
+          "own_s": 0.2610526,
+          "cumulative_s": 3.5696607
+        },
+        {
+          "file": "core.py",
+          "line": 214,
+          "function": "run",
+          "primitive_calls": 1,
+          "calls": 1,
+          "own_s": 0.2514849,
+          "cumulative_s": 7.0849609000000004
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<built-in method _heapq.heappush>",
+          "primitive_calls": 177717,
+          "calls": 177717,
+          "own_s": 0.2497715,
+          "cumulative_s": 0.2497715
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<method 'append' of 'list' objects>",
+          "primitive_calls": 346260,
+          "calls": 346260,
+          "own_s": 0.19870420000000003,
+          "cumulative_s": 0.19870420000000003
+        },
+        {
+          "file": "base.py",
+          "line": 48,
+          "function": "__init__",
+          "primitive_calls": 35306,
+          "calls": 35306,
+          "own_s": 0.19614920000000002,
+          "cumulative_s": 0.8484694
+        },
+        {
+          "file": "events.py",
+          "line": 519,
+          "function": "__init__",
+          "primitive_calls": 17053,
+          "calls": 17053,
+          "own_s": 0.17738140000000002,
+          "cumulative_s": 0.2291147
+        },
+        {
+          "file": "base.py",
+          "line": 217,
+          "function": "_trigger_put",
+          "primitive_calls": 66691,
+          "calls": 66691,
+          "own_s": 0.16683320000000001,
+          "cumulative_s": 0.6132379
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<method 'send' of 'generator' objects>",
+          "primitive_calls": 105518,
+          "calls": 105518,
+          "own_s": 0.16237880000000002,
+          "cumulative_s": 4.9777864
+        },
+        {
+          "file": "base.py",
+          "line": 255,
+          "function": "_trigger_get",
+          "primitive_calls": 66691,
+          "calls": 66691,
+          "own_s": 0.1601852,
+          "cumulative_s": 0.5251979
+        },
+        {
+          "file": "engine.py",
+          "line": 351,
+          "function": "_arrivals",
+          "primitive_calls": 13869,
+          "calls": 13869,
+          "own_s": 0.1546845,
+          "cumulative_s": 0.45536400000000005
+        },
+        {
+          "file": "base.py",
+          "line": 99,
+          "function": "__init__",
+          "primitive_calls": 31385,
+          "calls": 31385,
+          "own_s": 0.1546693,
+          "cumulative_s": 0.6869321
+        },
+        {
+          "file": "engine.py",
+          "line": 96,
+          "function": "pick",
+          "primitive_calls": 13867,
+          "calls": 13867,
+          "own_s": 0.1371183,
+          "cumulative_s": 0.3486695
+        },
+        {
+          "file": "events.py",
+          "line": 171,
+          "function": "succeed",
+          "primitive_calls": 83744,
+          "calls": 83744,
+          "own_s": 0.1236937,
+          "cumulative_s": 0.42425470000000004
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<built-in method builtins.len>",
+          "primitive_calls": 318674,
+          "calls": 318674,
+          "own_s": 0.11135060000000001,
+          "cumulative_s": 0.11135060000000001
+        },
+        {
+          "file": "resource.py",
+          "line": 85,
+          "function": "__exit__",
+          "primitive_calls": 24215,
+          "calls": 24215,
+          "own_s": 0.10743180000000001,
+          "cumulative_s": 0.7314838
+        },
+        {
+          "file": "engine.py",
+          "line": 215,
+          "function": "_enqueue",
+          "primitive_calls": 33249,
+          "calls": 33249,
+          "own_s": 0.1064215,
+          "cumulative_s": 0.5214758
+        },
+        {
+          "file": "events.py",
+          "line": 230,
+          "function": "__init__",
+          "primitive_calls": 66227,
+          "calls": 66227,
+          "own_s": 0.0988348,
+          "cumulative_s": 0.3244475
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<method 'pop' of 'list' objects>",
+          "primitive_calls": 73861,
+          "calls": 73861,
+          "own_s": 0.0948838,
+          "cumulative_s": 0.0948838
+        },
+        {
+          "file": "random.py",
+          "line": 599,
+          "function": "expovariate",
+          "primitive_calls": 49174,
+          "calls": 49174,
+          "own_s": 0.09377160000000001,
+          "cumulative_s": 0.1874162
+        }
+      ],
+      "top_cumulative": [
+        {
+          "file": "engine.py",
+          "line": 455,
+          "function": "run_summary",
+          "primitive_calls": 1,
+          "calls": 1,
+          "own_s": 2.47e-05,
+          "cumulative_s": 7.088194100000001
+        },
+        {
+          "file": "engine.py",
+          "line": 404,
+          "function": "run",
+          "primitive_calls": 1,
+          "calls": 1,
+          "own_s": 0.0008571000000000001,
+          "cumulative_s": 7.087693300000001
+        },
+        {
+          "file": "core.py",
+          "line": 214,
+          "function": "run",
+          "primitive_calls": 1,
+          "calls": 1,
+          "own_s": 0.2514849,
+          "cumulative_s": 7.0849609000000004
+        },
+        {
+          "file": "core.py",
+          "line": 182,
+          "function": "step",
+          "primitive_calls": 177708,
+          "calls": 177708,
+          "own_s": 0.5056453000000001,
+          "cumulative_s": 6.833471100000001
+        },
+        {
+          "file": "events.py",
+          "line": 388,
+          "function": "_resume",
+          "primitive_calls": 105518,
+          "calls": 105518,
+          "own_s": 0.3649742,
+          "cumulative_s": 5.466146
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<method 'send' of 'generator' objects>",
+          "primitive_calls": 105518,
+          "calls": 105518,
+          "own_s": 0.16237880000000002,
+          "cumulative_s": 4.9777864
+        },
+        {
+          "file": "engine.py",
+          "line": 225,
+          "function": "_request",
+          "primitive_calls": 70139,
+          "calls": 70139,
+          "own_s": 0.2610526,
+          "cumulative_s": 3.5696607
+        },
+        {
+          "file": "engine.py",
+          "line": 255,
+          "function": "_attempt",
+          "primitive_calls": 70139,
+          "calls": 70139,
+          "own_s": 0.36222960000000004,
+          "cumulative_s": 3.1785126000000004
+        },
+        {
+          "file": "engine.py",
+          "line": 197,
+          "function": "_serve",
+          "primitive_calls": 72661,
+          "calls": 72661,
+          "own_s": 0.3549972,
+          "cumulative_s": 2.3761078
+        },
+        {
+          "file": "base.py",
+          "line": 48,
+          "function": "__init__",
+          "primitive_calls": 35306,
+          "calls": 35306,
+          "own_s": 0.19614920000000002,
+          "cumulative_s": 0.8484694
+        },
+        {
+          "file": "engine.py",
+          "line": 337,
+          "function": "_consumer",
+          "primitive_calls": 21510,
+          "calls": 21510,
+          "own_s": 0.0867073,
+          "cumulative_s": 0.7903829
+        },
+        {
+          "file": "resource.py",
+          "line": 85,
+          "function": "__exit__",
+          "primitive_calls": 24215,
+          "calls": 24215,
+          "own_s": 0.10743180000000001,
+          "cumulative_s": 0.7314838
+        },
+        {
+          "file": "base.py",
+          "line": 99,
+          "function": "__init__",
+          "primitive_calls": 31385,
+          "calls": 31385,
+          "own_s": 0.1546693,
+          "cumulative_s": 0.6869321
+        },
+        {
+          "file": "core.py",
+          "line": 165,
+          "function": "schedule",
+          "primitive_calls": 177717,
+          "calls": 177717,
+          "own_s": 0.3312644,
+          "cumulative_s": 0.6588566
+        },
+        {
+          "file": "base.py",
+          "line": 217,
+          "function": "_trigger_put",
+          "primitive_calls": 66691,
+          "calls": 66691,
+          "own_s": 0.16683320000000001,
+          "cumulative_s": 0.6132379
+        },
+        {
+          "file": "resource.py",
+          "line": 105,
+          "function": "__init__",
+          "primitive_calls": 24215,
+          "calls": 24215,
+          "own_s": 0.049738000000000004,
+          "cumulative_s": 0.5628578000000001
+        },
+        {
+          "file": "base.py",
+          "line": 255,
+          "function": "_trigger_get",
+          "primitive_calls": 66691,
+          "calls": 66691,
+          "own_s": 0.1601852,
+          "cumulative_s": 0.5251979
+        },
+        {
+          "file": "engine.py",
+          "line": 215,
+          "function": "_enqueue",
+          "primitive_calls": 33249,
+          "calls": 33249,
+          "own_s": 0.1064215,
+          "cumulative_s": 0.5214758
+        },
+        {
+          "file": "engine.py",
+          "line": 351,
+          "function": "_arrivals",
+          "primitive_calls": 13869,
+          "calls": 13869,
+          "own_s": 0.1546845,
+          "cumulative_s": 0.45536400000000005
+        },
+        {
+          "file": "events.py",
+          "line": 171,
+          "function": "succeed",
+          "primitive_calls": 83744,
+          "calls": 83744,
+          "own_s": 0.1236937,
+          "cumulative_s": 0.42425470000000004
+        },
+        {
+          "file": "engine.py",
+          "line": 96,
+          "function": "pick",
+          "primitive_calls": 13867,
+          "calls": 13867,
+          "own_s": 0.1371183,
+          "cumulative_s": 0.3486695
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<built-in method _heapq.heappop>",
+          "primitive_calls": 177708,
+          "calls": 177708,
+          "own_s": 0.33174800000000004,
+          "cumulative_s": 0.33174800000000004
+        },
+        {
+          "file": "events.py",
+          "line": 230,
+          "function": "__init__",
+          "primitive_calls": 66227,
+          "calls": 66227,
+          "own_s": 0.0988348,
+          "cumulative_s": 0.3244475
+        },
+        {
+          "file": "store.py",
+          "line": 35,
+          "function": "__init__",
+          "primitive_calls": 11083,
+          "calls": 11083,
+          "own_s": 0.0278802,
+          "cumulative_s": 0.32424610000000004
+        },
+        {
+          "file": "events.py",
+          "line": 569,
+          "function": "_build_value",
+          "primitive_calls": 17053,
+          "calls": 17053,
+          "own_s": 0.0725202,
+          "cumulative_s": 0.29798460000000004
+        }
+      ]
+    }
+  }
+}
