@@ -1,15 +1,17 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
-import { LazyMotion, domAnimation, MotionConfig } from 'motion/react';
+import { memo, useEffect, useRef, useState } from 'react';
+import { LazyMotion, MotionConfig } from 'motion/react';
 import * as m from 'motion/react-m';
 import { Pause, Play, Sparkles } from 'lucide-react';
 
+const loadAnimations=()=>import('motion/react').then(module=>module.domAnimation);
+
 export function LabMotion({children}:{children:React.ReactNode}) {
-  return <LazyMotion features={domAnimation} strict><MotionConfig reducedMotion="user" transition={{duration:.4,ease:[.22,1,.36,1]}}>{children}</MotionConfig></LazyMotion>;
+  return <LazyMotion features={loadAnimations} strict><MotionConfig reducedMotion="user" transition={{duration:.4,ease:[.22,1,.36,1]}}>{children}</MotionConfig></LazyMotion>;
 }
 
-export function LabScene() {
+export const LabScene = memo(function LabScene() {
   const canvas = useRef<HTMLCanvasElement>(null);
   const [paused,setPaused] = useState(false);
   useEffect(()=>{
@@ -22,10 +24,12 @@ export function LabScene() {
     if(!element||!context)return;
     const media=window.matchMedia('(prefers-reduced-motion: reduce)');
     let frame=0, width=0, height=0, time=0, previous=0;
-    const points=Array.from({length:42},(_,i)=>({x:((i*73+17)%101)/101,y:((i*41+13)%103)/103,phase:i*1.7}));
+    const mobile=window.matchMedia('(max-width: 550px)').matches;
+    const frameInterval=mobile?66:40;
+    const points=Array.from({length:mobile?18:42},(_,i)=>({x:((i*73+17)%101)/101,y:((i*41+13)%103)/103,phase:i*1.7}));
     function draw(stamp:number){
       if(!context||!element)return;
-      if(stamp-previous<40){frame=requestAnimationFrame(draw);return;}
+      if(stamp-previous<frameInterval){frame=requestAnimationFrame(draw);return;}
       previous=stamp;
       if(!paused&&!media.matches)time+=.006;
       context.clearRect(0,0,width,height);
@@ -46,7 +50,7 @@ export function LabScene() {
     function resize(){
       if(!element||!context)return;
       width=element.clientWidth;height=element.clientHeight;
-      const ratio=Math.min(window.devicePixelRatio||1,1.5);
+      const ratio=Math.min(window.devicePixelRatio||1,mobile?1:1.5);
       element.width=width*ratio;element.height=height*ratio;context.setTransform(ratio,0,0,ratio,0,0);
       restart();
     }
@@ -56,7 +60,7 @@ export function LabScene() {
     return ()=>{cancelAnimationFrame(frame);observer.disconnect();media.removeEventListener('change',restart);document.removeEventListener('visibilitychange',restart);};
   },[paused]);
   return <><div className={'lab-atmosphere '+(paused?'is-paused':'')} aria-hidden="true"><div className="aurora aurora-violet"/><div className="aurora aurora-cyan"/><div className="atmosphere-grid"/><canvas ref={canvas}/></div><button className="effects-toggle" onClick={()=>setPaused(!paused)} aria-label={paused?'Resume background animations':'Pause background animations'} aria-pressed={paused}>{paused?<Play size={13}/>:<Pause size={13}/>}<span>Ambient motion</span><Sparkles size={12}/></button></>;
-}
+});
 
 export function ViewTransition({children,view}:{children:React.ReactNode;view:string}) {
   return <m.div key={view} className="view-transition" initial={{opacity:0,y:12}} animate={{opacity:1,y:0}}>{children}</m.div>;
