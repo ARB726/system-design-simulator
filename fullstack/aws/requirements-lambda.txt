@@ -1,0 +1,7 @@
+fastapi==0.121.2
+mangum==0.22.0
+PyJWT[crypto]==2.15.1
+boto3==1.44.4
+simpy==4.1.1
+pandas==2.3.3
+numpy==2.3.5
