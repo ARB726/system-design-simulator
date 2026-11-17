@@ -1,5 +1,9 @@
 # System Design Simulator
 
+**React full-stack edition:** [Local startup, features, and portable backups](fullstack/README.md) · [AWS deployment](fullstack/aws/DEPLOY.md). Run it locally without AWS or use the prepared serverless deployment.
+
+**Live React application:** [Open Systems Lab](https://d11ry0yeilwlgs.cloudfront.net).
+
 [![CI](https://github.com/ARB726/system-design-simulator/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/ARB726/system-design-simulator/actions/workflows/ci.yml)
 
 **Design a system, stress it, and see where it breaks.**
