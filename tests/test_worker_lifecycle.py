@@ -42,4 +42,3 @@ def test_start_failure_closes_temporary_file(monkeypatch):
     with pytest.raises(ValueError, match="could not start"):
         batch._Worker()
     assert stderr.closed
-
