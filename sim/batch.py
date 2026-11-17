@@ -56,14 +56,17 @@ class _Worker:
     def run(self, point):
         index, cfg = point
         try:
+            remaining = WORKER_TIMEOUT_S - (perf_counter() - self.started)
+            if remaining <= 0:
+                raise Empty
             assert self.process.stdin is not None
             self.process.stdin.write(json.dumps([index, cfg.to_dict()], allow_nan=False) + "\n")
             self.process.stdin.flush()
-            line = self.messages.get(timeout=max(0, WORKER_TIMEOUT_S - (perf_counter() - self.started)))
+            line = self.messages.get(timeout=remaining)
             if line is None:
                 raise ValueError("Worker exited without a result")
             returned_index, result = json.loads(line)
-            if returned_index != index or not isinstance(result, dict):
+            if type(returned_index) is not int or returned_index != index or not isinstance(result, dict):
                 raise ValueError("Worker returned an invalid result")
             return index, result
         except Empty as exc:
