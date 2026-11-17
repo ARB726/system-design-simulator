@@ -103,4 +103,3 @@ def test_failure_closes_peers_before_waiting_for_threads(monkeypatch, failure):
     with pytest.raises(ValueError, match=failure):
         batch.summaries([small(), small()], workers=2, progress=progress if failure == "progress" else None)
     assert all(child.closed for child in children)
-

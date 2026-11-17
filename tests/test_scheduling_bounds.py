@@ -54,4 +54,3 @@ def test_assigning_another_point_does_not_reset_lifetime_budget(monkeypatch):
     child.run((0, small()))
     child.run((1, small()))
     assert [call.kwargs["timeout"] for call in child.messages.get.call_args_list] == [20, 10]
-
