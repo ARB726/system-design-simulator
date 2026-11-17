@@ -1,0 +1,47 @@
+name: systems-lab
+services:
+  frontend:
+    image: nginx:1.27-alpine
+    ports: ["127.0.0.1:8080:80"]
+    volumes:
+      - ./frontend/out:/usr/share/nginx/html:ro
+    depends_on: [api]
+  api:
+    build:
+      context: ..
+      dockerfile: fullstack/backend/Dockerfile
+    ports: ["127.0.0.1:8000:8000"]
+    environment: &env
+      DATABASE_URL: postgresql+psycopg://lab:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}@postgres:5432/lab
+      LOCAL_SESSION_SECRET: ${LOCAL_SESSION_SECRET:?Set LOCAL_SESSION_SECRET}
+      ALLOW_LOCAL_AUTH_NETWORK: "true"
+      ALLOWED_ORIGINS: http://localhost:8080,http://127.0.0.1:8080
+      SYSDESIGN_MAX_ARRIVALS: "150000"
+    depends_on:
+      postgres: {condition: service_healthy}
+    restart: unless-stopped
+  worker:
+    build:
+      context: ..
+      dockerfile: fullstack/backend/Dockerfile
+    command: ["python", "-m", "fullstack.backend.worker"]
+    environment: *env
+    depends_on:
+      postgres: {condition: service_healthy}
+    restart: unless-stopped
+    mem_limit: 1g
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: lab
+      POSTGRES_DB: lab
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}
+    volumes: ["lab-data:/var/lib/postgresql/data"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U lab -d lab"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+    restart: unless-stopped
+volumes:
+  lab-data:
