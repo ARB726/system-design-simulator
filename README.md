@@ -22,7 +22,7 @@ Explore an animated architecture canvas, configure replicas, caches, CDN, databa
 2. Configure a design and click **Run simulation**. Experiments execute in background workers and results are saved to your workspace.
 3. After a simulation completes, click **Explain my results** for a Gemini explanation based on the saved evidence. AI advice supports learning; it does not validate production capacity.
 
-I verified the complete workflow on the live app: signing in with Google, running a simulation, and generating a Gemini explanation of the results.
+
 
 ### Hosted architecture
 
@@ -44,13 +44,24 @@ See the [Google sign-in and shared AI setup guide](fullstack/PUBLIC_ACCESS.md) f
 
 [Try it locally](#quick-start) · [Two-minute walkthrough](#two-minute-walkthrough) · [Engineering case study](docs/performance.md) · [Architecture](docs/architecture.md)
 
-## Engineering highlights
+## Engineering results
 
-- **Model system behavior:** I use a discrete-event engine to model replicas, caches, CDN hits, sharding, bounded queues, timeouts, and failures. Response latency and asynchronous write-apply lag are measured separately.
-- **Optimize without changing results:** the summary execution path reduced peak traced Python allocations by **84.1%** (3.366 to 0.535 MiB) in the [recorded local benchmark](docs/benchmarks/summary-local.md). The workload offered 500 requests/s for 20 simulated seconds; metric-equivalence checks passed at 1e-12 tolerance. This measures Python allocations for one workload, not process memory or production capacity. Median runtime changed from 1.9193 to 1.8622 seconds.
-- **Make comparisons explainable:** I preserve completed configurations and results in saved snapshots; comparisons flag changes in workloads, seeds, and chaos events that could confound conclusions.
-- **Separate the engine from delivery:** I reuse the simulation core across the local lab and the hosted app. The AWS deployment runs bounded background jobs and stores each user's experiments separately. See the [hosted architecture](#hosted-architecture) and the [alternative deployment design](docs/production.md).
-- **Validate the model:** I check the engine with queueing theory, regression tests, Streamlit interaction tests, and distributed-service CI. See [test coverage](docs/testing-coverage.md) and the [development guide](docs/development.md).
+- **Reduced simulation memory overhead by 84.1%, measured as peak traced Python allocations falling from 3.366 to 0.535 MiB, by implementing a summary execution path that avoids retaining unnecessary request detail.** I checked result equivalence at a relative/absolute tolerance of **1e-12**. [Benchmark and methodology](docs/benchmarks/summary-local.md).
+- **Reduced median local runtime by approximately 3.0%, measured from 1.9193 to 1.8622 seconds across three timing repetitions per path, by using the summary path for aggregate results.** The benchmark used **500 offered requests/s over 20 simulated seconds**, a one-second warmup, and seed 7. [Raw benchmark](docs/benchmarks/summary-local.json).
+- **Verified Google session handling across five passing browser tests by testing PKCE initiation, callback exchange, sign-out, missing-verifier recovery, and an already-consumed callback with an existing session.** I also verified Google sign-in, simulation execution, and Gemini explanations on the hosted app. [Authentication tests](fullstack/frontend/tests/google-auth.spec.ts).
+- **Bounded shared AI usage to five attempts per user and twenty globally per UTC hour, with two concurrent requests, by implementing atomic admission counters and request leases in a private PostgreSQL schema.** I added an owner-scoped **one-hour answer cache** so repeated answers can avoid another provider call. These are configured limits, not measured traffic or cost savings. [AI access design](fullstack/PUBLIC_ACCESS.md).
+
+### Recorded metrics
+
+| Metric | Baseline | Result | Evidence |
+| --- | ---: | ---: | --- |
+| Peak traced Python allocations | 3.366 MiB | 0.535 MiB (**84.1% lower**) | Local summary benchmark |
+| Median execution time | 1.9193 s | 1.8622 s (**about 3.0% lower**) | Three timing repetitions per path |
+| Metric equivalence tolerance | Full execution reference | **1e-12** relative/absolute | Benchmark checks |
+| Google authentication browser tests | — | **5 passed** | Authentication regression run |
+| AI usage limits | — | **5/user/hour; 20 globally/hour; 2 concurrent** | Backend admission policy |
+
+The performance figures describe one recorded local workload. Peak allocations were measured with `tracemalloc`, not process RSS; the runtime difference is an observation from a small sample, not an established production speedup. Offered simulated requests are not real API throughput. I have not measured production user capacity or cost savings.
 
 ## How it works
 
