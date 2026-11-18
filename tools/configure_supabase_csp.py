@@ -50,6 +50,11 @@ def main():
         print('Origin is already allowed; no changes needed.')
     elif args.apply:
         csp['ContentSecurityPolicy'] = updated
+        # CloudFront GET can return empty optional blocks that UPDATE rejects.
+        security = policy['SecurityHeadersConfig']
+        for name in list(security):
+            if security[name] == {}:
+                del security[name]
         cf.update_response_headers_policy(Id=policy_id, IfMatch=response['ETag'],
                                           ResponseHeadersPolicyConfig=policy)
         print('Updated existing CloudFront policy; other directives preserved.', flush=True)
