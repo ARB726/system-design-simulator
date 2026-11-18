@@ -1,4 +1,6 @@
 import copy
+import pytest
+pytest.importorskip('fastapi')
 
 from fullstack.backend.ai_evaluation import score, cases
 
