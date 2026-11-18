@@ -1,4 +1,5 @@
 import pytest
+pytest.importorskip('fastapi')
 from fastapi import HTTPException
 from fullstack.backend.ai import grounded_observations
 
