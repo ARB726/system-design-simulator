@@ -148,23 +148,23 @@ class Budget:
 budget = Budget()
 
 
-async def request_explanation(model, encoded, provider='openai'):
+async def request_explanation(model, encoded, provider='openai', *, schema=Explanation, instructions=INSTRUCTIONS):
     import httpx
     if provider == 'gemini':
         if not re.fullmatch(r'gemini-[A-Za-z0-9._-]{1,90}', model):
             raise HTTPException(503, 'The configured Gemini model ID is invalid.')
         url = f'https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent'
         headers = {'x-goog-api-key': os.environ['GEMINI_API_KEY'].strip()}
-        body = dict(systemInstruction={'parts': [{'text': INSTRUCTIONS}]},
+        body = dict(systemInstruction={'parts': [{'text': instructions}]},
                     contents=[{'role': 'user', 'parts': [{'text': encoded}]}],
                     generationConfig={'candidateCount': 1, 'maxOutputTokens': 1600,
-                                      'responseMimeType': 'application/json', 'responseJsonSchema': Explanation.model_json_schema()})
+                                      'responseMimeType': 'application/json', 'responseJsonSchema': schema.model_json_schema()})
     elif provider == 'openai':
         url = 'https://api.openai.com/v1/responses'
         headers = {'Authorization': 'Bearer ' + os.environ['OPENAI_API_KEY'].strip()}
-        body = dict(model=model, instructions=INSTRUCTIONS, input=encoded, store=False,
+        body = dict(model=model, instructions=instructions, input=encoded, store=False,
                     max_output_tokens=1600, text={'format': {'type': 'json_schema', 'name': 'experiment_explanation',
-                    'strict': True, 'schema': Explanation.model_json_schema()}})
+                    'strict': True, 'schema': schema.model_json_schema()}})
     else:
         raise HTTPException(503, 'The configured AI provider is unsupported.')
     try:
@@ -193,7 +193,7 @@ async def request_explanation(model, encoded, provider='openai'):
             if any(c.get('type') == 'refusal' for c in content):
                 raise ValueError('Refused response')
             text = ''.join(c['text'] for c in content if c.get('type') == 'output_text')
-        return Explanation.model_validate_json(text).model_dump()
+        return schema.model_validate_json(text).model_dump()
     except (TimeoutError, httpx.TimeoutException) as exc:
         raise HTTPException(504, 'The AI explanation timed out. Your simulation results are still available.') from exc
     except (httpx.HTTPError, ValueError, KeyError, TypeError, AttributeError, ValidationError) as exc:
