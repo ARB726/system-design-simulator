@@ -4,8 +4,8 @@ import { useEffect, useRef, useState } from 'react';
 import { LabMotion, LabScene, ViewTransition, DesignTelemetry } from './lab-effects';
 import { Activity, ArrowDownToLine, ArrowRight, BookOpen, Boxes, Check, ChevronRight, Clock3, Database, FlaskConical, GitCompareArrows, Layers3, LayoutDashboard, Library, LoaderCircle, LogOut, Play, Plus, Radio, RotateCcw, Server, ShieldCheck, Workflow, Zap } from 'lucide-react';
 import dynamic from 'next/dynamic';
-const AIExplanation=dynamic(()=>import('./ai-explanation'),{loading:()=> <div className="panel empty-results" role="status">Loading architecture coach?</div>});
-const ResultCharts = dynamic(()=>import('./result-charts'),{loading:()=> <div className="empty-results" role="status">Loading charts?</div>});
+const AIExplanation=dynamic(()=>import('./ai-explanation'),{loading:()=> <div className="panel empty-results" role="status">Loading architecture coach...</div>});
+const ResultCharts = dynamic(()=>import('./result-charts'),{loading:()=> <div className="empty-results" role="status">Loading charts...</div>});
 
 import type { Config, Result, Job, Preset, Challenge, Settings } from './lab-types';
 type Runtime = {apiUrl?:string};
@@ -35,17 +35,29 @@ export default function Home() {
     if (!response.ok) { const data=await response.json().catch(()=>({detail:'Request failed'})); if(response.status===401){setAuthOpen(true)} throw new Error(typeof data.detail==='string'?data.detail:JSON.stringify(data.detail)); }
     return response.json();
   }
-  useEffect(()=>{ let active=true; (async()=>{
+  useEffect(()=>{ let active=true;let disconnect:(()=>void)|undefined; (async()=>{
     let runtime:Runtime={};
     try { const r=await fetch('/runtime-config.json',{cache:'no-store'}); if(r.ok)runtime=await r.json(); }catch{}
     const base=runtime.apiUrl || process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
     if(!active)return; setApiBase(base.replace(/\/$/,''));
     const [s,c]=await Promise.all([fetch(base+'/api/settings').then(r=>r.json()),fetch(base+'/api/catalog').then(r=>r.json())]);
     if(!active)return;setSettings(s);setPresets(c.presets);setChallenges(c.challenges);
+    if(s.auth==='supabase'){
+      sessionStorage.removeItem('lab-token');sessionStorage.removeItem('lab-identity');
+      const {connectGoogleSession}=await import('./google-auth');
+      const stop=await connectGoogleSession(s,session=>{
+        if(!active)return;
+        setToken(session?.access_token||'');setIdentity(session?.user.email||'');
+        if(session)setAuthOpen(false);
+        else{setJobs([]);setSelected(undefined);setComparison([]);setCompareJobs([]);}
+      });
+      if(active)disconnect=stop;else stop();
+      return;
+    }
     const saved=sessionStorage.getItem('lab-token');if(saved){setToken(saved);setIdentity(sessionStorage.getItem('lab-identity')||'My workspace')}
     const params=new URLSearchParams(location.search);
     if(params.has('error'))throw new Error(params.get('error_description')||'Sign-in was canceled.');
-    if(params.has('code')){
+    if(s.auth==='cognito'&&params.has('code')){
       const state=sessionStorage.getItem('oauth-state');const verifier=sessionStorage.getItem('oauth-verifier');
       if(!state || state!==params.get('state') || !verifier)throw new Error('Sign-in state did not match. Please try again.');
       const response=await fetch(s.domain+'/oauth2/token',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({grant_type:'authorization_code',client_id:s.client_id,code:params.get('code')!,redirect_uri:location.origin+'/',code_verifier:verifier})});
@@ -53,7 +65,7 @@ export default function Home() {
       const data=await response.json();sessionStorage.removeItem('oauth-verifier');sessionStorage.removeItem('oauth-state');
       sessionStorage.setItem('lab-token',data.access_token);sessionStorage.setItem('lab-identity','My workspace');setToken(data.access_token);setIdentity('My workspace');history.replaceState(null,'','/');
     }
-  })().catch(e=>{if(active)setError('Could not connect: '+e.message)});return()=>{active=false}},[]);
+  })().catch(e=>{if(active)setError('Could not connect: '+e.message)});return()=>{active=false;disconnect?.()}},[]);
   async function refresh(){if(token)setJobs(await api<Job[]>('/api/experiments'))}
   useEffect(()=>{if(!token||!apiBase)return;refresh().catch(e=>setError(e.message))},[token,apiBase]);
   useEffect(()=>{if(!token||!selected||!['queued','running'].includes(selected.status))return;
@@ -82,7 +94,7 @@ export default function Home() {
     location.assign(settings.domain+'/oauth2/authorize?'+new URLSearchParams({response_type:'code',client_id:settings.client_id!,redirect_uri:location.origin+'/',scope:'openid email',state,code_challenge:challenge,code_challenge_method:'S256'}));
   }
   async function authenticate(e:React.FormEvent){e.preventDefault();setLoading(true);setError('');try{const data=await api<{access_token:string;email:string}>('/api/auth/'+(register?'register':'login'),{method:'POST',body:JSON.stringify({email,password})},'');sessionStorage.setItem('lab-token',data.access_token);sessionStorage.setItem('lab-identity',data.email);setToken(data.access_token);setIdentity(data.email);setAuthOpen(false);setPassword('')}catch(e){setError((e as Error).message)}finally{setLoading(false)}}
-  function logout(){sessionStorage.removeItem('lab-token');sessionStorage.removeItem('lab-identity');setToken('');setIdentity('');setJobs([]);setSelected(undefined);setComparison([]);setCompareJobs([]);if(settings?.auth==='cognito')location.assign(settings.domain+'/logout?'+new URLSearchParams({client_id:settings.client_id!,logout_uri:location.origin+'/'}))}
+  async function logout(){if(settings?.auth==='supabase'){try{const {signOutGoogle}=await import('./google-auth');await signOutGoogle(settings)}catch(e){setError((e as Error).message);return;}}sessionStorage.removeItem('lab-token');sessionStorage.removeItem('lab-identity');setToken('');setIdentity('');setJobs([]);setSelected(undefined);setComparison([]);setCompareJobs([]);if(settings?.auth==='cognito')location.assign(settings.domain+'/logout?'+new URLSearchParams({client_id:settings.client_id!,logout_uri:location.origin+'/'}))}
   async function run(kind='simulate'){setError('');if(!token){await signIn();return}setLoading(true);try{const j=await api<Job>('/api/experiments',{method:'POST',body:JSON.stringify({name:config.name||preset,config,kind,challenge:challenge?.id})});setSelected(j);setTab('sandbox');await refresh()}catch(e){setError((e as Error).message)}finally{setLoading(false)}}
   async function openJob(j:Job){try{setSelected(await api<Job>('/api/experiments/'+j.id));setTab('sandbox')}catch(e){setError((e as Error).message)}}
   function download(value:unknown,name:string){const url=URL.createObjectURL(new Blob([JSON.stringify(value,null,2)],{type:'application/json'}));const a=document.createElement('a');a.href=url;a.download=name;a.click();URL.revokeObjectURL(url)}
@@ -98,7 +110,7 @@ export default function Home() {
       <nav>{[{id:'sandbox',label:'Sandbox',icon:LayoutDashboard},{id:'library',label:'Experiment library',icon:Library},{id:'compare',label:'Compare designs',icon:GitCompareArrows},{id:'learn',label:'Learning lab',icon:BookOpen}].map(n=><button key={n.id} aria-label={n.label} aria-current={tab===n.id?'page':undefined} title={n.label} className={'nav-item '+(tab===n.id?'active':'')} onClick={()=>setTab(n.id)}><n.icon size={18}/>{n.label}{n.id==='library'&&jobs.length>0&&<span className="count">{jobs.length}</span>}</button>)}</nav>
       <div className="sidebar-bottom"><div className="lab-note"><FlaskConical size={22}/><strong>Experiment with confidence.</strong><p>These are simulations. Your design does not provision real infrastructure.</p></div><button className="profile" onClick={()=>token?logout():signIn()}><span className="avatar">{identity?identity[0].toUpperCase():'Y'}</span><span>{identity||'Your workspace'}<small>{token?'Sign out':'Sign in to save experiments'}</small></span>{token?<LogOut size={16}/>:<ArrowRight size={16}/>}</button></div>
     </aside>
-    <div className="main-shell"><header className="topbar"><span>Workspace <ChevronRight size={13}/> <strong>{tab==='sandbox'?'Sandbox':tab==='library'?'Experiment library':tab==='compare'?'Compare designs':'Learning lab'}</strong></span><span className="environment"><span/> {settings?.auth==='cognito'?'Cloud workspace':'Local workspace'}</span></header>
+    <div className="main-shell"><header className="topbar"><span>Workspace <ChevronRight size={13}/> <strong>{tab==='sandbox'?'Sandbox':tab==='library'?'Experiment library':tab==='compare'?'Compare designs':'Learning lab'}</strong></span><span className="environment"><span/> {settings?.auth==='local'?'Local workspace':'Cloud workspace'}</span></header>
     <main><ViewTransition view={tab}>
       {error&&<div className="error" role="alert">{error}<button aria-label="Dismiss error" onClick={()=>setError('')}>×</button></div>}
       {tab==='sandbox'&&<>
@@ -136,7 +148,7 @@ export default function Home() {
       {tab==='library'&&token&&settings?.auth==='local'&&<div className="notice"><p>Bring your completed cloud experiments back to this computer.</p><button className="button secondary" onClick={()=>archiveRef.current?.click()}>Import archive</button><input hidden ref={archiveRef} type="file" accept="application/json,.json" aria-label="Experiment archive" onChange={e=>importArchive(e.target.files?.[0])}/></div>}
       <footer className="page-footer"><span><Boxes size={14}/> Systems Lab</span><span>Understand the system. Make the tradeoff.</span><span>Python + SimPy · Reproducible experiments</span></footer>
     </ViewTransition></main></div>
-    {authOpen&&<div className="modal-backdrop"><section className="modal" role="dialog" aria-modal="true" aria-labelledby="auth-title"><button className="close" aria-label="Close sign-in" onClick={()=>setAuthOpen(false)}>×</button><span className="brand-mark"><Layers3 size={24}/></span><h2 id="auth-title">{settings?.auth==='cognito'?'Sign in to your cloud workspace':register?'Make room for your experiments.':'Welcome back to the lab.'}</h2>{settings?.auth==='cognito'?<button className="button primary" onClick={signIn}>Continue to secure sign-in</button>:<form onSubmit={authenticate}><p>Your experiments stay on this computer unless you export them.</p><label className="text-label">Email<input type="email" required autoComplete="username" value={email} onChange={e=>setEmail(e.target.value)}/></label><label className="text-label">Password<input type="password" required minLength={12} maxLength={128} autoComplete={register?'new-password':'current-password'} value={password} onChange={e=>setPassword(e.target.value)}/></label><small>Use at least 12 characters.</small>{error&&<p role="alert" className="auth-error">{error}</p>}<button className="button primary run" disabled={loading}>{loading?'Please wait…':register?'Create local account':'Sign in'}</button><button type="button" className="button text-button" onClick={()=>{setRegister(!register);setError('')}}>{register?'Already have an account? Sign in':'New here? Create an account'}</button></form>}</section></div>}
+    {authOpen&&<div className="modal-backdrop"><section className="modal" role="dialog" aria-modal="true" aria-labelledby="auth-title"><button className="close" aria-label="Close sign-in" onClick={()=>setAuthOpen(false)}>×</button><span className="brand-mark"><Layers3 size={24}/></span><h2 id="auth-title">{settings?.auth==='supabase'?'Your next idea starts here.':settings?.auth==='cognito'?'Sign in to your cloud workspace':register?'Make room for your experiments.':'Welcome back to the lab.'}</h2>{settings?.auth==='supabase'?<div className="google-sign-in"><p>Save your experiments, compare designs, and explore your results with an AI architecture coach.</p><button className="button primary run" disabled={loading} onClick={async()=>{setError('');setLoading(true);try{const {signInGoogle}=await import('./google-auth');await signInGoogle(settings)}catch(e){setError((e as Error).message)}finally{setLoading(false)}}}><span aria-hidden="true">G</span>{loading?'Connecting...':'Continue with Google'}</button>{error&&<p role="alert" className="auth-error">{error}</p>}<small>Your experiments are private to your workspace.</small></div>:settings?.auth==='cognito'?<button className="button primary" onClick={signIn}>Continue to secure sign-in</button>:<form onSubmit={authenticate}><p>Your experiments stay on this computer unless you export them.</p><label className="text-label">Email<input type="email" required autoComplete="username" value={email} onChange={e=>setEmail(e.target.value)}/></label><label className="text-label">Password<input type="password" required minLength={12} maxLength={128} autoComplete={register?'new-password':'current-password'} value={password} onChange={e=>setPassword(e.target.value)}/></label><small>Use at least 12 characters.</small>{error&&<p role="alert" className="auth-error">{error}</p>}<button className="button primary run" disabled={loading}>{loading?'Please wait…':register?'Create local account':'Sign in'}</button><button type="button" className="button text-button" onClick={()=>{setRegister(!register);setError('')}}>{register?'Already have an account? Sign in':'New here? Create an account'}</button></form>}</section></div>}
   </div></LabMotion>
 }
 
