@@ -17,6 +17,9 @@ services:
       ALLOW_LOCAL_AUTH_NETWORK: "true"
       ALLOWED_ORIGINS: http://localhost:8080,http://127.0.0.1:8080
       SYSDESIGN_MAX_ARRIVALS: "150000"
+      AI_PROVIDER: ${AI_PROVIDER:-openai}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      GEMINI_MODEL: ${GEMINI_MODEL:-}
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}
       OPENAI_MODEL: ${OPENAI_MODEL:-}
     depends_on:
@@ -29,6 +32,8 @@ services:
     command: ["python", "-m", "fullstack.backend.worker"]
     environment:
       <<: *env
+      GEMINI_API_KEY: ""
+      GEMINI_MODEL: ""
       OPENAI_API_KEY: ""
       OPENAI_MODEL: ""
     depends_on:
