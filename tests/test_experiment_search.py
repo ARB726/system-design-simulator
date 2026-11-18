@@ -1,5 +1,6 @@
 import copy
 import pytest
+pytest.importorskip('fastapi')
 from fullstack.backend.experiment_search import search
 from sim.config import Config
 
