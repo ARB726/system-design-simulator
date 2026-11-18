@@ -1,0 +1,1097 @@
+{
+  "version": 1,
+  "seed": 7,
+  "experiments": [
+    {
+      "id": "demo-baseline",
+      "created": 1794978309,
+      "updated": 1794978309,
+      "status": "completed",
+      "payload": {
+        "name": "Baseline: reads reach the database",
+        "config": {
+          "name": "Custom design",
+          "app": {
+            "replicas": 3,
+            "workers": 8,
+            "latency_ms": 20.0,
+            "lb_strategy": "least_queue",
+            "max_queue": 200
+          },
+          "cache": {
+            "enabled": false,
+            "hit_rate": 0.85,
+            "latency_ms": 1.0,
+            "workers": 64
+          },
+          "cdn": {
+            "enabled": false,
+            "hit_rate": 0.6,
+            "latency_ms": 8.0
+          },
+          "queue": {
+            "enabled": false,
+            "consumers": 8,
+            "max_depth": 5000,
+            "enqueue_ms": 2.0
+          },
+          "db": {
+            "workers": 2,
+            "read_ms": 8.0,
+            "write_ms": 25.0,
+            "read_replicas": 0,
+            "max_queue": 500,
+            "shards": 1,
+            "hot_share": 0.0
+          },
+          "workload": {
+            "rps": 120,
+            "read_ratio": 0.95,
+            "duration_s": 15,
+            "timeout_ms": 1000.0,
+            "warmup_s": 2
+          },
+          "events": [],
+          "seed": 7,
+          "app_only": false,
+          "policy": {
+            "max_retries": 0,
+            "backoff_ms": 100.0,
+            "backoff_multiplier": 2.0,
+            "jitter": true,
+            "rate_limit_rps": null,
+            "burst": 100
+          }
+        },
+        "kind": "simulate"
+      },
+      "result": {
+        "type": "simulation",
+        "summary": {
+          "offered_rps": 118.76923076923077,
+          "served_rps": 118.76923076923077,
+          "success_rate": 1.0,
+          "p50_ms": 27.30804962889799,
+          "p95_ms": 82.61722728225485,
+          "p99_ms": 116.93190609003587,
+          "fail": {
+            "dropped": 0,
+            "timeout": 0,
+            "error": 0,
+            "incomplete": 0,
+            "rate_limited": 0
+          },
+          "measured_hit_rate": 0.0,
+          "flows": {
+            "offered": 118.76923076923077,
+            "cdn_hits": 0.0,
+            "to_app": 118.76923076923077,
+            "reads": 112.3076923076923,
+            "writes": 6.461538461538462,
+            "db_reads": 112.3076923076923
+          },
+          "tiers": {
+            "app": {
+              "mean_util": 0.07932692307692307,
+              "p90_util": 0.12291666666666667,
+              "peak_util": 0.13541666666666666,
+              "peak_queue": 0.0,
+              "status": "good"
+            },
+            "db_primary": {
+              "mean_util": 0.6442307692307693,
+              "p90_util": 0.8500000000000001,
+              "peak_util": 0.875,
+              "peak_queue": 2.5,
+              "status": "serious"
+            }
+          },
+          "bottleneck": "db_primary",
+          "shards": [],
+          "queue": null,
+          "expected": {
+            "app": 0.09999999999999999,
+            "db_primary": 0.531
+          },
+          "traffic": {
+            "logical_requests": 1544,
+            "attempts": 1544,
+            "retries": 0,
+            "rate_limited_attempts": 0,
+            "cdn_hits": 0,
+            "to_app": 1544,
+            "reads": 1460,
+            "writes": 84,
+            "db_reads": 1460,
+            "cache_lookups": 0,
+            "cache_hits": 0
+          }
+        },
+        "timeline": [
+          {
+            "t": 0.0,
+            "offered_rps": 121.0,
+            "served_rps": 121.0,
+            "dropped_rps": 0.0,
+            "timeout_rps": 0.0,
+            "error_rps": 0.0,
+            "incomplete_rps": 0.0,
+            "rate_limited_rps": 0.0,
+            "p50": 24.656012085102653,
+            "p95": 72.51880536322042,
+            "p99": 94.17693635285873,
+            "alive_replicas": 3.0,
+            "util_app": 0.06944444444444443,
+            "q_app": 0.0,
+            "util_db_primary": 0.6666666666666666,
+            "q_db_primary": 0.3333333333333333,
+            "shard_util_0": 0.6666666666666666
+          },
+          {
+            "t": 1.0,
+            "offered_rps": 115.0,
+            "served_rps": 115.0,
+            "dropped_rps": 0.0,
+            "timeout_rps": 0.0,
+            "error_rps": 0.0,
+            "incomplete_rps": 0.0,
+            "rate_limited_rps": 0.0,
+            "p50": 21.08800276810685,
+            "p95": 68.31269041604203,
+            "p99": 123.1660971810797,
+            "alive_replicas": 3.0,
+            "util_app": 0.08333333333333333,
+            "q_app": 0.0,
+            "util_db_primary": 0.625,
+            "q_db_primary": 0.0,
+            "shard_util_0": 0.625
+          },
+          {
+            "t": 2.0,
+            "offered_rps": 130.0,
+            "served_rps": 130.0,
+            "dropped_rps": 0.0,
+            "timeout_rps": 0.0,
+            "error_rps": 0.0,
+            "incomplete_rps": 0.0,
+            "rate_limited_rps": 0.0,
+            "p50": 33.95749552265781,
+            "p95": 99.42691908484726,
+            "p99": 171.63255606372599,
+            "alive_replicas": 3.0,
+            "util_app": 0.09375,
+            "q_app": 0.0,
+            "util_db_primary": 0.875,
+            "q_db_primary": 0.75,
+            "shard_util_0": 0.875
+          },
+          {
+            "t": 3.0,
+            "offered_rps": 109.0,
+            "served_rps": 109.0,
+            "dropped_rps": 0.0,
+            "timeout_rps": 0.0,
+            "error_rps": 0.0,
+            "incomplete_rps": 0.0,
+            "rate_limited_rps": 0.0,
+            "p50": 29.48943767544643,
+            "p95": 93.05119430730032,
+            "p99": 114.82654892949012,
+            "alive_replicas": 3.0,
+            "util_app": 0.0625,
+            "q_app": 0.0,
+            "util_db_primary": 0.5,
+            "q_db_primary": 2.5,
+            "shard_util_0": 0.5
+          },
+          {
+            "t": 4.0,
+            "offered_rps": 118.0,
+            "served_rps": 118.0,
+            "dropped_rps": 0.0,
+            "timeout_rps": 0.0,
+            "error_rps": 0.0,
+            "incomplete_rps": 0.0,
+            "rate_limited_rps": 0.0,
+            "p50": 23.776208219946415,
+            "p95": 100.37145191280696,
+            "p99": 106.39318563284485,
+            "alive_replicas": 3.0,
+            "util_app": 0.07291666666666666,
+            "q_app": 0.0,
+            "util_db_primary": 0.5,
+            "q_db_primary": 0.0,
+            "shard_util_0": 0.5
+          },
+          {
+            "t": 5.0,
+            "offered_rps": 102.0,
+            "served_rps": 102.0,
+            "dropped_rps": 0.0,
+            "timeout_rps": 0.0,
+            "error_rps": 0.0,
+            "incomplete_rps": 0.0,
+            "rate_limited_rps": 0.0,
+            "p50": 24.498203715992428,
+            "p95": 65.98413066512559,
+            "p99": 103.86643579809353,
+            "alive_replicas": 3.0,
+            "util_app": 0.09375,
+            "q_app": 0.0,
+            "util_db_primary": 0.75,
+            "q_db_primary": 0.25,
+            "shard_util_0": 0.75
+          },
+          {
+            "t": 6.0,
+            "offered_rps": 137.0,
+            "served_rps": 137.0,
+            "dropped_rps": 0.0,
+            "timeout_rps": 0.0,
+            "error_rps": 0.0,
+            "incomplete_rps": 0.0,
+            "rate_limited_rps": 0.0,
+            "p50": 33.92506211070412,
+            "p95": 73.5402760392197,
+            "p99": 99.85464219840358,
+            "alive_replicas": 3.0,
+            "util_app": 0.11458333333333333,
+            "q_app": 0.0,
+            "util_db_primary": 0.75,
+            "q_db_primary": 0.25,
+            "shard_util_0": 0.75
+          },
+          {
+            "t": 7.0,
+            "offered_rps": 107.0,
+            "served_rps": 107.0,
+            "dropped_rps": 0.0,
+            "timeout_rps": 0.0,
+            "error_rps": 0.0,
+            "incomplete_rps": 0.0,
+            "rate_limited_rps": 0.0,
+            "p50": 24.46209901607599,
+            "p95": 76.83108397707281,
+            "p99": 100.49984603591642,
+            "alive_replicas": 3.0,
+            "util_app": 0.06249999999999999,
+            "q_app": 0.0,
+            "util_db_primary": 0.5,
+            "q_db_primary": 0.75,
+            "shard_util_0": 0.5
+          },
+          {
+            "t": 8.0,
+            "offered_rps": 120.0,
+            "served_rps": 120.0,
+            "dropped_rps": 0.0,
+            "timeout_rps": 0.0,
+            "error_rps": 0.0,
+            "incomplete_rps": 0.0,
+            "rate_limited_rps": 0.0,
+            "p50": 23.461033885849858,
+            "p95": 75.64056742363958,
+            "p99": 120.75215802267782,
+            "alive_replicas": 3.0,
+            "util_app": 0.07291666666666666,
+            "q_app": 0.0,
+            "util_db_primary": 0.875,
+            "q_db_primary": 0.5,
+            "shard_util_0": 0.875
+          },
+          {
+            "t": 9.0,
+            "offered_rps": 108.0,
+            "served_rps": 108.0,
+            "dropped_rps": 0.0,
+            "timeout_rps": 0.0,
+            "error_rps": 0.0,
+            "incomplete_rps": 0.0,
+            "rate_limited_rps": 0.0,
+            "p50": 20.4283812995687,
+            "p95": 61.93553137119338,
+            "p99": 94.16999625469464,
+            "alive_replicas": 3.0,
+            "util_app": 0.0625,
+            "q_app": 0.0,
+            "util_db_primary": 0.125,
+            "q_db_primary": 0.0,
+            "shard_util_0": 0.125
+          },
+          {
+            "t": 10.0,
+            "offered_rps": 121.0,
+            "served_rps": 121.0,
+            "dropped_rps": 0.0,
+            "timeout_rps": 0.0,
+            "error_rps": 0.0,
+            "incomplete_rps": 0.0,
+            "rate_limited_rps": 0.0,
+            "p50": 27.550167611204657,
+            "p95": 77.55922570036411,
+            "p99": 105.92630967767602,
+            "alive_replicas": 3.0,
+            "util_app": 0.13541666666666666,
+            "q_app": 0.0,
+            "util_db_primary": 0.625,
+            "q_db_primary": 0.75,
+            "shard_util_0": 0.625
+          },
+          {
+            "t": 11.0,
+            "offered_rps": 124.0,
+            "served_rps": 124.0,
+            "dropped_rps": 0.0,
+            "timeout_rps": 0.0,
+            "error_rps": 0.0,
+            "incomplete_rps": 0.0,
+            "rate_limited_rps": 0.0,
+            "p50": 28.033850269679306,
+            "p95": 81.76611623708312,
+            "p99": 115.28409624256983,
+            "alive_replicas": 3.0,
+            "util_app": 0.05208333333333333,
+            "q_app": 0.0,
+            "util_db_primary": 0.75,
+            "q_db_primary": 2.0,
+            "shard_util_0": 0.75
+          },
+          {
+            "t": 12.0,
+            "offered_rps": 112.0,
+            "served_rps": 112.0,
+            "dropped_rps": 0.0,
+            "timeout_rps": 0.0,
+            "error_rps": 0.0,
+            "incomplete_rps": 0.0,
+            "rate_limited_rps": 0.0,
+            "p50": 22.8952987859401,
+            "p95": 60.79476225871716,
+            "p99": 78.63299589307049,
+            "alive_replicas": 3.0,
+            "util_app": 0.010416666666666666,
+            "q_app": 0.0,
+            "util_db_primary": 0.75,
+            "q_db_primary": 0.75,
+            "shard_util_0": 0.75
+          },
+          {
+            "t": 13.0,
+            "offered_rps": 138.0,
+            "served_rps": 138.0,
+            "dropped_rps": 0.0,
+            "timeout_rps": 0.0,
+            "error_rps": 0.0,
+            "incomplete_rps": 0.0,
+            "rate_limited_rps": 0.0,
+            "p50": 25.60273820760184,
+            "p95": 83.6600595056182,
+            "p99": 132.141539518518,
+            "alive_replicas": 3.0,
+            "util_app": 0.125,
+            "q_app": 0.0,
+            "util_db_primary": 0.625,
+            "q_db_primary": 0.0,
+            "shard_util_0": 0.625
+          },
+          {
+            "t": 14.0,
+            "offered_rps": 118.0,
+            "served_rps": 118.0,
+            "dropped_rps": 0.0,
+            "timeout_rps": 0.0,
+            "error_rps": 0.0,
+            "incomplete_rps": 0.0,
+            "rate_limited_rps": 0.0,
+            "p50": 32.66909285776798,
+            "p95": 90.54890181664895,
+            "p99": 118.19060224695153,
+            "alive_replicas": 3.0,
+            "util_app": 0.07291666666666667,
+            "q_app": 0.0,
+            "util_db_primary": 0.75,
+            "q_db_primary": 1.0,
+            "shard_util_0": 0.75
+          }
+        ],
+        "histogram": [
+          {
+            "latency": 0.79,
+            "requests": 210
+          },
+          {
+            "latency": 9.29,
+            "requests": 351
+          },
+          {
+            "latency": 17.79,
+            "requests": 317
+          },
+          {
+            "latency": 26.29,
+            "requests": 259
+          },
+          {
+            "latency": 34.79,
+            "requests": 205
+          },
+          {
+            "latency": 43.28,
+            "requests": 116
+          },
+          {
+            "latency": 51.78,
+            "requests": 107
+          },
+          {
+            "latency": 60.28,
+            "requests": 71
+          },
+          {
+            "latency": 68.78,
+            "requests": 41
+          },
+          {
+            "latency": 77.28,
+            "requests": 28
+          },
+          {
+            "latency": 85.78,
+            "requests": 21
+          },
+          {
+            "latency": 94.28,
+            "requests": 12
+          },
+          {
+            "latency": 102.77,
+            "requests": 19
+          },
+          {
+            "latency": 111.27,
+            "requests": 7
+          },
+          {
+            "latency": 119.77,
+            "requests": 6
+          },
+          {
+            "latency": 128.27,
+            "requests": 4
+          },
+          {
+            "latency": 136.77,
+            "requests": 1
+          },
+          {
+            "latency": 145.27,
+            "requests": 1
+          },
+          {
+            "latency": 153.76,
+            "requests": 1
+          },
+          {
+            "latency": 162.26,
+            "requests": 0
+          },
+          {
+            "latency": 170.76,
+            "requests": 0
+          },
+          {
+            "latency": 179.26,
+            "requests": 1
+          },
+          {
+            "latency": 187.76,
+            "requests": 1
+          },
+          {
+            "latency": 196.26,
+            "requests": 1
+          }
+        ],
+        "findings": [
+          {
+            "level": "serious",
+            "title": "DB primary runs hot (90th-percentile utilization 85%, peak queue 2)",
+            "detail": "Most of its load is reads that missed the cache. Options: raise the hit rate, add read replicas, put a CDN in front, or add request coalescing so one miss does not become a thousand."
+          }
+        ],
+        "warnings": [],
+        "runtime_s": 0.5727236000093399,
+        "cost": 273.0,
+        "cost_breakdown": {
+          "App tier": 189.0,
+          "Database": 84.0
+        }
+      }
+    },
+    {
+      "id": "demo-cache",
+      "created": 1794978309,
+      "updated": 1794978309,
+      "status": "completed",
+      "payload": {
+        "name": "Candidate: add a read cache",
+        "config": {
+          "name": "Custom design",
+          "app": {
+            "replicas": 3,
+            "workers": 8,
+            "latency_ms": 20.0,
+            "lb_strategy": "least_queue",
+            "max_queue": 200
+          },
+          "cache": {
+            "enabled": true,
+            "hit_rate": 0.85,
+            "latency_ms": 1.0,
+            "workers": 64
+          },
+          "cdn": {
+            "enabled": false,
+            "hit_rate": 0.6,
+            "latency_ms": 8.0
+          },
+          "queue": {
+            "enabled": false,
+            "consumers": 8,
+            "max_depth": 5000,
+            "enqueue_ms": 2.0
+          },
+          "db": {
+            "workers": 2,
+            "read_ms": 8.0,
+            "write_ms": 25.0,
+            "read_replicas": 0,
+            "max_queue": 500,
+            "shards": 1,
+            "hot_share": 0.0
+          },
+          "workload": {
+            "rps": 120,
+            "read_ratio": 0.95,
+            "duration_s": 15,
+            "timeout_ms": 1000.0,
+            "warmup_s": 2
+          },
+          "events": [],
+          "seed": 7,
+          "app_only": false,
+          "policy": {
+            "max_retries": 0,
+            "backoff_ms": 100.0,
+            "backoff_multiplier": 2.0,
+            "jitter": true,
+            "rate_limit_rps": null,
+            "burst": 100
+          }
+        },
+        "kind": "simulate"
+      },
+      "result": {
+        "type": "simulation",
+        "summary": {
+          "offered_rps": 117.15384615384616,
+          "served_rps": 117.15384615384616,
+          "success_rate": 1.0,
+          "p50_ms": 17.448639135687394,
+          "p95_ms": 67.67133558463306,
+          "p99_ms": 102.40056573925904,
+          "fail": {
+            "dropped": 0,
+            "timeout": 0,
+            "error": 0,
+            "incomplete": 0,
+            "rate_limited": 0
+          },
+          "measured_hit_rate": 0.8324137931034483,
+          "flows": {
+            "offered": 117.15384615384616,
+            "cdn_hits": 0.0,
+            "to_app": 117.15384615384616,
+            "reads": 111.53846153846153,
+            "writes": 5.615384615384615,
+            "db_reads": 18.692307692307686
+          },
+          "tiers": {
+            "app": {
+              "mean_util": 0.09615384615384613,
+              "p90_util": 0.13333333333333336,
+              "peak_util": 0.14583333333333331,
+              "peak_queue": 0.0,
+              "status": "good"
+            },
+            "cache": {
+              "mean_util": 0.0021033653846153845,
+              "p90_util": 0.007031250000000003,
+              "peak_util": 0.0078125,
+              "peak_queue": 0.0,
+              "status": "good"
+            },
+            "db_primary": {
+              "mean_util": 0.14423076923076922,
+              "p90_util": 0.25,
+              "peak_util": 0.375,
+              "peak_queue": 0.0,
+              "status": "good"
+            }
+          },
+          "bottleneck": "db_primary",
+          "shards": [],
+          "queue": null,
+          "expected": {
+            "app": 0.09999999999999999,
+            "cache": 0.00178125,
+            "db_primary": 0.1434
+          },
+          "traffic": {
+            "logical_requests": 1523,
+            "attempts": 1523,
+            "retries": 0,
+            "rate_limited_attempts": 0,
+            "cdn_hits": 0,
+            "to_app": 1523,
+            "reads": 1450,
+            "writes": 73,
+            "db_reads": 243,
+            "cache_lookups": 1450,
+            "cache_hits": 1207
+          }
+        },
+        "timeline": [
+          {
+            "t": 0.0,
+            "offered_rps": 137.0,
+            "served_rps": 137.0,
+            "dropped_rps": 0.0,
+            "timeout_rps": 0.0,
+            "error_rps": 0.0,
+            "incomplete_rps": 0.0,
+            "rate_limited_rps": 0.0,
+            "p50": 16.96436593689671,
+            "p95": 63.858039630177295,
+            "p99": 115.3189853860585,
+            "alive_replicas": 3.0,
+            "util_app": 0.027777777777777776,
+            "q_app": 0.0,
+            "util_cache": 0.0,
+            "q_cache": 0.0,
+            "util_db_primary": 0.0,
+            "q_db_primary": 0.0,
+            "shard_util_0": 0.0
+          },
+          {
+            "t": 1.0,
+            "offered_rps": 104.0,
+            "served_rps": 104.0,
+            "dropped_rps": 0.0,
+            "timeout_rps": 0.0,
+            "error_rps": 0.0,
+            "incomplete_rps": 0.0,
+            "rate_limited_rps": 0.0,
+            "p50": 15.013290939182578,
+            "p95": 48.35850104732382,
+            "p99": 68.76936139166088,
+            "alive_replicas": 3.0,
+            "util_app": 0.11458333333333333,
+            "q_app": 0.0,
+            "util_cache": 0.0,
+            "q_cache": 0.0,
+            "util_db_primary": 0.0,
+            "q_db_primary": 0.0,
+            "shard_util_0": 0.0
+          },
+          {
+            "t": 2.0,
+            "offered_rps": 114.0,
+            "served_rps": 114.0,
+            "dropped_rps": 0.0,
+            "timeout_rps": 0.0,
+            "error_rps": 0.0,
+            "incomplete_rps": 0.0,
+            "rate_limited_rps": 0.0,
+            "p50": 15.368216407376512,
+            "p95": 58.327736589845586,
+            "p99": 65.61336099018165,
+            "alive_replicas": 3.0,
+            "util_app": 0.06249999999999999,
+            "q_app": 0.0,
+            "util_cache": 0.0078125,
+            "q_cache": 0.0,
+            "util_db_primary": 0.125,
+            "q_db_primary": 0.0,
+            "shard_util_0": 0.125
+          },
+          {
+            "t": 3.0,
+            "offered_rps": 103.0,
+            "served_rps": 103.0,
+            "dropped_rps": 0.0,
+            "timeout_rps": 0.0,
+            "error_rps": 0.0,
+            "incomplete_rps": 0.0,
+            "rate_limited_rps": 0.0,
+            "p50": 16.070312970047684,
+            "p95": 73.46147604867275,
+            "p99": 111.46950620401147,
+            "alive_replicas": 3.0,
+            "util_app": 0.09375,
+            "q_app": 0.0,
+            "util_cache": 0.0,
+            "q_cache": 0.0,
+            "util_db_primary": 0.125,
+            "q_db_primary": 0.0,
+            "shard_util_0": 0.125
+          },
+          {
+            "t": 4.0,
+            "offered_rps": 132.0,
+            "served_rps": 132.0,
+            "dropped_rps": 0.0,
+            "timeout_rps": 0.0,
+            "error_rps": 0.0,
+            "incomplete_rps": 0.0,
+            "rate_limited_rps": 0.0,
+            "p50": 18.217053053834587,
+            "p95": 68.45617788382339,
+            "p99": 114.57721645068347,
+            "alive_replicas": 3.0,
+            "util_app": 0.11458333333333333,
+            "q_app": 0.0,
+            "util_cache": 0.0,
+            "q_cache": 0.0,
+            "util_db_primary": 0.125,
+            "q_db_primary": 0.0,
+            "shard_util_0": 0.125
+          },
+          {
+            "t": 5.0,
+            "offered_rps": 136.0,
+            "served_rps": 136.0,
+            "dropped_rps": 0.0,
+            "timeout_rps": 0.0,
+            "error_rps": 0.0,
+            "incomplete_rps": 0.0,
+            "rate_limited_rps": 0.0,
+            "p50": 19.649636199746023,
+            "p95": 66.31729378968387,
+            "p99": 93.45434015901702,
+            "alive_replicas": 3.0,
+            "util_app": 0.13541666666666669,
+            "q_app": 0.0,
+            "util_cache": 0.0,
+            "q_cache": 0.0,
+            "util_db_primary": 0.25,
+            "q_db_primary": 0.0,
+            "shard_util_0": 0.25
+          },
+          {
+            "t": 6.0,
+            "offered_rps": 104.0,
+            "served_rps": 104.0,
+            "dropped_rps": 0.0,
+            "timeout_rps": 0.0,
+            "error_rps": 0.0,
+            "incomplete_rps": 0.0,
+            "rate_limited_rps": 0.0,
+            "p50": 19.57624700336691,
+            "p95": 63.95007313886962,
+            "p99": 88.20093524195342,
+            "alive_replicas": 3.0,
+            "util_app": 0.09374999999999999,
+            "q_app": 0.0,
+            "util_cache": 0.0,
+            "q_cache": 0.0,
+            "util_db_primary": 0.0,
+            "q_db_primary": 0.0,
+            "shard_util_0": 0.0
+          },
+          {
+            "t": 7.0,
+            "offered_rps": 116.0,
+            "served_rps": 116.0,
+            "dropped_rps": 0.0,
+            "timeout_rps": 0.0,
+            "error_rps": 0.0,
+            "incomplete_rps": 0.0,
+            "rate_limited_rps": 0.0,
+            "p50": 15.101680889618052,
+            "p95": 46.157530830988726,
+            "p99": 105.28068650877043,
+            "alive_replicas": 3.0,
+            "util_app": 0.0625,
+            "q_app": 0.0,
+            "util_cache": 0.0,
+            "q_cache": 0.0,
+            "util_db_primary": 0.0,
+            "q_db_primary": 0.0,
+            "shard_util_0": 0.0
+          },
+          {
+            "t": 8.0,
+            "offered_rps": 119.0,
+            "served_rps": 119.0,
+            "dropped_rps": 0.0,
+            "timeout_rps": 0.0,
+            "error_rps": 0.0,
+            "incomplete_rps": 0.0,
+            "rate_limited_rps": 0.0,
+            "p50": 20.173826829909203,
+            "p95": 81.03206465165387,
+            "p99": 100.0003124106232,
+            "alive_replicas": 3.0,
+            "util_app": 0.125,
+            "q_app": 0.0,
+            "util_cache": 0.0,
+            "q_cache": 0.0,
+            "util_db_primary": 0.375,
+            "q_db_primary": 0.0,
+            "shard_util_0": 0.375
+          },
+          {
+            "t": 9.0,
+            "offered_rps": 115.0,
+            "served_rps": 115.0,
+            "dropped_rps": 0.0,
+            "timeout_rps": 0.0,
+            "error_rps": 0.0,
+            "incomplete_rps": 0.0,
+            "rate_limited_rps": 0.0,
+            "p50": 18.30592791578667,
+            "p95": 63.75669775929946,
+            "p99": 72.92886154652311,
+            "alive_replicas": 3.0,
+            "util_app": 0.07291666666666666,
+            "q_app": 0.0,
+            "util_cache": 0.0078125,
+            "q_cache": 0.0,
+            "util_db_primary": 0.125,
+            "q_db_primary": 0.0,
+            "shard_util_0": 0.125
+          },
+          {
+            "t": 10.0,
+            "offered_rps": 128.0,
+            "served_rps": 128.0,
+            "dropped_rps": 0.0,
+            "timeout_rps": 0.0,
+            "error_rps": 0.0,
+            "incomplete_rps": 0.0,
+            "rate_limited_rps": 0.0,
+            "p50": 18.16084956816333,
+            "p95": 71.10767790577323,
+            "p99": 89.00952731101972,
+            "alive_replicas": 3.0,
+            "util_app": 0.10416666666666666,
+            "q_app": 0.0,
+            "util_cache": 0.00390625,
+            "q_cache": 0.0,
+            "util_db_primary": 0.25,
+            "q_db_primary": 0.0,
+            "shard_util_0": 0.25
+          },
+          {
+            "t": 11.0,
+            "offered_rps": 90.0,
+            "served_rps": 90.0,
+            "dropped_rps": 0.0,
+            "timeout_rps": 0.0,
+            "error_rps": 0.0,
+            "incomplete_rps": 0.0,
+            "rate_limited_rps": 0.0,
+            "p50": 16.09673202910944,
+            "p95": 75.05740167874303,
+            "p99": 122.50707591507046,
+            "alive_replicas": 3.0,
+            "util_app": 0.14583333333333331,
+            "q_app": 0.0,
+            "util_cache": 0.0,
+            "q_cache": 0.0,
+            "util_db_primary": 0.0,
+            "q_db_primary": 0.0,
+            "shard_util_0": 0.0
+          },
+          {
+            "t": 12.0,
+            "offered_rps": 108.0,
+            "served_rps": 108.0,
+            "dropped_rps": 0.0,
+            "timeout_rps": 0.0,
+            "error_rps": 0.0,
+            "incomplete_rps": 0.0,
+            "rate_limited_rps": 0.0,
+            "p50": 15.37723254483847,
+            "p95": 60.61686100430013,
+            "p99": 84.39636776619426,
+            "alive_replicas": 3.0,
+            "util_app": 0.06249999999999999,
+            "q_app": 0.0,
+            "util_cache": 0.00390625,
+            "q_cache": 0.0,
+            "util_db_primary": 0.125,
+            "q_db_primary": 0.0,
+            "shard_util_0": 0.125
+          },
+          {
+            "t": 13.0,
+            "offered_rps": 128.0,
+            "served_rps": 128.0,
+            "dropped_rps": 0.0,
+            "timeout_rps": 0.0,
+            "error_rps": 0.0,
+            "incomplete_rps": 0.0,
+            "rate_limited_rps": 0.0,
+            "p50": 16.88503874507674,
+            "p95": 74.75677082411805,
+            "p99": 111.2286742773619,
+            "alive_replicas": 3.0,
+            "util_app": 0.09375,
+            "q_app": 0.0,
+            "util_cache": 0.00390625,
+            "q_cache": 0.0,
+            "util_db_primary": 0.125,
+            "q_db_primary": 0.0,
+            "shard_util_0": 0.125
+          },
+          {
+            "t": 14.0,
+            "offered_rps": 130.0,
+            "served_rps": 130.0,
+            "dropped_rps": 0.0,
+            "timeout_rps": 0.0,
+            "error_rps": 0.0,
+            "incomplete_rps": 0.0,
+            "rate_limited_rps": 0.0,
+            "p50": 16.642550452827365,
+            "p95": 60.16322262753596,
+            "p99": 77.8123088676784,
+            "alive_replicas": 3.0,
+            "util_app": 0.08333333333333333,
+            "q_app": 0.0,
+            "util_cache": 0.0,
+            "q_cache": 0.0,
+            "util_db_primary": 0.25,
+            "q_db_primary": 0.0,
+            "shard_util_0": 0.25
+          }
+        ],
+        "histogram": [
+          {
+            "latency": 0.22,
+            "requests": 416
+          },
+          {
+            "latency": 7.69,
+            "requests": 380
+          },
+          {
+            "latency": 15.17,
+            "requests": 292
+          },
+          {
+            "latency": 22.65,
+            "requests": 212
+          },
+          {
+            "latency": 30.12,
+            "requests": 136
+          },
+          {
+            "latency": 37.6,
+            "requests": 101
+          },
+          {
+            "latency": 45.07,
+            "requests": 59
+          },
+          {
+            "latency": 52.55,
+            "requests": 51
+          },
+          {
+            "latency": 60.02,
+            "requests": 31
+          },
+          {
+            "latency": 67.5,
+            "requests": 33
+          },
+          {
+            "latency": 74.97,
+            "requests": 16
+          },
+          {
+            "latency": 82.45,
+            "requests": 8
+          },
+          {
+            "latency": 89.92,
+            "requests": 5
+          },
+          {
+            "latency": 97.4,
+            "requests": 6
+          },
+          {
+            "latency": 104.88,
+            "requests": 4
+          },
+          {
+            "latency": 112.35,
+            "requests": 6
+          },
+          {
+            "latency": 119.83,
+            "requests": 4
+          },
+          {
+            "latency": 127.3,
+            "requests": 0
+          },
+          {
+            "latency": 134.78,
+            "requests": 1
+          },
+          {
+            "latency": 142.25,
+            "requests": 0
+          },
+          {
+            "latency": 149.73,
+            "requests": 1
+          },
+          {
+            "latency": 157.2,
+            "requests": 1
+          },
+          {
+            "latency": 164.68,
+            "requests": 0
+          },
+          {
+            "latency": 172.16,
+            "requests": 1
+          }
+        ],
+        "findings": [
+          {
+            "level": "good",
+            "title": "The design holds",
+            "detail": "Success rate 100.00%, p95 68 ms. App tier could absorb roughly 8.8x the peak load before saturating."
+          }
+        ],
+        "warnings": [],
+        "runtime_s": 0.37268760000006296,
+        "cost": 323.0,
+        "cost_breakdown": {
+          "App tier": 189.0,
+          "Cache": 50.0,
+          "Database": 84.0
+        }
+      }
+    }
+  ]
+}
