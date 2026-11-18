@@ -8,7 +8,7 @@ from fastapi import Depends, FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
-from .auth import local_session, owner, password_hash
+from .auth import auth_provider, local_session, owner, password_hash
 from .jobs import validate
 from .store import store
 
@@ -39,7 +39,12 @@ def health():
 def settings():
     from .ai import provider_config
     ai = provider_config()
-    return dict(auth='cognito' if os.getenv('STORAGE_MODE') == 'aws' else 'local', client_id=os.getenv('COGNITO_CLIENT_ID'), domain=os.getenv('COGNITO_DOMAIN'), issuer=os.getenv('COGNITO_ISSUER'), ai_enabled=ai is not None, ai_provider=ai[0] if ai else None)
+    provider = auth_provider()
+    settings = dict(auth=provider, client_id=os.getenv('COGNITO_CLIENT_ID'), domain=os.getenv('COGNITO_DOMAIN'), issuer=os.getenv('COGNITO_ISSUER'), ai_enabled=ai is not None, ai_provider=ai[0] if ai else None)
+    if provider == 'supabase':
+        from .supabase_auth import configuration
+        settings['supabase_url'], settings['supabase_publishable_key'] = configuration()
+    return settings
 
 
 class Credentials(BaseModel):
@@ -49,7 +54,7 @@ class Credentials(BaseModel):
 
 @app.post('/api/auth/{action}')
 def authenticate(action: str, body: Credentials, request: Request):
-    if os.getenv('STORAGE_MODE') == 'aws':
+    if auth_provider() != 'local':
         raise HTTPException(404, 'Use the hosted sign-in page.')
     # Local password authentication is deliberately restricted to local serving.
     if request.client and request.client.host not in ('127.0.0.1', '::1', 'testclient') and os.getenv('ALLOW_LOCAL_AUTH_NETWORK') != 'true':
