@@ -2,6 +2,7 @@ import asyncio
 import json
 import logging
 import pytest
+pytest.importorskip('fastapi')
 import httpx
 from fastapi import HTTPException
 from fullstack.backend import ai
