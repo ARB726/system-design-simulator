@@ -89,6 +89,8 @@ def test_grounded_payload_structured_response_and_owner_scoped_cache(client, mon
     assert first.json()['explanation'] == ANSWER
     assert first.json()['cached'] is False
     assert first.json()['measurements'][1]['value'] == 50
+    assert first.json()['citations'][0]['source'] == 'result.summary.p95_ms'
+    assert first.json()['citations'][0]['value'] == 50
     assert client.post(url, headers=headers()).json()['cached'] is True
     bob = completed('bob@example.com')
     assert client.post(f'/api/experiments/{bob}/explanation', headers=headers('bob@example.com')).json()['cached'] is False

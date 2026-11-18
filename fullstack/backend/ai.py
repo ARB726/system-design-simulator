@@ -27,6 +27,18 @@ one parameter while keeping workload and seed fixed. Never promise an improvemen
 invent measurements, treat illustrative cost as a real bill, or claim production
 predictions. Do not execute anything or suggest provisioning infrastructure."""
 
+GROUNDING_VERSION = 'citations-v1'
+
+
+def grounded_observations(explanation, metrics):
+    """Attach canonical citations; reject explicit unsupported measurement claims."""
+    from .ai_evaluation import score
+    complete = dict(summary='Validation', next_experiment='Validation', limitations='Validation') | explanation
+    if not score(complete, metrics)['passed']:
+        raise HTTPException(502, 'The AI explanation could not be verified against your measurements. Your results are still available.')
+    return [dict(**row, value=metrics[row['metric']], unit=METRICS[row['metric']][1],
+                 source='result.summary.' + row['metric']) for row in explanation['observations']]
+
 
 class Observation(BaseModel):
     model_config = ConfigDict(extra='forbid')
@@ -197,14 +209,15 @@ async def explain(job, user):
     from .ai_shared import required, configured_budget
     gate = configured_budget() if required() else budget
     provider, model = configuration
-    key = hashlib.sha256(json.dumps([user, provider, model, INSTRUCTIONS, encoded]).encode()).hexdigest()
+    key = hashlib.sha256(json.dumps([user, provider, model, INSTRUCTIONS, GROUNDING_VERSION, encoded]).encode()).hexdigest()
     admission = await run_in_threadpool(gate.admit, user, key)
     if isinstance(admission, dict):
         return admission
     response = None
     try:
         explanation = await request_explanation(model, encoded, provider)
-        response = dict(explanation=explanation, measurements=[dict(key=k, label=METRICS[k][0], value=v, unit=METRICS[k][1]) for k, v in metrics.items()], provider=provider, model=model, cached=False)
+        citations = grounded_observations(explanation, metrics)
+        response = dict(explanation=explanation, citations=citations, measurements=[dict(key=k, label=METRICS[k][0], value=v, unit=METRICS[k][1]) for k, v in metrics.items()], provider=provider, model=model, cached=False)
         return response
     finally:
         await run_in_threadpool(gate.finish, key, response, admission)
