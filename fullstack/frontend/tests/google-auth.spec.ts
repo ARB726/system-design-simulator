@@ -60,3 +60,23 @@ test('provider callback error leaves the user signed out',async({page})=>{
   await page.getByRole('button',{name:'Experiment library',exact:true}).click();
   await expect(page.getByRole('button',{name:'Sign in',exact:true})).toBeVisible();
 });
+
+test('missing PKCE verifier explains recovery and removes the unusable callback',async({page})=>{
+  await settings(page);
+  await page.goto('/?code=orphaned-code');
+  await expect(page.getByRole('alert').filter({hasText:/lost its browser verification/})).toBeVisible();
+  expect(new URL(page.url()).search).toBe('');
+  await page.reload();
+  await expect(page.getByRole('heading',{name:'Your architecture. Under pressure.'})).toBeVisible();
+  await expect(page.getByRole('alert').filter({hasText:/Could not connect/})).toHaveCount(0);
+});
+
+test('an already consumed callback preserves an existing session',async({page})=>{
+  await settings(page);
+  await page.addInitScript(value=>sessionStorage.setItem('sb-project-auth-token',JSON.stringify(value)),session);
+  await page.route('**/api/experiments',r=>r.fulfill({json:[]}));
+  await page.goto('/?code=already-used-code');
+  await expect(page.getByRole('button',{name:/google-user@example.com/})).toBeVisible();
+  await expect(page.getByRole('alert').filter({hasText:/Could not connect/})).toHaveCount(0);
+  expect(new URL(page.url()).search).toBe('');
+});
