@@ -4,6 +4,7 @@ test('ambient effects pause, respect reduced motion, and fit narrow screens',asy
   const errors:string[]=[];
   page.on('pageerror',error=>errors.push(error.message));
   await page.goto('/');
+  await page.evaluate(()=>document.fonts.ready);
   const canvas=page.locator('.lab-atmosphere canvas');
   await expect(canvas).toBeVisible();
   await expect.poll(()=>canvas.evaluate(el=>(el as HTMLCanvasElement).width)).toBeGreaterThan(0);
@@ -32,7 +33,9 @@ test('ambient effects pause, respect reduced motion, and fit narrow screens',asy
   await expect.poll(movement).toBeLessThan(.001);
   for(const width of [1440,768,390,320]){
     await page.setViewportSize({width,height:900});
-    expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBeTruthy();
+    await expect.poll(()=>page.evaluate(()=>document.documentElement.scrollWidth),{
+      message:`The page must fit a ${width}px viewport after web fonts load`,
+    }).toBeLessThanOrEqual(width);
     await expect(page.getByRole('button',{name:'Learning lab',exact:true})).toBeVisible();
   }
   expect(errors).toEqual([]);
