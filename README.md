@@ -6,7 +6,37 @@
 
 An interactive learning lab for developers practicing system design. Build a simulated architecture, inject failures, and compare throughput, tail latency, reliability, and illustrative monthly cost before choosing a design.
 
-**Stack:** Python, Streamlit, SimPy, Plotly, SQLite. Optional multi-user deployment: PostgreSQL, Redis, Celery, OIDC, and a C++17 validation kernel.
+**Hosted stack:** Next.js, React, TypeScript, FastAPI, SimPy, AWS CloudFront/S3, API Gateway, Lambda, SQS, DynamoDB, Supabase Auth/PostgreSQL, and Gemini.
+
+**Local Python lab:** Streamlit, Plotly, and SQLite, with an optional PostgreSQL/Redis/Celery deployment and a C++17 validation kernel.
+
+## Live app
+
+**[Open Systems Lab](https://d11ry0yeilwlgs.cloudfront.net/)**
+
+Explore an animated architecture canvas, configure replicas, caches, CDN, database shards, and queues, then compare throughput, latency, reliability, and illustrative cost.
+
+1. Click **Sign in → Continue with Google**. Google OAuth is currently in Testing, so sign-in is limited to the configured test users.
+2. Configure a design and click **Run simulation**. Experiments execute in background workers and results are saved to your workspace.
+3. After a simulation completes, click **Explain my results** for a Gemini explanation based on the saved evidence. AI advice supports learning; it does not validate production capacity.
+
+Google sign-in has been verified on the hosted app. Gemini is configured; the complete signed-in simulation-to-explanation workflow still needs live verification.
+
+### Hosted architecture
+
+| Component | Responsibility |
+| --- | --- |
+| Next.js static frontend on S3 + CloudFront | Interactive UI, architecture graphics, and result charts |
+| Supabase Auth + Google | OAuth authorization code flow with PKCE; the API verifies signed user tokens |
+| API Gateway + FastAPI on Lambda | Authenticated experiment and AI endpoints |
+| SQS + Lambda workers | Bounded simulation jobs using the shared Python engine |
+| DynamoDB + S3 | Experiment metadata and saved simulation results |
+| Supabase PostgreSQL | Private shared AI usage counters, request leases, and owner-scoped answer cache |
+| Gemini | Server-side explanations of a user's completed simulation |
+
+AI access is limited to five attempts per user and twenty globally per UTC hour, with two simultaneous requests. Cached answers do not consume an attempt; failed attempts do. Provider keys and database credentials stay on the backend.
+
+See the [Google sign-in and shared AI setup guide](fullstack/PUBLIC_ACCESS.md) for deployment configuration, the private database schema, and the required CloudFront `connect-src` allowance for the exact Supabase project origin. Never commit real credentials. Existing Cognito histories retain their original owner identities when switching to Google sign-in; they are not automatically linked.
 
 [Try it locally](#quick-start) · [Two-minute walkthrough](#two-minute-walkthrough) · [Engineering case study](docs/performance.md) · [Architecture](docs/architecture.md)
 
@@ -102,7 +132,7 @@ After starting the app locally:
 
 For another tradeoff, open **Find your next experiment** and try **Can a queue absorb a burst?** Compare acknowledgement latency with write-apply lag. Selecting a guided experiment replaces the current sandbox settings.
 
-The demo runs locally without an LLM, API key, or cloud account. See the [user guide](docs/user-guide.md) for saved-library access, persistence, and the six-challenge campaign.
+The Streamlit demo runs locally without an LLM, API key, or cloud account. The hosted app adds Google sign-in and optional Gemini explanations. See the [user guide](docs/user-guide.md) for the local lab's saved-library access, persistence, and six-challenge campaign.
 
 ## Quick start
 
@@ -157,4 +187,4 @@ Queueing behavior is checked against Erlang C / M/M/c formulas. The tests pool m
 
 Potential next steps include durable classroom progress, job cancellation and richer progress,
 multi-region models, and classroom assignments.
-Production load tests and operational monitoring should precede public rollout.
+Broader rollout beyond the Google OAuth test users still needs end-to-end AI verification, production load tests, and operational monitoring.
