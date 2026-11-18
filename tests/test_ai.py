@@ -25,6 +25,7 @@ def client(tmp_path, monkeypatch):
     monkeypatch.setenv('LOCAL_SESSION_SECRET', 'test-session-secret-long-enough-for-hmac-key')
     monkeypatch.setenv('OPENAI_API_KEY', 'test-key-never-send')
     monkeypatch.setenv('OPENAI_MODEL', 'test-structured-model')
+    monkeypatch.setenv('AI_PROVIDER', 'openai')
     monkeypatch.delenv('STORAGE_MODE', raising=False)
     monkeypatch.setattr(ai, 'budget', ai.Budget())
     store.cache_clear(); secret.cache_clear()
@@ -121,5 +122,93 @@ def test_pending_and_invalid_metrics_never_call_provider(client):
     store().finish(job, result=dict(type='simulation', summary={'p95_ms': 'bad'}))
     assert client.post(url, headers=headers()).status_code == 422
     assert ai.budget.total == 0
+
+
+def gemini_response():
+    return dict(candidates=[dict(finishReason='STOP', content={'parts': [{'text': json.dumps(ANSWER)}]})])
+
+
+def configure_gemini(monkeypatch):
+    monkeypatch.setenv('AI_PROVIDER', 'gemini')
+    monkeypatch.setenv('GEMINI_API_KEY', 'test-gemini-key')
+    monkeypatch.setenv('GEMINI_MODEL', 'gemini-flash-latest')
+
+
+def test_gemini_contract_and_public_metadata(client, monkeypatch):
+    configure_gemini(monkeypatch)
+    def handler(request):
+        assert str(request.url) == 'https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent'
+        assert request.headers['x-goog-api-key'] == 'test-gemini-key'
+        assert 'authorization' not in request.headers and 'test-gemini-key' not in str(request.url)
+        body = json.loads(request.content)
+        assert body['generationConfig']['responseMimeType'] == 'application/json'
+        assert body['generationConfig']['maxOutputTokens'] == 1600
+        assert body['generationConfig']['responseJsonSchema']['additionalProperties'] is False
+        assert 'PRIVATE' not in body['contents'][0]['parts'][0]['text']
+        assert body['systemInstruction']['parts'][0]['text'] == ai.INSTRUCTIONS
+        return httpx.Response(200, json=gemini_response())
+    transport(monkeypatch, handler)
+    settings = client.get('/api/settings')
+    assert settings.json()['ai_provider'] == 'gemini' and settings.json()['ai_enabled'] is True
+    assert 'test-gemini-key' not in settings.text
+    job = completed()
+    result = client.post(f'/api/experiments/{job}/explanation', headers=headers())
+    assert result.status_code == 200 and result.json()['provider'] == 'gemini'
+    assert result.json()['explanation'] == ANSWER
+    assert 'test-gemini-key' not in result.text
+
+
+@pytest.mark.parametrize('mode', ['blocked', 'empty', 'truncated', 'safety', 'invalid', 'thought', 'shape', 'http', 'timeout'])
+def test_gemini_failure_handling(client, monkeypatch, mode):
+    configure_gemini(monkeypatch)
+    def handler(request):
+        data = gemini_response()
+        if mode == 'blocked': data = {'promptFeedback': {'blockReason': 'SAFETY'}}
+        if mode == 'empty': data['candidates'] = []
+        if mode == 'truncated': data['candidates'][0]['finishReason'] = 'MAX_TOKENS'
+        if mode == 'safety': data['candidates'][0]['safetyRatings'] = [{'blocked': True}]
+        if mode == 'invalid': data['candidates'][0]['content']['parts'][0]['text'] = '{}'
+        if mode == 'thought': data['candidates'][0]['content']['parts'][0]['thought'] = True
+        if mode == 'shape': data = []
+        if mode == 'http': return httpx.Response(429, text='PRIVATE provider error')
+        if mode == 'timeout': raise httpx.ReadTimeout('PRIVATE provider error')
+        return httpx.Response(200, json=data)
+    transport(monkeypatch, handler)
+    job = completed()
+    response = client.post(f'/api/experiments/{job}/explanation', headers=headers())
+    assert response.status_code == (504 if mode == 'timeout' else 502)
+    assert 'PRIVATE' not in response.text
+    assert not ai.budget.active and not ai.budget.cache
+
+
+def test_provider_selection_fails_closed_without_fallback(client, monkeypatch):
+    configure_gemini(monkeypatch)
+    monkeypatch.delenv('GEMINI_API_KEY')
+    assert client.get('/api/settings').json()['ai_enabled'] is False
+    job = completed()
+    assert client.post(f'/api/experiments/{job}/explanation', headers=headers()).status_code == 503
+    monkeypatch.setenv('GEMINI_API_KEY', 'test-gemini-key')
+    monkeypatch.setenv('GEMINI_MODEL', '../invalid/path')
+    assert not ai.available()
+    monkeypatch.setenv('AI_PROVIDER', 'unknown')
+    assert not ai.available()
+
+
+def test_provider_is_part_of_cache_identity(client, monkeypatch):
+    configure_gemini(monkeypatch)
+    monkeypatch.setenv('OPENAI_MODEL', 'gemini-flash-latest')
+    calls = []
+    def handler(request):
+        calls.append(request.url.host)
+        return httpx.Response(200, json=gemini_response() if request.url.host == 'generativelanguage.googleapis.com' else good_response())
+    transport(monkeypatch, handler)
+    job = completed(); url = f'/api/experiments/{job}/explanation'
+    assert client.post(url, headers=headers()).json()['cached'] is False
+    monkeypatch.setenv('AI_PROVIDER', 'openai')
+    response = client.post(url, headers=headers()).json()
+    assert response['cached'] is False and response['provider'] == 'openai'
+    monkeypatch.setenv('AI_PROVIDER', 'gemini')
+    assert client.post(url, headers=headers()).json()['cached'] is True
+    assert calls == ['generativelanguage.googleapis.com', 'api.openai.com']
 
 
