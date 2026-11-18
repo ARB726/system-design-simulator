@@ -17,6 +17,10 @@ services:
       ALLOW_LOCAL_AUTH_NETWORK: "true"
       ALLOWED_ORIGINS: http://localhost:8080,http://127.0.0.1:8080
       SYSDESIGN_MAX_ARRIVALS: "150000"
+      AUTH_PROVIDER: ${AUTH_PROVIDER:-local}
+      SUPABASE_URL: ${SUPABASE_URL:-}
+      SUPABASE_PUBLISHABLE_KEY: ${SUPABASE_PUBLISHABLE_KEY:-}
+      AI_BUDGET_DATABASE_URL: ${AI_BUDGET_DATABASE_URL:-}
       AI_PROVIDER: ${AI_PROVIDER:-openai}
       GEMINI_API_KEY: ${GEMINI_API_KEY:-}
       GEMINI_MODEL: ${GEMINI_MODEL:-}
@@ -34,6 +38,7 @@ services:
       <<: *env
       GEMINI_API_KEY: ""
       GEMINI_MODEL: ""
+      AI_BUDGET_DATABASE_URL: ""
       OPENAI_API_KEY: ""
       OPENAI_MODEL: ""
     depends_on:

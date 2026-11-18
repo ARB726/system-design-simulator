@@ -1,7 +1,7 @@
 [CmdletBinding()]
 param(
     [ValidatePattern('^gemini-[A-Za-z0-9._-]{1,90}$')]
-    [string]$Model = 'gemini-flash-latest',
+    [string]$Model = 'gemini-3.1-flash-lite',
     [ValidateRange(1024, 65535)][int]$Port = 8080,
     [ValidateRange(1024, 65535)][int]$ApiPort = 8000
 )

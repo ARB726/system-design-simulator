@@ -1,5 +1,7 @@
 # Optional AI result explanations
 
+For Google sign-in and shared access across hosted API instances, see [PUBLIC_ACCESS.md](PUBLIC_ACCESS.md).
+
 After a simulation completes, **Explain my results** sends selected measurements and the saved numeric configuration to the explicitly selected AI provider. It returns a structured summary, observations, one next experiment, and limitations. No model output changes configurations or starts simulations. The simulation engine remains the source of measured values.
 
 Set `AI_PROVIDER=gemini` with `GEMINI_API_KEY` and `GEMINI_MODEL` to use Google's Gemini generateContent API. Set `AI_PROVIDER=openai` (the backward-compatible default) with `OPENAI_API_KEY` and `OPENAI_MODEL` to use OpenAI Responses. The selected provider needs both its key and model. Unsupported providers, invalid Gemini model IDs, or missing settings disable the feature; there is no automatic fallback. Choose a model that supports JSON-schema structured output. API usage is billed by the provider separately from application hosting. Do not place the key in a `NEXT_PUBLIC_` variable, runtime-config.json, browser storage, or source control.
@@ -11,12 +13,12 @@ If a key has been pasted into chat, a command history, or a public location, rev
 From the repository root, run:
 
 ```powershell
-./tools/start_gemini.ps1 -Model gemini-flash-latest
+./tools/start_gemini.ps1 -Model gemini-3.1-flash-lite
 ```
 
 The launcher prompts with hidden input, passes the key to the local API through the process environment, and restores the caller's previous environment when the app stops. It never writes the key to a file or puts it in command arguments. The worker does not receive AI API keys. The launcher requires the Python environment, backend dependencies, and an existing frontend build. Stop an existing local app first, or choose unused `-Port` and `-ApiPort` values.
 
-`gemini-flash-latest` is the alias from the setup example; Google can change the model behind it. Verify availability, structured-output support, and free-tier eligibility for the chosen model and API project in [Google's pricing documentation](https://ai.google.dev/gemini-api/docs/pricing). Gemini's free tier is quota-limited, and its data-use terms differ from paid usage. The app cannot guarantee free usage if the provider project has billing enabled. No fallback provider is used when Gemini runs out of quota.
+The local setup defaults to `gemini-3.1-flash-lite`, which passed the live integration check. The optional `gemini-flash-latest` alias can change behind the scenes and timed out during initial testing. Verify availability, structured-output support, and free-tier eligibility for the chosen model and API project in [Google's pricing documentation](https://ai.google.dev/gemini-api/docs/pricing). Gemini's free tier is quota-limited, and its data-use terms differ from paid usage. The app cannot guarantee free usage if the provider project has billing enabled. No fallback provider is used when Gemini runs out of quota.
 
 ## OpenAI setup
 
@@ -34,7 +36,7 @@ The UI explains the data transfer before the user clicks. Requests exclude email
 
 There are no automatic AI calls or retries. Each response is limited to 1,600 output tokens, 16 KB of evidence, 128 KB of response data, and an 18-second total request timeout. Malformed output, refusals, incomplete responses, timeouts, and provider failures produce a recoverable error without affecting simulation results.
 
-Admission control allows two concurrent requests, five new attempts per user per hour, and twenty total new attempts per hour **per API process**. Failed attempts also count. Successful responses are cached for one hour in an owner-scoped cache of at most 128 entries; cache hits do not consume attempts. These controls are in memory: restarts reset them, and multiple instances each have independent budgets. They are not a distributed spending cap. Before enabling a public multi-instance deployment, add shared durable admission control and configure provider-side usage controls. No hosting configuration or deployment is changed by this feature.
+In private local-password mode, in-memory admission control allows two concurrent requests, five new attempts per user per hour, and twenty total new attempts per hour **per API process**. Failed attempts also count. Successful responses are cached for one hour in an owner-scoped cache of at most 128 entries; cache hits do not consume attempts. These controls are in memory: restarts reset them, and multiple instances each have independent budgets. They are not a distributed spending cap. Public Supabase/Cognito modes now require shared PostgreSQL admission control; see PUBLIC_ACCESS.md for its setup and fixed UTC-hour limits. Configure provider-side usage controls as well. No hosting configuration or deployment is changed by this feature.
 
 Validation uses an HTTP mock, not a paid model call. Run:
 
