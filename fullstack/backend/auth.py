@@ -40,12 +40,23 @@ def jwks():
     return jwt.PyJWKClient(os.environ['COGNITO_ISSUER'] + '/.well-known/jwks.json', cache_keys=True, timeout=5)
 
 
+def auth_provider():
+    provider = os.getenv('AUTH_PROVIDER', 'cognito' if os.getenv('STORAGE_MODE') == 'aws' else 'local').strip().lower()
+    if provider not in ('local', 'cognito', 'supabase') or (provider == 'local' and os.getenv('STORAGE_MODE') == 'aws'):
+        raise HTTPException(503, 'The configured sign-in provider is unavailable.')
+    return provider
+
+
 def owner(authorization: str = Header(default='')):
     if not authorization.startswith('Bearer '):
         raise HTTPException(401, 'Please sign in.')
     token = authorization[7:]
+    provider = auth_provider()
+    if provider == 'supabase':
+        from .supabase_auth import verify
+        return verify(token)
     try:
-        if os.getenv('STORAGE_MODE') == 'aws':
+        if provider == 'cognito':
             key = jwks().get_signing_key_from_jwt(token).key
             claims = jwt.decode(token, key, algorithms=['RS256'], issuer=os.environ['COGNITO_ISSUER'], options={'verify_aud': False, 'require': ['sub', 'exp', 'iss', 'token_use', 'client_id']})
             if claims['token_use'] != 'access' or not hmac.compare_digest(claims['client_id'], os.environ['COGNITO_CLIENT_ID']):
