@@ -38,9 +38,10 @@ def health():
 @app.get('/api/settings')
 def settings():
     from .ai import provider_config
+    from .ai_shared import ready
     ai = provider_config()
     provider = auth_provider()
-    settings = dict(auth=provider, client_id=os.getenv('COGNITO_CLIENT_ID'), domain=os.getenv('COGNITO_DOMAIN'), issuer=os.getenv('COGNITO_ISSUER'), ai_enabled=ai is not None, ai_provider=ai[0] if ai else None)
+    settings = dict(auth=provider, client_id=os.getenv('COGNITO_CLIENT_ID'), domain=os.getenv('COGNITO_DOMAIN'), issuer=os.getenv('COGNITO_ISSUER'), ai_enabled=ai is not None and ready(), ai_provider=ai[0] if ai else None)
     if provider == 'supabase':
         from .supabase_auth import configuration
         settings['supabase_url'], settings['supabase_publishable_key'] = configuration()

@@ -123,7 +123,7 @@ class Budget:
             self.active.add(key)
         return None
 
-    def finish(self, key, response=None):
+    def finish(self, key, response=None, lease=None):
         with self.lock:
             self.active.discard(key)
             if response is not None:
@@ -193,15 +193,18 @@ async def explain(job, user):
     if not configuration:
         raise HTTPException(503, 'AI explanations are not configured for this workspace.')
     encoded, metrics = evidence(job)
+    from starlette.concurrency import run_in_threadpool
+    from .ai_shared import required, configured_budget
+    gate = configured_budget() if required() else budget
     provider, model = configuration
     key = hashlib.sha256(json.dumps([user, provider, model, INSTRUCTIONS, encoded]).encode()).hexdigest()
-    cached = budget.admit(user, key)
-    if cached:
-        return cached
+    admission = await run_in_threadpool(gate.admit, user, key)
+    if isinstance(admission, dict):
+        return admission
     response = None
     try:
         explanation = await request_explanation(model, encoded, provider)
         response = dict(explanation=explanation, measurements=[dict(key=k, label=METRICS[k][0], value=v, unit=METRICS[k][1]) for k, v in metrics.items()], provider=provider, model=model, cached=False)
         return response
     finally:
-        budget.finish(key, response)
+        await run_in_threadpool(gate.finish, key, response, admission)

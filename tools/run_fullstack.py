@@ -27,7 +27,7 @@ def main():
     server = http.server.ThreadingHTTPServer(('127.0.0.1', args.port), functools.partial(http.server.SimpleHTTPRequestHandler, directory=str(public)))
     environment = dict(os.environ)
     environment.setdefault('ALLOWED_ORIGINS', f'http://127.0.0.1:{args.port},http://localhost:{args.port}')
-    worker_environment = {k: v for k, v in environment.items() if k not in ('OPENAI_API_KEY', 'GEMINI_API_KEY')}
+    worker_environment = {k: v for k, v in environment.items() if k not in ('OPENAI_API_KEY', 'GEMINI_API_KEY', 'AI_BUDGET_DATABASE_URL')}
     children = [subprocess.Popen([sys.executable, '-m', 'uvicorn', 'fullstack.backend.main:app', '--host', '127.0.0.1', '--port', str(args.api_port), '--no-proxy-headers'], env=environment), subprocess.Popen([sys.executable, '-m', 'fullstack.backend.worker'], env=worker_environment)]
     def stop(*_):
         raise KeyboardInterrupt
