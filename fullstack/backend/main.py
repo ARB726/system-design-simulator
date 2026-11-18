@@ -37,8 +37,9 @@ def health():
 
 @app.get('/api/settings')
 def settings():
-    from .ai import available
-    return dict(auth='cognito' if os.getenv('STORAGE_MODE') == 'aws' else 'local', client_id=os.getenv('COGNITO_CLIENT_ID'), domain=os.getenv('COGNITO_DOMAIN'), issuer=os.getenv('COGNITO_ISSUER'), ai_enabled=available())
+    from .ai import provider_config
+    ai = provider_config()
+    return dict(auth='cognito' if os.getenv('STORAGE_MODE') == 'aws' else 'local', client_id=os.getenv('COGNITO_CLIENT_ID'), domain=os.getenv('COGNITO_DOMAIN'), issuer=os.getenv('COGNITO_ISSUER'), ai_enabled=ai is not None, ai_provider=ai[0] if ai else None)
 
 
 class Credentials(BaseModel):

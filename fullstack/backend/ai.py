@@ -1,10 +1,11 @@
-"""Optional, bounded explanations of saved simulation evidence via OpenAI."""
+"""Optional, bounded explanations of saved simulation evidence."""
 import asyncio
 from collections import OrderedDict
 import hashlib
 import json
 import math
 import os
+import re
 from threading import Lock
 import time
 from typing import Literal
@@ -41,8 +42,21 @@ class Explanation(BaseModel):
     limitations: str = Field(min_length=1, max_length=600)
 
 
+def provider_config():
+    provider = os.getenv('AI_PROVIDER', 'openai').strip().lower()
+    if provider not in ('openai', 'gemini'):
+        return None
+    prefix = 'GEMINI' if provider == 'gemini' else 'OPENAI'
+    model = os.getenv(prefix + '_MODEL', '').strip()
+    if not model or not os.getenv(prefix + '_API_KEY', '').strip():
+        return None
+    if provider == 'gemini' and not re.fullmatch(r'gemini-[A-Za-z0-9._-]{1,90}', model):
+        return None
+    return provider, model
+
+
 def available():
-    return bool(os.getenv('OPENAI_API_KEY', '').strip() and os.getenv('OPENAI_MODEL', '').strip())
+    return provider_config() is not None
 
 
 def numeric_config(value, template):
@@ -122,16 +136,29 @@ class Budget:
 budget = Budget()
 
 
-async def request_explanation(model, encoded):
+async def request_explanation(model, encoded, provider='openai'):
     import httpx
-    body = dict(model=model, instructions=INSTRUCTIONS, input=encoded, store=False,
-                max_output_tokens=1600, text={'format': {'type': 'json_schema', 'name': 'experiment_explanation',
-                'strict': True, 'schema': Explanation.model_json_schema()}})
+    if provider == 'gemini':
+        if not re.fullmatch(r'gemini-[A-Za-z0-9._-]{1,90}', model):
+            raise HTTPException(503, 'The configured Gemini model ID is invalid.')
+        url = f'https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent'
+        headers = {'x-goog-api-key': os.environ['GEMINI_API_KEY'].strip()}
+        body = dict(systemInstruction={'parts': [{'text': INSTRUCTIONS}]},
+                    contents=[{'role': 'user', 'parts': [{'text': encoded}]}],
+                    generationConfig={'candidateCount': 1, 'maxOutputTokens': 1600,
+                                      'responseMimeType': 'application/json', 'responseJsonSchema': Explanation.model_json_schema()})
+    elif provider == 'openai':
+        url = 'https://api.openai.com/v1/responses'
+        headers = {'Authorization': 'Bearer ' + os.environ['OPENAI_API_KEY'].strip()}
+        body = dict(model=model, instructions=INSTRUCTIONS, input=encoded, store=False,
+                    max_output_tokens=1600, text={'format': {'type': 'json_schema', 'name': 'experiment_explanation',
+                    'strict': True, 'schema': Explanation.model_json_schema()}})
+    else:
+        raise HTTPException(503, 'The configured AI provider is unsupported.')
     try:
         async with asyncio.timeout(18):
             async with httpx.AsyncClient(timeout=httpx.Timeout(15, connect=5), follow_redirects=False) as client:
-                async with client.stream('POST', 'https://api.openai.com/v1/responses',
-                                         headers={'Authorization': 'Bearer ' + os.environ['OPENAI_API_KEY'].strip()}, json=body) as response:
+                async with client.stream('POST', url, headers=headers, json=body) as response:
                     response.raise_for_status()
                     data = bytearray()
                     async for chunk in response.aiter_bytes():
@@ -139,12 +166,21 @@ async def request_explanation(model, encoded):
                         if len(data) > 128000:
                             raise ValueError('Response too large')
         result = json.loads(data)
-        if result.get('status') != 'completed':
-            raise ValueError('Incomplete response')
-        content = [c for item in result.get('output', []) if item.get('type') == 'message' for c in item.get('content', [])]
-        if any(c.get('type') == 'refusal' for c in content):
-            raise ValueError('Refused response')
-        text = ''.join(c['text'] for c in content if c.get('type') == 'output_text')
+        if provider == 'gemini':
+            candidates = result.get('candidates', [])
+            if result.get('promptFeedback', {}).get('blockReason') or len(candidates) != 1:
+                raise ValueError('Blocked or missing response')
+            candidate = candidates[0]
+            if candidate.get('finishReason') != 'STOP' or any(r.get('blocked') for r in candidate.get('safetyRatings', [])):
+                raise ValueError('Incomplete or blocked response')
+            text = ''.join(part['text'] for part in candidate.get('content', {}).get('parts', []) if 'text' in part and not part.get('thought'))
+        else:
+            if result.get('status') != 'completed':
+                raise ValueError('Incomplete response')
+            content = [c for item in result.get('output', []) if item.get('type') == 'message' for c in item.get('content', [])]
+            if any(c.get('type') == 'refusal' for c in content):
+                raise ValueError('Refused response')
+            text = ''.join(c['text'] for c in content if c.get('type') == 'output_text')
         return Explanation.model_validate_json(text).model_dump()
     except (TimeoutError, httpx.TimeoutException) as exc:
         raise HTTPException(504, 'The AI explanation timed out. Your simulation results are still available.') from exc
@@ -153,18 +189,19 @@ async def request_explanation(model, encoded):
 
 
 async def explain(job, user):
-    if not available():
+    configuration = provider_config()
+    if not configuration:
         raise HTTPException(503, 'AI explanations are not configured for this workspace.')
     encoded, metrics = evidence(job)
-    model = os.environ['OPENAI_MODEL'].strip()
-    key = hashlib.sha256(json.dumps([user, model, INSTRUCTIONS, encoded]).encode()).hexdigest()
+    provider, model = configuration
+    key = hashlib.sha256(json.dumps([user, provider, model, INSTRUCTIONS, encoded]).encode()).hexdigest()
     cached = budget.admit(user, key)
     if cached:
         return cached
     response = None
     try:
-        explanation = await request_explanation(model, encoded)
-        response = dict(explanation=explanation, measurements=[dict(key=k, label=METRICS[k][0], value=v, unit=METRICS[k][1]) for k, v in metrics.items()], model=model, cached=False)
+        explanation = await request_explanation(model, encoded, provider)
+        response = dict(explanation=explanation, measurements=[dict(key=k, label=METRICS[k][0], value=v, unit=METRICS[k][1]) for k, v in metrics.items()], provider=provider, model=model, cached=False)
         return response
     finally:
         budget.finish(key, response)
