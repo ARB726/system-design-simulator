@@ -1,0 +1,190 @@
+{
+  "attempts": [
+    {
+      "change": {},
+      "config": {
+        "name": "Custom design",
+        "app": {
+          "replicas": 3,
+          "workers": 8,
+          "latency_ms": 20.0,
+          "lb_strategy": "least_queue",
+          "max_queue": 200
+        },
+        "cache": {
+          "enabled": false,
+          "hit_rate": 0.85,
+          "latency_ms": 1.0,
+          "workers": 64
+        },
+        "cdn": {
+          "enabled": false,
+          "hit_rate": 0.6,
+          "latency_ms": 8.0
+        },
+        "queue": {
+          "enabled": false,
+          "consumers": 8,
+          "max_depth": 5000,
+          "enqueue_ms": 2.0
+        },
+        "db": {
+          "workers": 1,
+          "read_ms": 8.0,
+          "write_ms": 25.0,
+          "read_replicas": 0,
+          "max_queue": 500,
+          "shards": 1,
+          "hot_share": 0.0
+        },
+        "workload": {
+          "rps": 180,
+          "read_ratio": 0.95,
+          "duration_s": 4,
+          "timeout_ms": 1000.0,
+          "warmup_s": 1
+        },
+        "events": [],
+        "seed": 7,
+        "app_only": false,
+        "policy": {
+          "max_retries": 0,
+          "backoff_ms": 100.0,
+          "backoff_multiplier": 2.0,
+          "jitter": true,
+          "rate_limit_rps": null,
+          "burst": 100
+        }
+      },
+      "cost": 261.0,
+      "served_rps": 99.66666666666667,
+      "success_rate": 0.5496323529411765
+    },
+    {
+      "change": {
+        "db.workers": 2
+      },
+      "config": {
+        "name": "Custom design",
+        "app": {
+          "replicas": 3,
+          "workers": 8,
+          "latency_ms": 20.0,
+          "lb_strategy": "least_queue",
+          "max_queue": 200
+        },
+        "cache": {
+          "enabled": false,
+          "hit_rate": 0.85,
+          "latency_ms": 1.0,
+          "workers": 64
+        },
+        "cdn": {
+          "enabled": false,
+          "hit_rate": 0.6,
+          "latency_ms": 8.0
+        },
+        "queue": {
+          "enabled": false,
+          "consumers": 8,
+          "max_depth": 5000,
+          "enqueue_ms": 2.0
+        },
+        "db": {
+          "workers": 2,
+          "read_ms": 8.0,
+          "write_ms": 25.0,
+          "read_replicas": 0,
+          "max_queue": 500,
+          "shards": 1,
+          "hot_share": 0.0
+        },
+        "workload": {
+          "rps": 180,
+          "read_ratio": 0.95,
+          "duration_s": 4,
+          "timeout_ms": 1000.0,
+          "warmup_s": 1
+        },
+        "events": [],
+        "seed": 7,
+        "app_only": false,
+        "policy": {
+          "max_retries": 0,
+          "backoff_ms": 100.0,
+          "backoff_multiplier": 2.0,
+          "jitter": true,
+          "rate_limit_rps": null,
+          "burst": 100
+        }
+      },
+      "cost": 273.0,
+      "served_rps": 170.33333333333334,
+      "success_rate": 1.0
+    }
+  ],
+  "best": {
+    "change": {
+      "db.workers": 2
+    },
+    "config": {
+      "name": "Custom design",
+      "app": {
+        "replicas": 3,
+        "workers": 8,
+        "latency_ms": 20.0,
+        "lb_strategy": "least_queue",
+        "max_queue": 200
+      },
+      "cache": {
+        "enabled": false,
+        "hit_rate": 0.85,
+        "latency_ms": 1.0,
+        "workers": 64
+      },
+      "cdn": {
+        "enabled": false,
+        "hit_rate": 0.6,
+        "latency_ms": 8.0
+      },
+      "queue": {
+        "enabled": false,
+        "consumers": 8,
+        "max_depth": 5000,
+        "enqueue_ms": 2.0
+      },
+      "db": {
+        "workers": 2,
+        "read_ms": 8.0,
+        "write_ms": 25.0,
+        "read_replicas": 0,
+        "max_queue": 500,
+        "shards": 1,
+        "hot_share": 0.0
+      },
+      "workload": {
+        "rps": 180,
+        "read_ratio": 0.95,
+        "duration_s": 4,
+        "timeout_ms": 1000.0,
+        "warmup_s": 1
+      },
+      "events": [],
+      "seed": 7,
+      "app_only": false,
+      "policy": {
+        "max_retries": 0,
+        "backoff_ms": 100.0,
+        "backoff_multiplier": 2.0,
+        "jitter": true,
+        "rate_limit_rps": null,
+        "burst": 100
+      }
+    },
+    "cost": 273.0,
+    "served_rps": 170.33333333333334,
+    "success_rate": 1.0
+  },
+  "stop_reason": "target_met",
+  "target_met": true
+}
