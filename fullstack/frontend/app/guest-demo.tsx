@@ -9,6 +9,7 @@ import TopologyHero from './topology-hero';
 import ComparisonDeltas from './comparison-deltas';
 import BottleneckTakeaway from './bottleneck-takeaway';
 import SnapshotShare from './snapshot-share';
+import Walkthrough from './walkthrough';
 const ResultCharts=dynamic(()=>import('./result-charts'),{loading:()=> <p role="status">Loading sample charts...</p>});
 const number=(n:number,digits=1)=>n.toLocaleString(undefined,{maximumFractionDigits:digits});
 
@@ -28,6 +29,7 @@ export default function GuestDemo({onExit,onSignIn}:{onExit:()=>void;onSignIn:()
   return <LabMotion><div className="guest-shell"><LabScene/><main className="guest-main">
     <div className="page-heading"><div><div className="eyebrow"><ShieldCheck size={15}/> READ-ONLY GUEST DEMO</div><h1>Two designs. See the tradeoff.</h1><p>Explore real simulation snapshots without an account.</p></div><button className="button secondary" onClick={onExit}><ArrowLeft size={16}/> Back to sandbox</button></div>
     <div className="notice">These are precomputed, synthetic examples from the Python/SimPy engine. Viewing them creates no jobs and makes no AI calls.</div>
+    <Walkthrough/>
     {error&&<p role="alert" className="error">{error}</p>}
     {!jobs.length&&!error&&<p role="status">Loading sample experiments...</p>}
     {!!jobs.length&&<>
