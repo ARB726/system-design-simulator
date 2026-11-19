@@ -22,6 +22,13 @@ const enc = (b:Uint8Array) => btoa(String.fromCharCode(...b)).replace(/\+/g,'-')
 
 export default function Home() {
   const [guest,setGuest]=useState(false);
+  useEffect(()=>{
+    const sync=()=>setGuest(location.hash==='#demo');
+    sync();window.addEventListener('hashchange',sync);
+    return()=>window.removeEventListener('hashchange',sync);
+  },[]);
+  function openGuest(){location.hash='demo';setGuest(true)}
+  function closeGuest(){history.replaceState(null,'',location.pathname+location.search);setGuest(false)}
   const [apiBase,setApiBase]=useState(''); const [settings,setSettings]=useState<Settings>();
   const [token,setToken]=useState(''); const [identity,setIdentity]=useState('');
   const [tab,setTab]=useState('sandbox'); const [config,setConfig]=useState<Config>(defaults);
@@ -105,7 +112,7 @@ export default function Home() {
   async function importArchive(file?:File){if(!file)return;setError('');try{if(file.size>8000000)throw new Error('Archive must be under 8 MB. Export individual experiments for larger libraries.');const data=JSON.parse(await file.text());const archive=data.payload?{version:1,experiments:[data]}:data;await api('/api/import',{method:'POST',body:JSON.stringify(archive)});await refresh()}catch(e){setError((e as Error).message)}finally{if(archiveRef.current)archiveRef.current.value=''}}
   const result=selected?.result;const summary=result?.summary;const busy=loading||!!(selected&&['queued','running'].includes(selected.status));
 
-  if(guest)return <GuestDemo onExit={()=>setGuest(false)} onSignIn={()=>{setGuest(false);void signIn()}}/>;
+  if(guest)return <GuestDemo onExit={closeGuest} onSignIn={()=>{closeGuest();void signIn()}}/>;
   return <LabMotion><div className="app-shell"><LabScene/>
     <aside className="sidebar">
       <a className="brand" href="/"><span className="brand-mark"><Layers3 size={23}/></span><span>systems<span className="brand-light">lab</span><small>THE ARCHITECTURE PLAYGROUND</small></span></a>
@@ -118,7 +125,7 @@ export default function Home() {
     <main><ViewTransition view={tab}>
       {error&&<div className="error" role="alert">{error}<button aria-label="Dismiss error" onClick={()=>setError('')}>×</button></div>}
       {tab==='sandbox'&&<>
-        {!token&&<section className="panel guest-entry"><div><strong>Take a look before signing in.</strong><p>Compare two recorded designs and explore their results. No account required.</p></div><button className="button secondary" onClick={()=>{setError('');setGuest(true)}}>Explore guest demo <ArrowRight size={16}/></button></section>}
+        {!token&&<section className="panel guest-entry"><div><strong>See what a read cache changes.</strong><p>Explore two recorded simulations and compare their results. No sign-in required.</p></div><button className="button primary" onClick={()=>{setError('');openGuest()}}>Try without signing in <ArrowRight size={16}/></button></section>}
         <div className="page-heading"><div><div className="eyebrow"><span/> BUILD · BREAK · UNDERSTAND</div><h1>Your architecture. Under pressure.</h1><p>Design a system, push its limits, and discover what really makes it work.</p></div><button className="button secondary" onClick={()=>{setConfig(structuredClone(defaults));setSelected(undefined);setPreset('Custom design');setChallenge(undefined);setStory('Start with a design. Change one thing. See what happens.')}}><Plus size={16}/> New experiment</button></div>
         <TopologyHero config={config} onToggle={(section,value)=>update(section,'enabled',value)}/><DesignTelemetry rps={config.workload.rps} replicas={config.app.replicas} seed={config.seed} busy={busy}/><div className="scenario-bar"><div className="scenario-icon"><FlaskConical size={20}/></div><label>STARTING POINT<select aria-label="Scenario" value={preset} onChange={e=>{const p=presets.find(p=>p.name===e.target.value);if(p)loadPreset(p)}}><option value="Custom design">Custom design</option>{presets.map(p=><option key={p.name}>{p.name}</option>)}</select></label><div className="scenario-description">{story}</div><span className="badge">SimPy engine</span></div>
         <div className="editor-grid"><section className="panel architecture"><div className="panel-heading"><div><h2><Workflow size={17}/> Architecture canvas</h2><p>A live view of the system you’re designing</p></div><span className="subtle">{[true,config.cache.enabled,config.cdn.enabled,config.queue.enabled,true].filter(Boolean).length} components</span></div>
