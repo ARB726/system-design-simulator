@@ -28,5 +28,5 @@ test('an invalid snapshot offers recovery without executing a job',async({page})
   await page.goto('/#share=v1.invalid');
   await expect(page.getByRole('alert').filter({hasText:'This snapshot link is invalid'})).toBeVisible({timeout:20000});
   await page.getByRole('button',{name:'Open sandbox'}).click();
-  await expect(page.getByRole('heading',{name:'Your architecture. Under pressure.'})).toBeVisible();
+  await expect(page.getByRole('heading',{name:'Find the constraint.'})).toBeVisible();
 });
