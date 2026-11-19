@@ -12,7 +12,7 @@ test('architecture illustration controls real configuration and respects motion 
   await expect(page.getByRole('switch',{name:'Async write queue',exact:true})).toBeChecked();
   await page.getByLabel('App replicas',{exact:true}).fill('5');
   await expect(preview.getByRole('img')).toHaveAccessibleName(/5 application replicas/);
-  await page.getByRole('button',{name:'Pause background animations'}).click();
+  await page.getByRole('button',{name:'Pause flow animation'}).click();
   await expect(page.locator('.topology-signal').first()).toHaveCSS('animation-play-state','paused');
   await page.emulateMedia({reducedMotion:'reduce'});
   await expect(page.locator('.topology-signal').first()).toHaveCSS('animation-name','none');
