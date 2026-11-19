@@ -7,6 +7,8 @@ import dynamic from 'next/dynamic';
 import TopologyHero from './topology-hero';
 import ComparisonDeltas from './comparison-deltas';
 import BottleneckTakeaway from './bottleneck-takeaway';
+import SnapshotShare from './snapshot-share';
+const SharedSnapshot=dynamic(()=>import('./shared-snapshot'),{loading:()=> <p role="status">Opening shared snapshot...</p>});
 const AIExplanation=dynamic(()=>import('./ai-explanation'),{loading:()=> <div className="panel empty-results" role="status">Loading architecture coach...</div>});
 const GuestDemo=dynamic(()=>import('./guest-demo'),{loading:()=> <p role="status">Opening guest demo...</p>});
 const ResultCharts = dynamic(()=>import('./result-charts'),{loading:()=> <div className="empty-results" role="status">Loading charts...</div>});
@@ -24,8 +26,9 @@ const enc = (b:Uint8Array) => btoa(String.fromCharCode(...b)).replace(/\+/g,'-')
 
 export default function Home() {
   const [guest,setGuest]=useState(false);
+  const [sharedHash,setSharedHash]=useState('');
   useEffect(()=>{
-    const sync=()=>setGuest(location.hash==='#demo');
+    const sync=()=>{setGuest(location.hash==='#demo');setSharedHash(location.hash.startsWith('#share=')?location.hash:'')};
     sync();window.addEventListener('hashchange',sync);
     return()=>window.removeEventListener('hashchange',sync);
   },[]);
@@ -48,6 +51,7 @@ export default function Home() {
     return response.json();
   }
   useEffect(()=>{ let active=true;let disconnect:(()=>void)|undefined; (async()=>{
+    if(location.hash.startsWith('#share='))return;
     let runtime:Runtime={};
     try { const r=await fetch('/runtime-config.json',{cache:'no-store'}); if(r.ok)runtime=await r.json(); }catch{}
     const base=runtime.apiUrl || process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
@@ -114,6 +118,7 @@ export default function Home() {
   async function importArchive(file?:File){if(!file)return;setError('');try{if(file.size>8000000)throw new Error('Archive must be under 8 MB. Export individual experiments for larger libraries.');const data=JSON.parse(await file.text());const archive=data.payload?{version:1,experiments:[data]}:data;await api('/api/import',{method:'POST',body:JSON.stringify(archive)});await refresh()}catch(e){setError((e as Error).message)}finally{if(archiveRef.current)archiveRef.current.value=''}}
   const result=selected?.result;const summary=result?.summary;const busy=loading||!!(selected&&['queued','running'].includes(selected.status));
 
+  if(sharedHash)return <SharedSnapshot key={sharedHash} hash={sharedHash}/>;
   if(guest)return <GuestDemo onExit={closeGuest} onSignIn={()=>{closeGuest();void signIn()}}/>;
   return <LabMotion><div className="app-shell"><LabScene/>
     <aside className="sidebar">
@@ -150,7 +155,7 @@ export default function Home() {
         <section className="results-section"><div className="section-heading"><div><h2>Experiment results</h2><p>{selected?`${selected.payload.name} · ${new Date(selected.created*1000).toLocaleString()}`:'The evidence behind your next design decision.'}</p></div>{selected?.result&&<button className="button secondary" onClick={()=>download(selected,'experiment-'+selected.id+'.json')}><ArrowDownToLine size={15}/> Export result</button>}</div>
         {!selected?<div className="empty-results"><span className="empty-icon"><Activity size={25}/></span><h3>Every good design starts with a question.</h3><p>Run your first simulation to uncover throughput, latency, and bottlenecks.</p><div className="empty-metrics"><span><i/> Throughput</span><span><i/> Tail latency</span><span><i/> Reliability</span><span><i/> Resource pressure</span></div></div>:busy?<div className="empty-results" role="status"><LoaderCircle className="spin" size={26}/><h3>{selected.status==='running'?'Your architecture is under pressure.':'Your experiment is in the queue.'}</h3><p>You can leave this page. Your experiment is saved in the library.</p></div>:selected.status==='failed'?<div className="error">{selected.error}</div>:result?.type==='grade'?<div className="panel grade"><h3>{result.passed?'Challenge passed':'Keep experimenting'}</h3><p>Design cost {money(result.cost)} / budget {money(result.budget||0)}</p>{result.checks?.map(c=><div className="check-row" key={c.name}><strong>{c.passed?'Passed':'Failed'} · {c.name}</strong><span>p99 {number(c.p99_ms,1)} ms · {number(c.success*100,2)}% success</span><p>{c.reasons.join(' · ')}</p></div>)}</div>:summary&&result?<>
           <div className="metrics"><Metric label="Successful throughput" value={number(summary.served_rps)} unit="req/s" note="Requests completed per second"/><Metric label="p95 latency" value={number(summary.p95_ms,1)} unit="ms" note="95% of measured requests finish within"/><Metric label="Success rate" value={number(summary.success_rate*100,2)} unit="%" note={`${Object.values(summary.fail).reduce((a,b)=>a+b,0)} failed requests`}/><Metric label="Illustrative design cost" value={money(result.cost)} unit="/mo" note="Simulated infrastructure estimate"/></div>
-          <BottleneckTakeaway result={result}/><ResultCharts result={result}/>
+          <BottleneckTakeaway result={result}/><SnapshotShare key={selected.id} job={selected}/><ResultCharts result={result}/>
           <AIExplanation key={selected.id} jobId={selected.id} apiBase={apiBase} token={token} enabled={settings?.ai_enabled===true} provider={settings?.ai_provider}/>
           {summary.queue&&<div className="notice">Async writes: p95 write-apply lag <strong>{number(summary.queue.lag_p95_s,2)} sec</strong> · ending backlog <strong>{number(summary.queue.end_depth)}</strong>. Acknowledgement latency does not measure when writes land.</div>}
           <div className="panel findings"><h2>What the experiment tells us</h2>{result.findings.map((f,i)=><article key={i}><span className={'finding-dot '+f.level}/><div><h3>{f.title}</h3><p>{f.detail}</p></div></article>)}{result.warnings.map((w,i)=><p className="notice" key={i}>{w}</p>)}<p className="subtle">Executed by the Python/SimPy engine in {number(result.runtime_s,2)} seconds. These simplified models illustrate tradeoffs; they do not predict production performance.</p></div>
