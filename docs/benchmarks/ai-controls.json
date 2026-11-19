@@ -1,0 +1,748 @@
+{
+  "mode": "offline-scorer-controls",
+  "latency_scope": "scorer-only",
+  "summary": {
+    "grounded-control": {
+      "cases": 36,
+      "passed": 36,
+      "pass_rate": 1.0,
+      "p95_latency_ms": 0.02080000012938399,
+      "input_tokens": null,
+      "output_tokens": null,
+      "estimated_cost_usd": null,
+      "cost_per_success_usd": null
+    },
+    "fabricated-control": {
+      "cases": 36,
+      "passed": 0,
+      "pass_rate": 0.0,
+      "p95_latency_ms": 0.010900000233959872,
+      "input_tokens": null,
+      "output_tokens": null,
+      "estimated_cost_usd": null,
+      "cost_per_success_usd": null
+    }
+  },
+  "results": [
+    {
+      "case_id": "r60-db1-cache0-s7",
+      "variant": "grounded-control",
+      "latency_ms": 0.2849000002242974,
+      "input_tokens": null,
+      "output_tokens": null,
+      "passed": true,
+      "errors": []
+    },
+    {
+      "case_id": "r60-db1-cache0-s7",
+      "variant": "fabricated-control",
+      "latency_ms": 0.02550000044720946,
+      "input_tokens": null,
+      "output_tokens": null,
+      "passed": false,
+      "errors": [
+        "unsupported_value:p95_ms"
+      ]
+    },
+    {
+      "case_id": "r60-db1-cache0-s19",
+      "variant": "grounded-control",
+      "latency_ms": 0.013300000318849925,
+      "input_tokens": null,
+      "output_tokens": null,
+      "passed": true,
+      "errors": []
+    },
+    {
+      "case_id": "r60-db1-cache0-s19",
+      "variant": "fabricated-control",
+      "latency_ms": 0.010900000233959872,
+      "input_tokens": null,
+      "output_tokens": null,
+      "passed": false,
+      "errors": [
+        "unsupported_value:p95_ms"
+      ]
+    },
+    {
+      "case_id": "r60-db1-cache1-s7",
+      "variant": "grounded-control",
+      "latency_ms": 0.00960000033956021,
+      "input_tokens": null,
+      "output_tokens": null,
+      "passed": true,
+      "errors": []
+    },
+    {
+      "case_id": "r60-db1-cache1-s7",
+      "variant": "fabricated-control",
+      "latency_ms": 0.008900000466383062,
+      "input_tokens": null,
+      "output_tokens": null,
+      "passed": false,
+      "errors": [
+        "unsupported_value:p95_ms"
+      ]
+    },
+    {
+      "case_id": "r60-db1-cache1-s19",
+      "variant": "grounded-control",
+      "latency_ms": 0.008299999535665847,
+      "input_tokens": null,
+      "output_tokens": null,
+      "passed": true,
+      "errors": []
+    },
+    {
+      "case_id": "r60-db1-cache1-s19",
+      "variant": "fabricated-control",
+      "latency_ms": 0.007900000127847306,
+      "input_tokens": null,
+      "output_tokens": null,
+      "passed": false,
+      "errors": [
+        "unsupported_value:p95_ms"
+      ]
+    },
+    {
+      "case_id": "r60-db4-cache0-s7",
+      "variant": "grounded-control",
+      "latency_ms": 0.007800000275892671,
+      "input_tokens": null,
+      "output_tokens": null,
+      "passed": true,
+      "errors": []
+    },
+    {
+      "case_id": "r60-db4-cache0-s7",
+      "variant": "fabricated-control",
+      "latency_ms": 0.007799999366397969,
+      "input_tokens": null,
+      "output_tokens": null,
+      "passed": false,
+      "errors": [
+        "unsupported_value:p95_ms"
+      ]
+    },
+    {
+      "case_id": "r60-db4-cache0-s19",
+      "variant": "grounded-control",
+      "latency_ms": 0.007999999979801942,
+      "input_tokens": null,
+      "output_tokens": null,
+      "passed": true,
+      "errors": []
+    },
+    {
+      "case_id": "r60-db4-cache0-s19",
+      "variant": "fabricated-control",
+      "latency_ms": 0.008400000297115184,
+      "input_tokens": null,
+      "output_tokens": null,
+      "passed": false,
+      "errors": [
+        "unsupported_value:p95_ms"
+      ]
+    },
+    {
+      "case_id": "r60-db4-cache1-s7",
+      "variant": "grounded-control",
+      "latency_ms": 0.008099999831756577,
+      "input_tokens": null,
+      "output_tokens": null,
+      "passed": true,
+      "errors": []
+    },
+    {
+      "case_id": "r60-db4-cache1-s7",
+      "variant": "fabricated-control",
+      "latency_ms": 0.008099999831756577,
+      "input_tokens": null,
+      "output_tokens": null,
+      "passed": false,
+      "errors": [
+        "unsupported_value:p95_ms"
+      ]
+    },
+    {
+      "case_id": "r60-db4-cache1-s19",
+      "variant": "grounded-control",
+      "latency_ms": 0.008100000741251279,
+      "input_tokens": null,
+      "output_tokens": null,
+      "passed": true,
+      "errors": []
+    },
+    {
+      "case_id": "r60-db4-cache1-s19",
+      "variant": "fabricated-control",
+      "latency_ms": 0.007999999979801942,
+      "input_tokens": null,
+      "output_tokens": null,
+      "passed": false,
+      "errors": [
+        "unsupported_value:p95_ms"
+      ]
+    },
+    {
+      "case_id": "r60-db16-cache0-s7",
+      "variant": "grounded-control",
+      "latency_ms": 0.007800000275892671,
+      "input_tokens": null,
+      "output_tokens": null,
+      "passed": true,
+      "errors": []
+    },
+    {
+      "case_id": "r60-db16-cache0-s7",
+      "variant": "fabricated-control",
+      "latency_ms": 0.008099999831756577,
+      "input_tokens": null,
+      "output_tokens": null,
+      "passed": false,
+      "errors": [
+        "unsupported_value:p95_ms"
+      ]
+    },
+    {
+      "case_id": "r60-db16-cache0-s19",
+      "variant": "grounded-control",
+      "latency_ms": 0.007599999662488699,
+      "input_tokens": null,
+      "output_tokens": null,
+      "passed": true,
+      "errors": []
+    },
+    {
+      "case_id": "r60-db16-cache0-s19",
+      "variant": "fabricated-control",
+      "latency_ms": 0.007600000571983401,
+      "input_tokens": null,
+      "output_tokens": null,
+      "passed": false,
+      "errors": [
+        "unsupported_value:p95_ms"
+      ]
+    },
+    {
+      "case_id": "r60-db16-cache1-s7",
+      "variant": "grounded-control",
+      "latency_ms": 0.007900000127847306,
+      "input_tokens": null,
+      "output_tokens": null,
+      "passed": true,
+      "errors": []
+    },
+    {
+      "case_id": "r60-db16-cache1-s7",
+      "variant": "fabricated-control",
+      "latency_ms": 0.007800000275892671,
+      "input_tokens": null,
+      "output_tokens": null,
+      "passed": false,
+      "errors": [
+        "unsupported_value:p95_ms"
+      ]
+    },
+    {
+      "case_id": "r60-db16-cache1-s19",
+      "variant": "grounded-control",
+      "latency_ms": 0.007800000275892671,
+      "input_tokens": null,
+      "output_tokens": null,
+      "passed": true,
+      "errors": []
+    },
+    {
+      "case_id": "r60-db16-cache1-s19",
+      "variant": "fabricated-control",
+      "latency_ms": 0.007800000275892671,
+      "input_tokens": null,
+      "output_tokens": null,
+      "passed": false,
+      "errors": [
+        "unsupported_value:p95_ms"
+      ]
+    },
+    {
+      "case_id": "r180-db1-cache0-s7",
+      "variant": "grounded-control",
+      "latency_ms": 0.007900000127847306,
+      "input_tokens": null,
+      "output_tokens": null,
+      "passed": true,
+      "errors": []
+    },
+    {
+      "case_id": "r180-db1-cache0-s7",
+      "variant": "fabricated-control",
+      "latency_ms": 0.007800000275892671,
+      "input_tokens": null,
+      "output_tokens": null,
+      "passed": false,
+      "errors": [
+        "unsupported_value:p95_ms"
+      ]
+    },
+    {
+      "case_id": "r180-db1-cache0-s19",
+      "variant": "grounded-control",
+      "latency_ms": 0.007999999979801942,
+      "input_tokens": null,
+      "output_tokens": null,
+      "passed": true,
+      "errors": []
+    },
+    {
+      "case_id": "r180-db1-cache0-s19",
+      "variant": "fabricated-control",
+      "latency_ms": 0.007999999979801942,
+      "input_tokens": null,
+      "output_tokens": null,
+      "passed": false,
+      "errors": [
+        "unsupported_value:p95_ms"
+      ]
+    },
+    {
+      "case_id": "r180-db1-cache1-s7",
+      "variant": "grounded-control",
+      "latency_ms": 0.007700000423938036,
+      "input_tokens": null,
+      "output_tokens": null,
+      "passed": true,
+      "errors": []
+    },
+    {
+      "case_id": "r180-db1-cache1-s7",
+      "variant": "fabricated-control",
+      "latency_ms": 0.007999999979801942,
+      "input_tokens": null,
+      "output_tokens": null,
+      "passed": false,
+      "errors": [
+        "unsupported_value:p95_ms"
+      ]
+    },
+    {
+      "case_id": "r180-db1-cache1-s19",
+      "variant": "grounded-control",
+      "latency_ms": 0.007499999810534064,
+      "input_tokens": null,
+      "output_tokens": null,
+      "passed": true,
+      "errors": []
+    },
+    {
+      "case_id": "r180-db1-cache1-s19",
+      "variant": "fabricated-control",
+      "latency_ms": 0.007700000423938036,
+      "input_tokens": null,
+      "output_tokens": null,
+      "passed": false,
+      "errors": [
+        "unsupported_value:p95_ms"
+      ]
+    },
+    {
+      "case_id": "r180-db4-cache0-s7",
+      "variant": "grounded-control",
+      "latency_ms": 0.007600000571983401,
+      "input_tokens": null,
+      "output_tokens": null,
+      "passed": true,
+      "errors": []
+    },
+    {
+      "case_id": "r180-db4-cache0-s7",
+      "variant": "fabricated-control",
+      "latency_ms": 0.007700000423938036,
+      "input_tokens": null,
+      "output_tokens": null,
+      "passed": false,
+      "errors": [
+        "unsupported_value:p95_ms"
+      ]
+    },
+    {
+      "case_id": "r180-db4-cache0-s19",
+      "variant": "grounded-control",
+      "latency_ms": 0.007499999810534064,
+      "input_tokens": null,
+      "output_tokens": null,
+      "passed": true,
+      "errors": []
+    },
+    {
+      "case_id": "r180-db4-cache0-s19",
+      "variant": "fabricated-control",
+      "latency_ms": 0.007499999810534064,
+      "input_tokens": null,
+      "output_tokens": null,
+      "passed": false,
+      "errors": [
+        "unsupported_value:p95_ms"
+      ]
+    },
+    {
+      "case_id": "r180-db4-cache1-s7",
+      "variant": "grounded-control",
+      "latency_ms": 0.007600000571983401,
+      "input_tokens": null,
+      "output_tokens": null,
+      "passed": true,
+      "errors": []
+    },
+    {
+      "case_id": "r180-db4-cache1-s7",
+      "variant": "fabricated-control",
+      "latency_ms": 0.0075000007200287655,
+      "input_tokens": null,
+      "output_tokens": null,
+      "passed": false,
+      "errors": [
+        "unsupported_value:p95_ms"
+      ]
+    },
+    {
+      "case_id": "r180-db4-cache1-s19",
+      "variant": "grounded-control",
+      "latency_ms": 0.02080000012938399,
+      "input_tokens": null,
+      "output_tokens": null,
+      "passed": true,
+      "errors": []
+    },
+    {
+      "case_id": "r180-db4-cache1-s19",
+      "variant": "fabricated-control",
+      "latency_ms": 0.007300000106624793,
+      "input_tokens": null,
+      "output_tokens": null,
+      "passed": false,
+      "errors": [
+        "unsupported_value:p95_ms"
+      ]
+    },
+    {
+      "case_id": "r180-db16-cache0-s7",
+      "variant": "grounded-control",
+      "latency_ms": 0.0072999991971300915,
+      "input_tokens": null,
+      "output_tokens": null,
+      "passed": true,
+      "errors": []
+    },
+    {
+      "case_id": "r180-db16-cache0-s7",
+      "variant": "fabricated-control",
+      "latency_ms": 0.007499999810534064,
+      "input_tokens": null,
+      "output_tokens": null,
+      "passed": false,
+      "errors": [
+        "unsupported_value:p95_ms"
+      ]
+    },
+    {
+      "case_id": "r180-db16-cache0-s19",
+      "variant": "grounded-control",
+      "latency_ms": 0.007300000106624793,
+      "input_tokens": null,
+      "output_tokens": null,
+      "passed": true,
+      "errors": []
+    },
+    {
+      "case_id": "r180-db16-cache0-s19",
+      "variant": "fabricated-control",
+      "latency_ms": 0.0075000007200287655,
+      "input_tokens": null,
+      "output_tokens": null,
+      "passed": false,
+      "errors": [
+        "unsupported_value:p95_ms"
+      ]
+    },
+    {
+      "case_id": "r180-db16-cache1-s7",
+      "variant": "grounded-control",
+      "latency_ms": 0.007300000106624793,
+      "input_tokens": null,
+      "output_tokens": null,
+      "passed": true,
+      "errors": []
+    },
+    {
+      "case_id": "r180-db16-cache1-s7",
+      "variant": "fabricated-control",
+      "latency_ms": 0.007200000254670158,
+      "input_tokens": null,
+      "output_tokens": null,
+      "passed": false,
+      "errors": [
+        "unsupported_value:p95_ms"
+      ]
+    },
+    {
+      "case_id": "r180-db16-cache1-s19",
+      "variant": "grounded-control",
+      "latency_ms": 0.0073999999585794285,
+      "input_tokens": null,
+      "output_tokens": null,
+      "passed": true,
+      "errors": []
+    },
+    {
+      "case_id": "r180-db16-cache1-s19",
+      "variant": "fabricated-control",
+      "latency_ms": 0.007300000106624793,
+      "input_tokens": null,
+      "output_tokens": null,
+      "passed": false,
+      "errors": [
+        "unsupported_value:p95_ms"
+      ]
+    },
+    {
+      "case_id": "r540-db1-cache0-s7",
+      "variant": "grounded-control",
+      "latency_ms": 0.007499999810534064,
+      "input_tokens": null,
+      "output_tokens": null,
+      "passed": true,
+      "errors": []
+    },
+    {
+      "case_id": "r540-db1-cache0-s7",
+      "variant": "fabricated-control",
+      "latency_ms": 0.007499999810534064,
+      "input_tokens": null,
+      "output_tokens": null,
+      "passed": false,
+      "errors": [
+        "unsupported_value:p95_ms"
+      ]
+    },
+    {
+      "case_id": "r540-db1-cache0-s19",
+      "variant": "grounded-control",
+      "latency_ms": 0.0073999999585794285,
+      "input_tokens": null,
+      "output_tokens": null,
+      "passed": true,
+      "errors": []
+    },
+    {
+      "case_id": "r540-db1-cache0-s19",
+      "variant": "fabricated-control",
+      "latency_ms": 0.007499999810534064,
+      "input_tokens": null,
+      "output_tokens": null,
+      "passed": false,
+      "errors": [
+        "unsupported_value:p95_ms"
+      ]
+    },
+    {
+      "case_id": "r540-db1-cache1-s7",
+      "variant": "grounded-control",
+      "latency_ms": 0.01120000069931848,
+      "input_tokens": null,
+      "output_tokens": null,
+      "passed": true,
+      "errors": []
+    },
+    {
+      "case_id": "r540-db1-cache1-s7",
+      "variant": "fabricated-control",
+      "latency_ms": 0.007899999218352605,
+      "input_tokens": null,
+      "output_tokens": null,
+      "passed": false,
+      "errors": [
+        "unsupported_value:p95_ms"
+      ]
+    },
+    {
+      "case_id": "r540-db1-cache1-s19",
+      "variant": "grounded-control",
+      "latency_ms": 0.007700000423938036,
+      "input_tokens": null,
+      "output_tokens": null,
+      "passed": true,
+      "errors": []
+    },
+    {
+      "case_id": "r540-db1-cache1-s19",
+      "variant": "fabricated-control",
+      "latency_ms": 0.0073999999585794285,
+      "input_tokens": null,
+      "output_tokens": null,
+      "passed": false,
+      "errors": [
+        "unsupported_value:p95_ms"
+      ]
+    },
+    {
+      "case_id": "r540-db4-cache0-s7",
+      "variant": "grounded-control",
+      "latency_ms": 0.0075000007200287655,
+      "input_tokens": null,
+      "output_tokens": null,
+      "passed": true,
+      "errors": []
+    },
+    {
+      "case_id": "r540-db4-cache0-s7",
+      "variant": "fabricated-control",
+      "latency_ms": 0.007600000571983401,
+      "input_tokens": null,
+      "output_tokens": null,
+      "passed": false,
+      "errors": [
+        "unsupported_value:p95_ms"
+      ]
+    },
+    {
+      "case_id": "r540-db4-cache0-s19",
+      "variant": "grounded-control",
+      "latency_ms": 0.007499999810534064,
+      "input_tokens": null,
+      "output_tokens": null,
+      "passed": true,
+      "errors": []
+    },
+    {
+      "case_id": "r540-db4-cache0-s19",
+      "variant": "fabricated-control",
+      "latency_ms": 0.0073999999585794285,
+      "input_tokens": null,
+      "output_tokens": null,
+      "passed": false,
+      "errors": [
+        "unsupported_value:p95_ms"
+      ]
+    },
+    {
+      "case_id": "r540-db4-cache1-s7",
+      "variant": "grounded-control",
+      "latency_ms": 0.0073999999585794285,
+      "input_tokens": null,
+      "output_tokens": null,
+      "passed": true,
+      "errors": []
+    },
+    {
+      "case_id": "r540-db4-cache1-s7",
+      "variant": "fabricated-control",
+      "latency_ms": 0.007300000106624793,
+      "input_tokens": null,
+      "output_tokens": null,
+      "passed": false,
+      "errors": [
+        "unsupported_value:p95_ms"
+      ]
+    },
+    {
+      "case_id": "r540-db4-cache1-s19",
+      "variant": "grounded-control",
+      "latency_ms": 0.007300000106624793,
+      "input_tokens": null,
+      "output_tokens": null,
+      "passed": true,
+      "errors": []
+    },
+    {
+      "case_id": "r540-db4-cache1-s19",
+      "variant": "fabricated-control",
+      "latency_ms": 0.0073999999585794285,
+      "input_tokens": null,
+      "output_tokens": null,
+      "passed": false,
+      "errors": [
+        "unsupported_value:p95_ms"
+      ]
+    },
+    {
+      "case_id": "r540-db16-cache0-s7",
+      "variant": "grounded-control",
+      "latency_ms": 0.007200000254670158,
+      "input_tokens": null,
+      "output_tokens": null,
+      "passed": true,
+      "errors": []
+    },
+    {
+      "case_id": "r540-db16-cache0-s7",
+      "variant": "fabricated-control",
+      "latency_ms": 0.0073999999585794285,
+      "input_tokens": null,
+      "output_tokens": null,
+      "passed": false,
+      "errors": [
+        "unsupported_value:p95_ms"
+      ]
+    },
+    {
+      "case_id": "r540-db16-cache0-s19",
+      "variant": "grounded-control",
+      "latency_ms": 0.007200000254670158,
+      "input_tokens": null,
+      "output_tokens": null,
+      "passed": true,
+      "errors": []
+    },
+    {
+      "case_id": "r540-db16-cache0-s19",
+      "variant": "fabricated-control",
+      "latency_ms": 0.007300000106624793,
+      "input_tokens": null,
+      "output_tokens": null,
+      "passed": false,
+      "errors": [
+        "unsupported_value:p95_ms"
+      ]
+    },
+    {
+      "case_id": "r540-db16-cache1-s7",
+      "variant": "grounded-control",
+      "latency_ms": 0.007600000571983401,
+      "input_tokens": null,
+      "output_tokens": null,
+      "passed": true,
+      "errors": []
+    },
+    {
+      "case_id": "r540-db16-cache1-s7",
+      "variant": "fabricated-control",
+      "latency_ms": 0.007300000106624793,
+      "input_tokens": null,
+      "output_tokens": null,
+      "passed": false,
+      "errors": [
+        "unsupported_value:p95_ms"
+      ]
+    },
+    {
+      "case_id": "r540-db16-cache1-s19",
+      "variant": "grounded-control",
+      "latency_ms": 0.007300000106624793,
+      "input_tokens": null,
+      "output_tokens": null,
+      "passed": true,
+      "errors": []
+    },
+    {
+      "case_id": "r540-db16-cache1-s19",
+      "variant": "fabricated-control",
+      "latency_ms": 0.007300000106624793,
+      "input_tokens": null,
+      "output_tokens": null,
+      "passed": false,
+      "errors": [
+        "unsupported_value:p95_ms"
+      ]
+    }
+  ]
+}

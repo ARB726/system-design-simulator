@@ -8,6 +8,8 @@ import os
 import re
 from threading import Lock
 import time
+import logging
+from uuid import uuid4
 from typing import Literal
 
 from fastapi import HTTPException
@@ -26,6 +28,19 @@ and limitations. Distinguish observed values from hypotheses. Recommend changing
 one parameter while keeping workload and seed fixed. Never promise an improvement,
 invent measurements, treat illustrative cost as a real bill, or claim production
 predictions. Do not execute anything or suggest provisioning infrastructure."""
+
+GROUNDING_VERSION = 'citations-v1'
+
+
+def grounded_observations(explanation, metrics):
+    """Attach canonical citations; reject explicit unsupported measurement claims."""
+    from .ai_evaluation import score
+    complete = dict(summary='Validation', next_experiment='Validation', limitations='Validation') | explanation
+    if not score(complete, metrics)['passed']:
+        logging.getLogger('systems_lab.ai').info(json.dumps(dict(event='grounding_rejected', prompt_version=GROUNDING_VERSION)))
+        raise HTTPException(502, 'The AI explanation could not be verified against your measurements. Your results are still available.')
+    return [dict(**row, value=metrics[row['metric']], unit=METRICS[row['metric']][1],
+                 source='result.summary.' + row['metric']) for row in explanation['observations']]
 
 
 class Observation(BaseModel):
@@ -136,23 +151,26 @@ class Budget:
 budget = Budget()
 
 
-async def request_explanation(model, encoded, provider='openai'):
+async def request_explanation(model, encoded, provider='openai', *, schema=Explanation, instructions=INSTRUCTIONS):
     import httpx
+    started = time.monotonic()
+    trace = dict(event='ai_request', trace_id=uuid4().hex, provider=provider, model=model,
+                 prompt_version=GROUNDING_VERSION if schema is Explanation else 'proposal-v1', operation=schema.__name__, status='error', input_tokens=None, output_tokens=None)
     if provider == 'gemini':
         if not re.fullmatch(r'gemini-[A-Za-z0-9._-]{1,90}', model):
             raise HTTPException(503, 'The configured Gemini model ID is invalid.')
         url = f'https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent'
         headers = {'x-goog-api-key': os.environ['GEMINI_API_KEY'].strip()}
-        body = dict(systemInstruction={'parts': [{'text': INSTRUCTIONS}]},
+        body = dict(systemInstruction={'parts': [{'text': instructions}]},
                     contents=[{'role': 'user', 'parts': [{'text': encoded}]}],
                     generationConfig={'candidateCount': 1, 'maxOutputTokens': 1600,
-                                      'responseMimeType': 'application/json', 'responseJsonSchema': Explanation.model_json_schema()})
+                                      'responseMimeType': 'application/json', 'responseJsonSchema': schema.model_json_schema()})
     elif provider == 'openai':
         url = 'https://api.openai.com/v1/responses'
         headers = {'Authorization': 'Bearer ' + os.environ['OPENAI_API_KEY'].strip()}
-        body = dict(model=model, instructions=INSTRUCTIONS, input=encoded, store=False,
+        body = dict(model=model, instructions=instructions, input=encoded, store=False,
                     max_output_tokens=1600, text={'format': {'type': 'json_schema', 'name': 'experiment_explanation',
-                    'strict': True, 'schema': Explanation.model_json_schema()}})
+                    'strict': True, 'schema': schema.model_json_schema()}})
     else:
         raise HTTPException(503, 'The configured AI provider is unsupported.')
     try:
@@ -181,11 +199,22 @@ async def request_explanation(model, encoded, provider='openai'):
             if any(c.get('type') == 'refusal' for c in content):
                 raise ValueError('Refused response')
             text = ''.join(c['text'] for c in content if c.get('type') == 'output_text')
-        return Explanation.model_validate_json(text).model_dump()
+        validated = schema.model_validate_json(text).model_dump()
+        usage = result.get('usageMetadata' if provider == 'gemini' else 'usage') or {}
+        for field, source in [('input_tokens', 'promptTokenCount' if provider == 'gemini' else 'input_tokens'),
+                              ('output_tokens', 'candidatesTokenCount' if provider == 'gemini' else 'output_tokens')]:
+            value = usage.get(source)
+            if type(value) is int and value >= 0:
+                trace[field] = value
+        trace['status'] = 'ok'
+        return validated
     except (TimeoutError, httpx.TimeoutException) as exc:
         raise HTTPException(504, 'The AI explanation timed out. Your simulation results are still available.') from exc
     except (httpx.HTTPError, ValueError, KeyError, TypeError, AttributeError, ValidationError) as exc:
         raise HTTPException(502, 'AI explanations are temporarily unavailable. Your simulation results are still available.') from exc
+    finally:
+        trace['latency_ms'] = round((time.monotonic() - started) * 1000, 3)
+        logging.getLogger('systems_lab.ai').info(json.dumps(trace))
 
 
 async def explain(job, user):
@@ -197,14 +226,15 @@ async def explain(job, user):
     from .ai_shared import required, configured_budget
     gate = configured_budget() if required() else budget
     provider, model = configuration
-    key = hashlib.sha256(json.dumps([user, provider, model, INSTRUCTIONS, encoded]).encode()).hexdigest()
+    key = hashlib.sha256(json.dumps([user, provider, model, INSTRUCTIONS, GROUNDING_VERSION, encoded]).encode()).hexdigest()
     admission = await run_in_threadpool(gate.admit, user, key)
     if isinstance(admission, dict):
         return admission
     response = None
     try:
         explanation = await request_explanation(model, encoded, provider)
-        response = dict(explanation=explanation, measurements=[dict(key=k, label=METRICS[k][0], value=v, unit=METRICS[k][1]) for k, v in metrics.items()], provider=provider, model=model, cached=False)
+        citations = grounded_observations(explanation, metrics)
+        response = dict(explanation=explanation, citations=citations, measurements=[dict(key=k, label=METRICS[k][0], value=v, unit=METRICS[k][1]) for k, v in metrics.items()], provider=provider, model=model, cached=False)
         return response
     finally:
         await run_in_threadpool(gate.finish, key, response, admission)

@@ -8,6 +8,8 @@ I built Systems Lab to make system design something I could experiment with, ins
 
 I started with a Python simulation lab, then added a web frontend, Google sign-in, saved cloud experiments, and an AI architecture coach. The same simulation engine powers both the local lab and the hosted app.
 
+The [AI engineering case study](docs/ai-engineering-case-study.md) documents a 36-case engine-backed evaluation corpus, validated measurement citations, bounded experiment search, provider tracing, and reproducible benchmark controls. It distinguishes measured scorer behavior from model quality and includes commands for comparing recorded model responses.
+
 **Hosted stack:** Next.js, React, TypeScript, FastAPI, SimPy, AWS CloudFront/S3, API Gateway, Lambda, SQS, DynamoDB, Supabase Auth/PostgreSQL, and Gemini.
 
 **Local Python lab:** Streamlit, Plotly, and SQLite, with an optional PostgreSQL/Redis/Celery deployment and a C++17 validation kernel.
