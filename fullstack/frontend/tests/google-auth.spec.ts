@@ -67,7 +67,7 @@ test('missing PKCE verifier explains recovery and removes the unusable callback'
   await expect(page.getByRole('alert').filter({hasText:/lost its browser verification/})).toBeVisible();
   expect(new URL(page.url()).search).toBe('');
   await page.reload();
-  await expect(page.getByRole('heading',{name:'Your architecture. Under pressure.'})).toBeVisible();
+  await expect(page.getByRole('heading',{name:'Find the constraint.'})).toBeVisible();
   await expect(page.getByRole('alert').filter({hasText:/Could not connect/})).toHaveCount(0);
 });
 

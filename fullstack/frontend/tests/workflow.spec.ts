@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 
 test('register, simulate, compare, export, and inspect responsive layout',async({page})=>{
   await page.goto('/');
-  await expect(page.getByRole('heading',{name:'Your architecture. Under pressure.'})).toBeVisible();
+  await expect(page.getByRole('heading',{name:'Find the constraint.'})).toBeVisible();
   await page.screenshot({path:'../../.local/fullstack-desktop.png',fullPage:true});
   await page.getByLabel('Experiment name',{exact:true}).fill('Browser baseline');
   await page.getByRole('button',{name:'Run simulation',exact:true}).click();
@@ -38,7 +38,7 @@ test('register, simulate, compare, export, and inspect responsive layout',async(
   await expect(page.getByRole('button',{name:/Take on the challenge/})).toHaveCount(6);
   await page.getByRole('button',{name:'Sandbox',exact:true}).click();
   await page.setViewportSize({width:390,height:844});
-  await expect(page.getByRole('heading',{name:'Your architecture. Under pressure.'})).toBeVisible();
+  await expect(page.getByRole('heading',{name:'Find the constraint.'})).toBeVisible();
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth)).toBeTruthy();
   await page.screenshot({path:'../../.local/fullstack-mobile.png',fullPage:true});
 });

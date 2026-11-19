@@ -31,7 +31,7 @@ async function main(){
     await page.addStyleTag({content:'.lab-atmosphere,.ambient-toggle,nextjs-portal{display:none!important}body{padding-bottom:170px!important}'});
     await page.evaluate(()=>{
       const caption=document.createElement('div');caption.id='video-caption';
-      caption.style.cssText='position:fixed;bottom:0;left:0;right:0;z-index:9999;background:#090c16f5;border-top:2px solid #b49aff;padding:26px 40px;color:#fff;font:22px/1.5 system-ui;min-height:130px';
+      caption.style.cssText='position:fixed;bottom:0;left:0;right:0;z-index:9999;background:#202c28f5;border-top:2px solid #ad4324;padding:26px 40px;color:#fff;font:22px/1.5 system-ui;min-height:130px';
       document.body.append(caption);
     });
     async function frame(title,caption,locator){
