@@ -8,11 +8,22 @@ I built Systems Lab to make system design something I could experiment with, ins
 
 I started with a Python simulation lab, then added a web frontend, Google sign-in, saved cloud experiments, and an AI architecture coach. The same simulation engine powers both the local lab and the hosted app.
 
+The [distributed job recovery case study](docs/job-recovery.md) shows how I enforce attempt ownership, recover interrupted workers, and prevent stale results from replacing a winner. It includes a real process-death demo, service-emulated storage races, and raw local pipeline benchmarks. Execution may repeat; result publication is fenced by a lease token.
+
 The [AI engineering case study](docs/ai-engineering-case-study.md) documents a 36-case engine-backed evaluation corpus, validated measurement citations, bounded experiment search, provider tracing, and reproducible benchmark controls. It distinguishes measured scorer behavior from model quality and includes commands for comparing recorded model responses.
 
 **Hosted stack:** Next.js, React, TypeScript, FastAPI, SimPy, AWS CloudFront/S3, API Gateway, Lambda, SQS, DynamoDB, Supabase Auth/PostgreSQL, and Gemini.
 
 **Local Python lab:** Streamlit, Plotly, and SQLite, with an optional PostgreSQL/Redis/Celery deployment and a C++17 validation kernel.
+
+## Distributed systems evidence
+
+- **Correctness:** conditional claims and completion checks bind publication to the current attempt; terminal results cannot be replaced by a stale worker.
+- **Recovery:** a separate process claims a durable job and exits without cleanup. After an injected lease expiry, a replacement completes it and the old attempt is rejected. Run `python tools/job_recovery_lab.py recovery`.
+- **Failure tests:** concurrent claims and admission, duplicate delivery, stale uploads, expiry during publication, quota release, per-record read failures, and retry exhaustion. DynamoDB/S3/SQS tests run locally in Moto without cloud resources.
+- **Performance evidence:** benchmark the actual local claim/execute/commit pipeline with `python tools/job_recovery_lab.py benchmark --jobs 20 --workers 1`. Raw samples record job throughput, queue wait, completion latency, process CPU time, and workload settings. Simulated request rates remain separate from measured job throughput.
+
+See the [protocol, failure investigation, benchmark samples, and remaining limits](docs/job-recovery.md). This code has not yet been deployed to the live app.
 
 ## Live app
 

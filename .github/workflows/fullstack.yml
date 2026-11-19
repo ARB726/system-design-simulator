@@ -73,6 +73,11 @@ jobs:
         run: python -m pip install -r fullstack/backend/requirements-test.txt
       - name: Test API ownership, workers, and recovery
         run: python -m pytest tests/test_fullstack.py tests/test_job_*.py tests/test_ai*.py tests/test_experiment_search.py tests/test_supabase_auth.py -q --junitxml=test-results/fullstack.xml
+      # Recovery and benchmark artifacts are local evidence, not production load tests.
+      - name: Demonstrate process recovery and smoke-test pipeline benchmark
+        run: |
+          python tools/job_recovery_lab.py recovery --output test-results/job-recovery.json
+          python tools/job_recovery_lab.py benchmark --jobs 4 --workers 2 --output test-results/job-pipeline.json
       - name: Install frontend dependencies
         working-directory: fullstack/frontend
         run: npm ci

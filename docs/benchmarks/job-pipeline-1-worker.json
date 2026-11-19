@@ -1,0 +1,194 @@
+{
+  "mode": "benchmark",
+  "python": "3.12.10",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "adapter": "SQLite; threaded consumers; no HTTP or cloud services",
+  "jobs": 20,
+  "workers": 1,
+  "initial_queue_depth": 20,
+  "workload": {
+    "kind": "simulate",
+    "config": {
+      "name": "Custom design",
+      "app": {
+        "replicas": 3,
+        "workers": 8,
+        "latency_ms": 20.0,
+        "lb_strategy": "least_queue",
+        "max_queue": 200
+      },
+      "cache": {
+        "enabled": true,
+        "hit_rate": 0.85,
+        "latency_ms": 1.0,
+        "workers": 64
+      },
+      "cdn": {
+        "enabled": false,
+        "hit_rate": 0.6,
+        "latency_ms": 8.0
+      },
+      "queue": {
+        "enabled": false,
+        "consumers": 8,
+        "max_depth": 5000,
+        "enqueue_ms": 2.0
+      },
+      "db": {
+        "workers": 16,
+        "read_ms": 8.0,
+        "write_ms": 25.0,
+        "read_replicas": 0,
+        "max_queue": 500,
+        "shards": 1,
+        "hot_share": 0.0
+      },
+      "workload": {
+        "rps": 30,
+        "read_ratio": 0.95,
+        "duration_s": 10,
+        "timeout_ms": 1000.0,
+        "warmup_s": 1
+      },
+      "events": [],
+      "seed": 42,
+      "app_only": false,
+      "policy": {
+        "max_retries": 0,
+        "backoff_ms": 100.0,
+        "backoff_multiplier": 2.0,
+        "jitter": true,
+        "rate_limit_rps": null,
+        "burst": 100
+      }
+    }
+  },
+  "elapsed_s": 1.891219699999965,
+  "process_cpu_s": 1.703125,
+  "completed_jobs_per_s": 10.575185950104247,
+  "p95_completion_s": 1.8013181000005716,
+  "p95_queue_wait_s": 1.713019499999973,
+  "p95_service_s": 0.10555889999977808,
+  "samples": [
+    {
+      "id": "04bc9d09-d686-4df2-8c78-de6fdbc2642b",
+      "queue_wait_s": 0.08286869999938062,
+      "service_s": 0.07163650000074995,
+      "completion_s": 0.15450520000013057
+    },
+    {
+      "id": "126164cb-6afb-495d-93c0-5f369d29dbab",
+      "queue_wait_s": 0.1868813000000955,
+      "service_s": 0.06896140000026207,
+      "completion_s": 0.2558427000003576
+    },
+    {
+      "id": "189df210-8a08-45b5-ab71-74729b7e2e18",
+      "queue_wait_s": 0.18318439999984548,
+      "service_s": 0.08333230000062031,
+      "completion_s": 0.2665167000004658
+    },
+    {
+      "id": "24f7520c-afea-4e14-a883-aa9df2f32bbe",
+      "queue_wait_s": 0.2795740999999907,
+      "service_s": 0.06664869999985967,
+      "completion_s": 0.3462227999998504
+    },
+    {
+      "id": "34f0b34e-64b4-4f6d-a413-6a455ab87788",
+      "queue_wait_s": 0.358760699999948,
+      "service_s": 0.06912849999935133,
+      "completion_s": 0.4278891999992993
+    },
+    {
+      "id": "45feba0d-72c7-4d06-9a82-99e8f9cb126e",
+      "queue_wait_s": 0.5126851000004535,
+      "service_s": 0.06753670000034617,
+      "completion_s": 0.5802218000007997
+    },
+    {
+      "id": "6dc309aa-01c6-4d6d-a737-b7278a78f752",
+      "queue_wait_s": 0.47830620000058843,
+      "service_s": 0.08695209999950748,
+      "completion_s": 0.5652583000000959
+    },
+    {
+      "id": "70ae5ce5-c2be-4fa9-b02e-8c7a981895f9",
+      "queue_wait_s": 0.6479568000004292,
+      "service_s": 0.09124979999978677,
+      "completion_s": 0.739206600000216
+    },
+    {
+      "id": "95bcca6e-d362-4aa0-82ef-acfe561dfa32",
+      "queue_wait_s": 0.705972899999324,
+      "service_s": 0.09523400000034599,
+      "completion_s": 0.80120689999967
+    },
+    {
+      "id": "a122223e-90fb-4333-8594-6a8542f75cd4",
+      "queue_wait_s": 0.8263690000003407,
+      "service_s": 0.09625320000031934,
+      "completion_s": 0.9226222000006601
+    },
+    {
+      "id": "aa104e82-d2ae-4d77-b59e-7c97a246477a",
+      "queue_wait_s": 0.9247169999998732,
+      "service_s": 0.10555889999977808,
+      "completion_s": 1.0302758999996513
+    },
+    {
+      "id": "ac16f455-fc94-4c5a-aba8-596e603aeca7",
+      "queue_wait_s": 1.0686030999995637,
+      "service_s": 0.09758830000009766,
+      "completion_s": 1.1661913999996614
+    },
+    {
+      "id": "adfa0042-0ee9-4217-873a-bda3d09ea3c7",
+      "queue_wait_s": 1.0969986999998582,
+      "service_s": 0.09842480000042997,
+      "completion_s": 1.1954235000002882
+    },
+    {
+      "id": "b1411f92-123f-4f20-b44f-3447755eeebd",
+      "queue_wait_s": 1.2981743000000279,
+      "service_s": 0.08006030000069586,
+      "completion_s": 1.3782346000007237
+    },
+    {
+      "id": "bfe1b696-afe2-4227-aa38-1b726cefd8b6",
+      "queue_wait_s": 1.2960033999997904,
+      "service_s": 0.137865800000327,
+      "completion_s": 1.4338692000001174
+    },
+    {
+      "id": "c5b96f28-1639-46b7-b20c-a41e6144a9c1",
+      "queue_wait_s": 1.4910949999994045,
+      "service_s": 0.09164060000057361,
+      "completion_s": 1.5827355999999781
+    },
+    {
+      "id": "dafb7eb4-4c1f-45a9-95aa-5e013361832a",
+      "queue_wait_s": 1.6419411999995646,
+      "service_s": 0.08816339999975753,
+      "completion_s": 1.730104599999322
+    },
+    {
+      "id": "ddd9e2f3-b38e-4790-91ce-3b2ae98e698e",
+      "queue_wait_s": 1.7107393000005686,
+      "service_s": 0.09057880000000296,
+      "completion_s": 1.8013181000005716
+    },
+    {
+      "id": "e918845c-5026-458e-86ab-ca43c4fe90d7",
+      "queue_wait_s": 1.713019499999973,
+      "service_s": 0.0846254999996745,
+      "completion_s": 1.7976449999996476
+    },
+    {
+      "id": "eb467181-7499-425f-910e-477ff37933fc",
+      "queue_wait_s": 1.8533599000002141,
+      "service_s": 0.08494419999988168,
+      "completion_s": 1.9383041000000958
+    }
+  ]
+}
