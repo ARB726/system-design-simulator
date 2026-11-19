@@ -8,6 +8,8 @@ from functools import lru_cache
 from pathlib import Path
 from uuid import uuid4
 
+from .leases import EXHAUSTED, LEASE_SECONDS, MAX_ATTEMPTS, claimable, deadline, leased
+
 
 def now():
     return int(time.time())
@@ -23,6 +25,17 @@ class SQLStore:
             cx.execute(text('CREATE TABLE IF NOT EXISTS lab_users (email VARCHAR(254) PRIMARY KEY, salt TEXT NOT NULL, password_hash TEXT NOT NULL)'))
             cx.execute(text('CREATE TABLE IF NOT EXISTS lab_jobs (id VARCHAR(36) PRIMARY KEY, owner VARCHAR(254) NOT NULL, created BIGINT NOT NULL, updated BIGINT NOT NULL, status VARCHAR(20) NOT NULL, payload TEXT NOT NULL, result TEXT, error TEXT)'))
             cx.execute(text('CREATE INDEX IF NOT EXISTS lab_jobs_owner ON lab_jobs(owner, created)'))
+        # Upgrade existing local databases without discarding saved experiments.
+        from sqlalchemy import inspect
+        with self.engine.begin() as cx:
+            if self.engine.dialect.name == 'sqlite':
+                cx.exec_driver_sql('UPDATE lab_jobs SET updated=updated WHERE 1=0')
+            elif self.engine.dialect.name == 'postgresql':
+                cx.execute(text("SELECT pg_advisory_xact_lock(hashtext('lab_jobs_schema'))"))
+            columns = {c['name'] for c in inspect(cx).get_columns('lab_jobs')}
+            for name, definition in (('lease_token', 'TEXT'), ('lease_until', 'BIGINT'), ('attempts', 'INTEGER NOT NULL DEFAULT 0')):
+                if name not in columns:
+                    cx.execute(text(f'ALTER TABLE lab_jobs ADD COLUMN {name} {definition}'))
 
     def user(self, email):
         with self.engine.connect() as cx:
@@ -68,18 +81,22 @@ class SQLStore:
         with self.engine.begin() as cx:
             if self.engine.dialect.name == 'sqlite':
                 cx.exec_driver_sql('UPDATE lab_jobs SET updated=updated WHERE 1=0')
-            # A crashed worker must not leave an experiment running forever.
-            cx.execute(self.text("UPDATE lab_jobs SET status='failed', error='Worker stopped or exceeded its execution limit.' WHERE status='running' AND updated<:cut"), {'cut': now() - 900})
+            timestamp = now()
+            expired = "status='running' AND COALESCE(lease_until, updated+:duration)<=:t"
+            params = dict(t=timestamp, duration=LEASE_SECONDS, maximum=MAX_ATTEMPTS, error=EXHAUSTED)
+            cx.execute(self.text(f"UPDATE lab_jobs SET status='failed',error=:error,updated=:t WHERE ({expired}) AND attempts>=:maximum"), params)
             suffix = ' FOR UPDATE SKIP LOCKED' if self.engine.dialect.name == 'postgresql' else ''
-            row = cx.execute(self.text("SELECT * FROM lab_jobs WHERE status='queued' ORDER BY created LIMIT 1" + suffix)).mappings().first()
+            row = cx.execute(self.text(f"SELECT * FROM lab_jobs WHERE status='queued' OR ({expired}) ORDER BY created,id LIMIT 1" + suffix), params).mappings().first()
             if not row:
                 return None
-            cx.execute(self.text("UPDATE lab_jobs SET status='running',updated=:t WHERE id=:i"), {'t': now(), 'i': row['id']})
-            return {**row, 'payload': json.loads(row['payload'])}
+            job = leased({**row, 'payload': json.loads(row['payload'])}, timestamp)
+            cx.execute(self.text("UPDATE lab_jobs SET status='running',updated=:updated,lease_token=:lease_token,lease_until=:lease_until,attempts=:attempts WHERE id=:id"), {k: job[k] for k in ('id', 'updated', 'lease_token', 'lease_until', 'attempts')})
+            return job
 
     def finish(self, job, result=None, error=None):
         with self.engine.begin() as cx:
-            cx.execute(self.text('UPDATE lab_jobs SET status=:s, result=:r,error=:e,updated=:t WHERE id=:i AND owner=:o'), dict(s='failed' if error else 'completed', r=json.dumps(result, allow_nan=False) if result else None, e=error, t=now(), i=job['id'], o=job['owner']))
+            changed = cx.execute(self.text("UPDATE lab_jobs SET status=:s,result=:r,error=:e,updated=:t WHERE id=:i AND owner=:o AND status='running' AND lease_token=:token AND lease_until>:t"), dict(s='failed' if error else 'completed', r=json.dumps(result, allow_nan=False) if result is not None else None, e=error, t=now(), i=job['id'], o=job['owner'], token=job.get('lease_token')))
+            return changed.rowcount == 1
 
     def restore(self, owner, jobs):
         with self.engine.begin() as cx:
@@ -96,29 +113,28 @@ class AWSStore:
         self.table = session.resource('dynamodb', config=settings).Table(os.environ['JOBS_TABLE'])
         self.s3 = session.client('s3', config=settings)
         self.sqs = session.client('sqs', config=settings)
+        self.ddb = session.client('dynamodb', config=settings)
         self.bucket = os.environ['RESULTS_BUCKET']
 
     def create(self, owner, payload):
         # A transactional per-owner counter bounds pending jobs across concurrent requests.
-        import boto3
-        from botocore.exceptions import ClientError
         job = dict(id=str(uuid4()), owner=owner, created=now(), updated=now(), status='queued', payload=payload)
         item = {'owner': owner, 'id': job['id'], 'document': json.dumps(job)}
         from boto3.dynamodb.types import TypeSerializer
         serialize = TypeSerializer().serialize
-        client = self.table.meta.client
         # Resource clients apply their serializer to transactions, so use a separate low-level client.
-        client = boto3.client('dynamodb')
+        client = self.ddb
         try:
-            client.transact_write_items(TransactItems=[
+            client.transact_write_items(ClientRequestToken=job['id'], TransactItems=[
                 {'Update': {'TableName': self.table.name, 'Key': {k: serialize(v) for k, v in {'owner': owner, 'id': '_quota'}.items()},
                             'UpdateExpression': 'SET #active = if_not_exists(#active, :zero) + :one',
                             'ConditionExpression': 'attribute_not_exists(#active) OR #active < :limit',
                             'ExpressionAttributeNames': {'#active': 'active'},
                             'ExpressionAttributeValues': {k: serialize(v) for k, v in {':zero': 0, ':one': 1, ':limit': 2}.items()}}},
                 {'Put': {'TableName': self.table.name, 'Item': {k: serialize(v) for k, v in item.items()}}}])
-        except ClientError as exc:
-            if exc.response['Error']['Code'] == 'TransactionCanceledException':
+        except self.ddb.exceptions.TransactionCanceledException as exc:
+            reasons = exc.response.get('CancellationReasons', [])
+            if reasons and reasons[0].get('Code') == 'ConditionalCheckFailed':
                 raise ValueError('Two experiments are already active. Wait for one to finish.') from exc
             raise
         try:
@@ -154,34 +170,51 @@ class AWSStore:
         return job
 
     def mark_running(self, job):
-        from botocore.exceptions import ClientError
+        if not claimable(job, now()):
+            return False
+        if job.get('attempts', 0) >= MAX_ATTEMPTS:
+            self.finish(job, error=EXHAUSTED, exhausted=True)
+            return False
         document = json.dumps({k: v for k, v in job.items() if k != 'result'})
-        updated = {**job, 'status': 'running', 'updated': now()}
+        updated = leased(job, now())
         try:
-            self.table.update_item(Key={'owner': job['owner'], 'id': job['id']}, UpdateExpression='SET #doc=:new', ConditionExpression='#doc=:old', ExpressionAttributeNames={'#doc':'document'}, ExpressionAttributeValues={':new': json.dumps(updated), ':old': document})
+            self.table.update_item(Key={'owner': job['owner'], 'id': job['id']}, UpdateExpression='SET #doc=:new, lease_until=:until', ConditionExpression='#doc=:old', ExpressionAttributeNames={'#doc':'document'}, ExpressionAttributeValues={':new': json.dumps(updated), ':old': document, ':until': updated['lease_until']})
+            job.update(updated)
             return True
-        except ClientError as exc:
-            if exc.response['Error']['Code'] == 'ConditionalCheckFailedException':
-                return False
-            raise
+        except self.table.meta.client.exceptions.ConditionalCheckFailedException:
+            return False
 
-    def finish(self, job, result=None, error=None):
-        import boto3
+    def finish(self, job, result=None, error=None, exhausted=False):
         from boto3.dynamodb.types import TypeSerializer
         current = self.get(job['owner'], job['id'])
         if not current or current['status'] in ('completed', 'failed'):
-            return
+            return True
+        if exhausted:
+            if not claimable(current, now()):
+                return False
+        elif current['status'] == 'running':
+            if not job.get('lease_token') or current.get('lease_token') != job['lease_token'] or deadline(current) <= now():
+                return False
+        elif job['status'] != 'queued':
+            return False
         expected = json.dumps({k: v for k, v in current.items() if k != 'result'})
         completed = {**current, 'status': 'failed' if error else 'completed', 'updated': now(), 'error': error}
         completed.pop('result', None)
         if result is not None:
-            key = f"results/{job['owner']}/{job['id']}.json"
+            # Immutable per-publication key: a stale writer cannot corrupt a winner.
+            key = f"results/{job['owner']}/{job['id']}/{uuid4()}.json"
             self.s3.put_object(Bucket=self.bucket, Key=key, Body=json.dumps(result, allow_nan=False).encode(), ContentType='application/json', ServerSideEncryption='AES256')
             completed['result_key'] = key
         ser = TypeSerializer().serialize
-        boto3.client('dynamodb').transact_write_items(TransactItems=[
-            {'Update': {'TableName': self.table.name, 'Key': {k: ser(v) for k, v in {'owner': job['owner'], 'id': job['id']}.items()}, 'UpdateExpression': 'SET #doc=:new', 'ConditionExpression': '#doc=:old', 'ExpressionAttributeNames': {'#doc':'document'}, 'ExpressionAttributeValues': {':new': ser(json.dumps(completed)), ':old': ser(expected)}}},
+        values = {':new': ser(json.dumps(completed)), ':old': ser(expected)}
+        condition = '#doc=:old'
+        if current['status'] == 'running' and not exhausted:
+            condition += ' AND lease_until > :timestamp'
+            values[':timestamp'] = ser(now())
+        self.ddb.transact_write_items(ClientRequestToken=str(uuid4()), TransactItems=[
+            {'Update': {'TableName': self.table.name, 'Key': {k: ser(v) for k, v in {'owner': job['owner'], 'id': job['id']}.items()}, 'UpdateExpression': 'SET #doc=:new', 'ConditionExpression': condition, 'ExpressionAttributeNames': {'#doc':'document'}, 'ExpressionAttributeValues': values}},
             {'Update': {'TableName': self.table.name, 'Key': {k: ser(v) for k, v in {'owner': job['owner'], 'id': '_quota'}.items()}, 'UpdateExpression': 'SET #active = #active - :one', 'ConditionExpression': '#active > :zero', 'ExpressionAttributeNames': {'#active':'active'}, 'ExpressionAttributeValues': {':one': ser(1), ':zero': ser(0)}}}])
+        return True
 
 
 @lru_cache

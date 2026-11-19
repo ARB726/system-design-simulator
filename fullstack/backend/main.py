@@ -92,7 +92,7 @@ class Experiment(BaseModel):
 
 
 def public(job):
-    return {k: v for k, v in job.items() if k not in ('owner', 'result_key')}
+    return {k: v for k, v in job.items() if k not in ('owner', 'result_key', 'lease_token')}
 
 
 @app.post('/api/experiments', status_code=202)
