@@ -6,6 +6,7 @@ import {ArrowLeft,ArrowRight,FlaskConical,GitCompareArrows,ShieldCheck} from 'lu
 import type {Job} from './lab-types';
 import {LabMotion,LabScene} from './lab-effects';
 import TopologyHero from './topology-hero';
+import ComparisonDeltas from './comparison-deltas';
 const ResultCharts=dynamic(()=>import('./result-charts'),{loading:()=> <p role="status">Loading sample charts...</p>});
 const number=(n:number,digits=1)=>n.toLocaleString(undefined,{maximumFractionDigits:digits});
 
@@ -29,6 +30,7 @@ export default function GuestDemo({onExit,onSignIn}:{onExit:()=>void;onSignIn:()
     {!jobs.length&&!error&&<p role="status">Loading sample experiments...</p>}
     {!!jobs.length&&<>
       <section className="guest-samples" aria-label="Sample experiments">{jobs.map((sample,i)=><button key={sample.id} className={'button '+(index===i?'primary':'secondary')} aria-pressed={index===i} onClick={()=>setIndex(i)}><FlaskConical size={16}/>{i===0?'Baseline: no cache':'Candidate: cache enabled'}</button>)}</section>
+      <ComparisonDeltas jobs={jobs}/>
       <TopologyHero config={job.payload.config} onToggle={()=>{}} readOnly/>
       <section className="panel guest-details"><div className="panel-heading"><div><h2>{job.payload.name}</h2><p>Seed {job.payload.config.seed} · {job.payload.config.workload.rps} offered req/s · {job.payload.config.workload.duration_s} simulated seconds</p></div><span className="badge">Recorded sample</span></div>
         {summary&&<div className="metrics">{[
