@@ -126,6 +126,19 @@ def test_pending_and_invalid_metrics_never_call_provider(client):
     assert ai.budget.total == 0
 
 
+def test_fabricated_measurements_are_not_cached(client, monkeypatch, caplog):
+    import logging
+    answer = dict(ANSWER, observations=[dict(metric='p95_ms', interpretation='Latency is 900 ms.')])
+    response = good_response()
+    response['output'][0]['content'][0]['text'] = json.dumps(answer)
+    transport(monkeypatch, lambda request: httpx.Response(200, json=response))
+    with caplog.at_level(logging.INFO, logger='systems_lab.ai'):
+        result = client.post(f'/api/experiments/{completed()}/explanation', headers=headers())
+    assert result.status_code == 502
+    assert not ai.budget.cache and not ai.budget.active
+    assert 'grounding_rejected' in caplog.text
+
+
 def gemini_response():
     return dict(candidates=[dict(finishReason='STOP', content={'parts': [{'text': json.dumps(ANSWER)}]})])
 
