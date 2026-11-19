@@ -60,6 +60,7 @@ def test_background_job_ownership_and_persistence(client):
     run_job(job)
     response = client.get('/api/experiments/' + job_id, headers=alice).json()
     assert response['status'] == 'completed'
+    assert 'lease_token' not in response
     assert response['result']['summary']['success_rate'] > 0
     assert len(response['result']['timeline']) == 10
     json.dumps(response, allow_nan=False)

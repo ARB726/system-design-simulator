@@ -46,7 +46,9 @@ def completed(user='alice@example.com'):
     result = dict(type='simulation', summary=dict(served_rps=480, p95_ms=50, p99_ms=90, success_rate=.96,
                   tiers={'app': {'mean_util': .4, 'peak_queue': 2}}, injected='PRIVATE SECRET'),
                   timeline=[{'request': 'PRIVATE TRACE'}], findings=[{'detail': 'PRIVATE INSTRUCTIONS'}])
-    store().finish(job, result=result)
+    claimed = store().claim()
+    assert claimed['id'] == job['id']
+    assert store().finish(claimed, result=result)
     return job['id']
 
 
@@ -121,7 +123,9 @@ def test_pending_and_invalid_metrics_never_call_provider(client):
     job = store().create('alice@example.com', dict(config=Config().to_dict()))
     url = f'/api/experiments/{job["id"]}/explanation'
     assert client.post(url, headers=headers()).status_code == 409
-    store().finish(job, result=dict(type='simulation', summary={'p95_ms': 'bad'}))
+    claimed = store().claim()
+    assert claimed['id'] == job['id']
+    assert store().finish(claimed, result=dict(type='simulation', summary={'p95_ms': 'bad'}))
     assert client.post(url, headers=headers()).status_code == 422
     assert ai.budget.total == 0
 
