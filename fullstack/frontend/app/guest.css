@@ -2,4 +2,5 @@
 
 .comparison-deltas h2{margin-bottom:12px}.comparison-deltas>p{line-height:1.7;margin:12px 0}.comparison-deltas .metric p{font-size:14px;line-height:1.6;overflow-wrap:anywhere}.comparison-deltas .metric>span{font-size:14px}.comparison-deltas li{font-size:14px;line-height:1.8;overflow-wrap:anywhere}.comparison-deltas h3{margin-top:20px}
 .bottleneck-takeaway{border-left:3px solid var(--green)}.bottleneck-takeaway p{font-size:16px;line-height:1.75;margin-top:14px}
+.walkthrough summary{font-size:16px;cursor:pointer}.walkthrough p,.walkthrough li{font-size:16px;line-height:1.75;margin:12px 0}.walkthrough video{display:block;width:100%;max-height:720px;background:#090c16;border-radius:12px;margin:20px 0}.walkthrough ol{padding-left:24px}
 .snapshot-share p{font-size:14px;line-height:1.7;margin:14px 0}.snapshot-share .text-label{margin:16px 0}.shared-config pre{max-height:420px;overflow:auto;font-size:14px;line-height:1.6}.snapshot-share input{min-width:0;width:100%}.shared-config summary,.snapshot-share summary{font-size:16px;cursor:pointer}

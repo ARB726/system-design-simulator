@@ -16,6 +16,8 @@ I started with a Python simulation lab, then added a web frontend, Google sign-i
 
 **[Open Systems Lab](https://d11ry0yeilwlgs.cloudfront.net/)**
 
+Use **Try without signing in** to explore recorded results, measured before-and-after deltas and bottleneck evidence. The guest view includes a captioned 75-second walkthrough, and completed results can be shared as read-only snapshots. See the [walkthrough and sharing guide](docs/walkthrough.md) for reproduction and link limitations.
+
 Explore an animated architecture canvas, configure replicas, caches, CDN, database shards, and queues, then compare throughput, latency, reliability, and illustrative cost.
 
 1. Click **Sign in → Continue with Google**. Google OAuth is currently in Testing, so sign-in is limited to the configured test users.

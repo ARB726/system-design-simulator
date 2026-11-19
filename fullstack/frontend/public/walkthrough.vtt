@@ -1,0 +1,21 @@
+WEBVTT
+
+00:00.000 --> 00:15.000
+Start with database overload: 500 requests/s and two connections.
+These are recorded Python/SimPy snapshots.
+
+00:15.000 --> 00:30.000
+Inspect the database queue, utilization and failed requests.
+Use measured evidence to form a bottleneck hypothesis.
+
+00:30.000 --> 00:45.000
+Add a read cache. Keep workload, seed and database capacity fixed.
+Inspect the candidate's measured results.
+
+00:45.000 --> 01:00.000
+Compare throughput, latency, success rate and illustrative cost.
+These results do not establish production capacity.
+
+01:00.000 --> 01:15.000
+Share a read-only snapshot of the configuration and results.
+Recipients can inspect it without signing in.
