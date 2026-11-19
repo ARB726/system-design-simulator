@@ -1,0 +1,11 @@
+{
+  "mode": "recovery",
+  "child_exit_code": 23,
+  "attempts": 2,
+  "active_duplicate_blocked": true,
+  "expired_publication_rejected": true,
+  "stale_publication_rejected": true,
+  "replacement_result_preserved": true,
+  "terminal_redelivery_skipped": true,
+  "clock": "injected expiry boundary; child process actually exited"
+}
