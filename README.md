@@ -1,57 +1,66 @@
-# System Design Simulator
+# Systems Lab - System Design Simulator
 
 [![CI](https://github.com/ARB726/system-design-simulator/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/ARB726/system-design-simulator/actions/workflows/ci.yml)
 
-**Design a system, stress it, and see where it breaks.**
+I built Systems Lab because I wanted to test system design ideas instead of stopping at diagrams. I can configure an architecture, put it under load, introduce failures, and see where requests start waiting. Then I can change one part of the design and compare the results.
 
-I built Systems Lab to make system design something I could experiment with, instead of only drawing diagrams. It lets me build a simulated architecture, inject failures, and compare throughput, tail latency, reliability, and illustrative monthly cost before choosing a design.
-
-I started with a Python simulation lab, then added a web frontend, Google sign-in, saved cloud experiments, and an AI architecture coach. The same simulation engine powers both the local lab and the hosted app.
-
-**Hosted stack:** Next.js, React, TypeScript, FastAPI, SimPy, AWS CloudFront/S3, API Gateway, Lambda, SQS, DynamoDB, Supabase Auth/PostgreSQL, and Gemini.
-
-**Local Python lab:** Streamlit, Plotly, and SQLite, with an optional PostgreSQL/Redis/Celery deployment and a C++17 validation kernel.
+I started with a Python simulation engine and a Streamlit interface. I later added a Next.js frontend, Google sign-in, saved experiments, background workers, and a Gemini architecture coach. Both interfaces use the same Python/SimPy engine.
 
 ## Live app
 
-**[Open Systems Lab](https://d11ry0yeilwlgs.cloudfront.net/)**
+**[Open Systems Lab](https://d11ry0yeilwlgs.cloudfront.net/)** · **[Try the guest demo](https://d11ry0yeilwlgs.cloudfront.net/#demo)**
 
-Use **Try without signing in** to explore recorded results, measured before-and-after deltas and bottleneck evidence. The guest view includes a captioned 75-second walkthrough, and completed results can be shared as read-only snapshots. See the [walkthrough and sharing guide](docs/walkthrough.md) for reproduction and link limitations.
+The guest demo is the quickest way to see the project. Click **Try without signing in** to compare two recorded experiments, inspect their architecture, and see the measured tradeoff. It does not require an account or make an AI call.
 
-Explore an animated architecture canvas, configure replicas, caches, CDN, database shards, and queues, then compare throughput, latency, reliability, and illustrative cost.
+[![A recorded experiment in the Systems Lab workbench](fullstack/frontend/public/walkthrough-poster.jpg)](https://d11ry0yeilwlgs.cloudfront.net/#demo)
 
-1. Click **Sign in → Continue with Google**. Google OAuth is currently in Testing, so sign-in is limited to the configured test users.
-2. Configure a design and click **Run simulation**. Experiments execute in background workers and results are saved to your workspace.
-3. After a simulation completes, click **Explain my results** for a Gemini explanation based on the saved evidence. AI advice supports learning; it does not validate production capacity.
+### What I added to the interface
 
+I redesigned the frontend around the way I run an experiment: configure the system, inspect the evidence, and compare a change. I replaced the separate architecture illustrations with one interactive schematic and made the controls and results easier to read.
 
+- **Interactive architecture:** click a tier to inspect its configured capacity, or toggle the cache, CDN, and write queue to change the model.
+- **Before-and-after results:** compare throughput, p95 latency, success rate, and illustrative monthly cost. The outcome summary explains the latency/cost tradeoff and flags different test conditions.
+- **Bottleneck evidence:** inspect utilization and queue pressure before deciding what to change. I treat the busiest tier as a starting point for another experiment, not proof of a production limit.
+- **Read-only sharing:** create a link containing an experiment's configuration and results. It leaves out login tokens, owner identifiers, and AI conversations. Shared values are labelled unverified, and links cannot be revoked.
+- **Short walkthrough:** watch a captioned 75-second example showing database overload, a cached candidate, and the comparison. I included a transcript, pause controls, and reduced-motion support.
+
+The guest example uses 120 offered requests/s. The video uses a separate 500 requests/s experiment so the overload is visible. Both use recorded synthetic engine output. The [walkthrough guide](docs/walkthrough.md) explains how I generated the examples, and the [design notes](docs/design-system.md) explain the interface decisions.
+
+### Run an experiment
+
+1. Sign in through **Continue with Google** to use a private workspace. While the Google OAuth app is in testing, sign-in is limited to its configured test users; the guest demo remains available without signing in.
+2. Configure the workload, capacity, and failure conditions, then click **Run simulation**. Background workers execute the experiment and save the result.
+3. Inspect the charts and bottleneck takeaway. Keep the configured workload, random seed, and failure schedule fixed when testing an architecture change.
+4. Select two completed runs in **Experiment library**, then open **Compare designs**.
+5. Use **Explain my results** for a Gemini explanation grounded in the saved measurements. I use it to suggest a next experiment, not to validate production capacity.
 
 ### Hosted architecture
 
-| Component | Responsibility |
-| --- | --- |
-| Next.js static frontend on S3 + CloudFront | Interactive UI, architecture graphics, and result charts |
-| Supabase Auth + Google | OAuth authorization code flow with PKCE; the API verifies signed user tokens |
-| API Gateway + FastAPI on Lambda | Authenticated experiment and AI endpoints |
-| SQS + Lambda workers | Bounded simulation jobs using the shared Python engine |
-| DynamoDB + S3 | Experiment metadata and saved simulation results |
-| Supabase PostgreSQL | Private shared AI usage counters, request leases, and owner-scoped answer cache |
-| Gemini | Server-side explanations of a user's completed simulation |
+| Layer | What I use | What it does |
+| --- | --- | --- |
+| Frontend | Next.js, React, TypeScript, Recharts | Interactive workbench, architecture schematic, and result charts |
+| Frontend hosting | AWS S3 + CloudFront | Stores and serves the exported website |
+| API | Python, FastAPI, AWS API Gateway + Lambda | Handles authenticated experiments and AI requests |
+| Simulation | SimPy | Models requests, worker capacity, queues, and failure scenarios |
+| Background jobs | AWS SQS + Lambda workers | Queues and executes simulation jobs |
+| Saved experiments | AWS DynamoDB + S3 | Stores experiment metadata and result snapshots |
+| Sign-in | Supabase Auth + Google | Signs users in; the API verifies their tokens |
+| Shared AI controls | Supabase PostgreSQL | Tracks usage limits, concurrent request leases, and cached answers |
+| AI explanations | Google Gemini | Explains a user's completed simulation using saved evidence |
 
-I integrated Gemini so users can ask for an explanation after running a simulation. The backend loads that user's saved results and uses them as evidence for the answer. I keep the provider key on the server, so users do not need their own API key.
+I keep the Gemini key on the backend, so visitors do not need their own API key. AI access is bounded to five attempts per user and twenty globally per UTC hour, with two requests allowed at once. I also added an owner-scoped one-hour answer cache. Cached answers do not consume another attempt; failed attempts do.
 
-I bounded AI usage with shared PostgreSQL counters: five attempts per user and twenty globally per UTC hour, with two simultaneous requests. Cached answers do not consume an attempt; failed attempts do. Provider keys and database credentials stay on the backend.
+For the local Python lab, I use **Streamlit, pandas, Plotly, and SQLite**. There is also an optional **PostgreSQL/Redis/Celery** deployment and a **C++17** kernel for the narrower queueing-validation lab. The hosted app uses the AWS job path shown above.
 
-See the [Google sign-in and shared AI setup guide](fullstack/PUBLIC_ACCESS.md) for deployment configuration, the private database schema, and the required CloudFront `connect-src` allowance for the exact Supabase project origin. Never commit real credentials. Existing Cognito histories retain their original owner identities when switching to Google sign-in; they are not automatically linked.
-
-[Try it locally](#quick-start) · [Two-minute walkthrough](#two-minute-walkthrough) · [Engineering case study](docs/performance.md) · [Architecture](docs/architecture.md)
+[Local setup](#quick-start) · [Architecture](docs/architecture.md) · [Google sign-in and AI setup](fullstack/PUBLIC_ACCESS.md) · [Local walkthrough](#two-minute-walkthrough)
 
 ## Engineering results
 
-- **Reduced simulation memory overhead by 84.1%, measured as peak traced Python allocations falling from 3.366 to 0.535 MiB, by implementing a summary execution path that avoids retaining unnecessary request detail.** I checked result equivalence at a relative/absolute tolerance of **1e-12**. [Benchmark and methodology](docs/benchmarks/summary-local.md).
-- **Reduced median local runtime by approximately 3.0%, measured from 1.9193 to 1.8622 seconds across three timing repetitions per path, by using the summary path for aggregate results.** The benchmark used **500 offered requests/s over 20 simulated seconds**, a one-second warmup, and seed 7. [Raw benchmark](docs/benchmarks/summary-local.json).
-- **Verified Google session handling across five passing browser tests by testing PKCE initiation, callback exchange, sign-out, missing-verifier recovery, and an already-consumed callback with an existing session.** I also verified Google sign-in, simulation execution, and Gemini explanations on the hosted app. [Authentication tests](fullstack/frontend/tests/google-auth.spec.ts).
-- **Bounded shared AI usage to five attempts per user and twenty globally per UTC hour, with two concurrent requests, by implementing atomic admission counters and request leases in a private PostgreSQL schema.** I added an owner-scoped **one-hour answer cache** so repeated answers can avoid another provider call. These are configured limits, not measured traffic or cost savings. [AI access design](fullstack/PUBLIC_ACCESS.md).
+- **Memory:** I reduced peak traced Python allocations by **84.1%**, from **3.366 to 0.535 MiB**, by adding a summary execution path that does not retain unnecessary request detail. I checked metric equivalence at **1e-12** relative/absolute tolerance. [Benchmark and methodology](docs/benchmarks/summary-local.md).
+- **Runtime:** I recorded about **3.0% lower median local runtime**, from **1.9193 to 1.8622 seconds**, across three timing repetitions per path. The workload was 500 offered requests/s over 20 simulated seconds, with a one-second warmup and seed 7. [Raw samples](docs/benchmarks/summary-local.json).
+- **Browser workflow:** I verified the redesigned app with **28 passing Playwright tests**, covering configuration, comparisons, Google session recovery, guest access, read-only sharing, video playback, and responsive layout. I also checked the deployed interface at 320px and 390px widths. [Browser tests](fullstack/frontend/tests/).
+- **Google sign-in:** I covered PKCE initiation, callback exchange, sign-out, missing-verifier recovery, and an already-consumed callback with an existing session in **five passing authentication tests**. [Authentication tests](fullstack/frontend/tests/google-auth.spec.ts).
+- **AI usage:** I bounded shared AI access with atomic PostgreSQL counters, request leases, and an owner-scoped answer cache. These are configured limits, not measured traffic or cost savings. [AI access design](fullstack/PUBLIC_ACCESS.md).
 
 ### Recorded metrics
 
@@ -60,14 +69,15 @@ See the [Google sign-in and shared AI setup guide](fullstack/PUBLIC_ACCESS.md) f
 | Peak traced Python allocations | 3.366 MiB | 0.535 MiB (**84.1% lower**) | Local summary benchmark |
 | Median execution time | 1.9193 s | 1.8622 s (**about 3.0% lower**) | Three timing repetitions per path |
 | Metric equivalence tolerance | Full execution reference | **1e-12** relative/absolute | Benchmark checks |
-| Google authentication browser tests | — | **5 passed** | Authentication regression run |
-| AI usage limits | — | **5/user/hour; 20 globally/hour; 2 concurrent** | Backend admission policy |
+| Web workflow regression run | - | **28 passed** | Playwright regression run |
+| Google authentication browser tests | - | **5 passed** | Authentication regression run |
+| AI usage limits | - | **5/user/hour; 20 globally/hour; 2 concurrent** | Backend admission policy |
 
-The performance figures describe one recorded local workload. Peak allocations were measured with `tracemalloc`, not process RSS; the runtime difference is an observation from a small sample, not an established production speedup. Offered simulated requests are not real API throughput. I have not measured production user capacity or cost savings.
+The memory and runtime figures describe one local workload. I measured Python allocations with `tracemalloc`, not process RSS. Three timing repetitions do not establish a production speedup. I have not measured production user capacity or cost savings, and simulated request rates are not real API throughput.
 
 ## How it works
 
-Think of the simulator as a virtual lab: configure an imaginary service, send requests through it, and watch where work starts waiting. A request is one action, such as opening a short link (a read) or saving a chat message (a write).
+I use the simulator as a virtual lab: configure a service, generate simulated requests, and watch where work starts waiting. A request is one action, such as opening a short link (a read) or saving a chat message (a write).
 
 There are two architectures to keep separate: **the service being simulated** and **the application running the experiment**. The CDN, cache, and database you configure are simulated resources; running an experiment does not create those services in the cloud.
 
@@ -113,17 +123,17 @@ For example, when a cache goes cold, more reads reach the database. Its queue ca
 
 ### The application running the experiment
 
-1. **Configure:** Streamlit controls build a `Config` containing the design, workload, random seed, and failure schedule.
-2. **Simulate:** the SimPy engine advances simulated time from event to event: requests arrive, wait for workers, finish, or time out. A simulated minute does not require a real minute. No external service receives this traffic.
-3. **Analyze:** request outcomes and sampled resource activity become throughput, success rate, latency percentiles, queue timelines, and bottleneck findings. A p95 latency is a value at or below which about 95% of measured latencies fall.
-4. **Explore:** Plotly charts show when pressure develops. Async write acknowledgement latency and write-apply lag are separate, so a quick response does not hide unfinished work.
-5. **Compare:** save configuration/result snapshots and test a candidate under the same workload and failures. Repeating both designs across seeds helps reveal variation within the model; it does not establish production accuracy.
+1. **Configure:** I build a `Config` from the web workbench or local Streamlit controls. It contains the design, workload, random seed, and failure schedule.
+2. **Simulate:** I run that configuration through SimPy. The engine advances from event to event as requests arrive, wait for workers, finish, or time out. No external service receives this simulated traffic.
+3. **Analyze:** I turn the recorded outcomes into throughput, success rate, latency percentiles, queue timelines, and bottleneck findings.
+4. **Inspect:** I show the evidence through Recharts in the web app and Plotly in the local lab. I keep asynchronous write acknowledgement separate from write-apply lag, so a quick response does not hide unfinished work.
+5. **Compare:** I save the configuration and result, change one variable, and compare under the same configured workload, seed, and failures. Repeating across seeds helps show variation within the model.
 
-The engine and analysis are separate from the interface, so experiments, challenge checks, and background workers reuse the same core. For the component diagram and source boundaries, see [Architecture](docs/architecture.md).
+I kept the engine and analysis separate from the interface so experiments, challenge checks, and background workers reuse the same core. For the component diagram and source boundaries, see [Architecture](docs/architecture.md).
 
 ## Why these technologies?
 
-| Technology | Role and reason for the choice | Tradeoff or boundary |
+| Technology | Why I use it | Tradeoff or boundary |
 | --- | --- | --- |
 | Python | Keeps the simulation, analysis, and experiment logic together in an accessible language | CPU-heavy experiments need bounded workloads and execution resources |
 | SimPy | Represents queues, limited workers, and timed events without provisioning infrastructure | Results depend on simplified arrival, service, and resource models |
@@ -138,7 +148,7 @@ The engine and analysis are separate from the interface, so experiments, challen
 
 ## Two-minute walkthrough
 
-For an in-app introduction, choose **Start guided walkthrough**. It walks through a cold-cache failure, one capacity change, and a paired comparison across seeds. See the [learning and resilience guide](docs/learning-lab.md) for evidence windows, retry/backoff policies, admission control, and bounded parallel sweeps.
+In the local Streamlit app, choose **Start guided walkthrough** for an in-app introduction. The hosted app has the separate 75-second video described above. It walks through a cold-cache failure, one capacity change, and a paired comparison across seeds. See the [learning and resilience guide](docs/learning-lab.md) for evidence windows, retry/backoff policies, admission control, and bounded parallel sweeps.
 
 After starting the app locally:
 
@@ -200,8 +210,6 @@ Queueing behavior is checked against Erlang C / M/M/c formulas. The tests pool m
 | [Development guide](docs/development.md) | Test commands, CI, source map, and native kernel build |
 | [Production runbook](docs/production.md) | Optional multi-user deployment, ownership, worker limits, and operations |
 
-## Future directions
+## What I want to improve next
 
-Potential next steps include durable classroom progress, job cancellation and richer progress,
-multi-region models, and classroom assignments.
-I have verified Google sign-in, simulation execution, and AI explanations on the hosted app. Before opening access beyond the configured OAuth test users, I plan to complete production load testing and strengthen operational monitoring.
+I want to add job cancellation, clearer progress reporting, durable classroom progress, and more guided assignments. I also want to complete production load testing and improve operational monitoring before opening access beyond the configured OAuth test users.
