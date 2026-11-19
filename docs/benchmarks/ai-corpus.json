@@ -1,0 +1,4898 @@
+[
+  {
+    "id": "r60-db1-cache0-s7",
+    "config": {
+      "name": "Custom design",
+      "app": {
+        "replicas": 3,
+        "workers": 8,
+        "latency_ms": 20.0,
+        "lb_strategy": "least_queue",
+        "max_queue": 200
+      },
+      "cache": {
+        "enabled": false,
+        "hit_rate": 0.85,
+        "latency_ms": 1.0,
+        "workers": 64
+      },
+      "cdn": {
+        "enabled": false,
+        "hit_rate": 0.6,
+        "latency_ms": 8.0
+      },
+      "queue": {
+        "enabled": false,
+        "consumers": 8,
+        "max_depth": 5000,
+        "enqueue_ms": 2.0
+      },
+      "db": {
+        "workers": 1,
+        "read_ms": 8.0,
+        "write_ms": 25.0,
+        "read_replicas": 0,
+        "max_queue": 500,
+        "shards": 1,
+        "hot_share": 0.0
+      },
+      "workload": {
+        "rps": 60,
+        "read_ratio": 0.95,
+        "duration_s": 4,
+        "timeout_ms": 1000.0,
+        "warmup_s": 1
+      },
+      "events": [],
+      "seed": 7,
+      "app_only": false,
+      "policy": {
+        "max_retries": 0,
+        "backoff_ms": 100.0,
+        "backoff_multiplier": 2.0,
+        "jitter": true,
+        "rate_limit_rps": null,
+        "burst": 100
+      }
+    },
+    "metrics": {
+      "served_rps": 59.666666666666664,
+      "p95_ms": 86.24692802392383,
+      "p99_ms": 102.9656880760637,
+      "success_rate": 1.0
+    },
+    "evidence": {
+      "configuration": {
+        "app": {
+          "latency_ms": 20.0,
+          "lb_strategy": null,
+          "max_queue": 200,
+          "replicas": 3,
+          "workers": 8
+        },
+        "app_only": false,
+        "cache": {
+          "enabled": false,
+          "hit_rate": 0.85,
+          "latency_ms": 1.0,
+          "workers": 64
+        },
+        "cdn": {
+          "enabled": false,
+          "hit_rate": 0.6,
+          "latency_ms": 8.0
+        },
+        "db": {
+          "hot_share": 0.0,
+          "max_queue": 500,
+          "read_ms": 8.0,
+          "read_replicas": 0,
+          "shards": 1,
+          "workers": 1,
+          "write_ms": 25.0
+        },
+        "events": [],
+        "policy": {
+          "backoff_ms": 100.0,
+          "backoff_multiplier": 2.0,
+          "burst": 100,
+          "jitter": true,
+          "max_retries": 0,
+          "rate_limit_rps": null
+        },
+        "queue": {
+          "consumers": 8,
+          "enabled": false,
+          "enqueue_ms": 2.0,
+          "max_depth": 5000
+        },
+        "seed": 7,
+        "workload": {
+          "duration_s": 4,
+          "read_ratio": 0.95,
+          "rps": 60,
+          "timeout_ms": 1000.0,
+          "warmup_s": 1
+        }
+      },
+      "metrics": {
+        "p95_ms": 86.24692802392383,
+        "p99_ms": 102.9656880760637,
+        "served_rps": 59.666666666666664,
+        "success_rate": 1.0
+      },
+      "tiers": {
+        "app": {
+          "mean_util": 0.03472222222222222,
+          "peak_queue": 0.0
+        },
+        "db_primary": {
+          "mean_util": 0.6666666666666666,
+          "peak_queue": 0.75
+        }
+      }
+    }
+  },
+  {
+    "id": "r60-db1-cache0-s19",
+    "config": {
+      "name": "Custom design",
+      "app": {
+        "replicas": 3,
+        "workers": 8,
+        "latency_ms": 20.0,
+        "lb_strategy": "least_queue",
+        "max_queue": 200
+      },
+      "cache": {
+        "enabled": false,
+        "hit_rate": 0.85,
+        "latency_ms": 1.0,
+        "workers": 64
+      },
+      "cdn": {
+        "enabled": false,
+        "hit_rate": 0.6,
+        "latency_ms": 8.0
+      },
+      "queue": {
+        "enabled": false,
+        "consumers": 8,
+        "max_depth": 5000,
+        "enqueue_ms": 2.0
+      },
+      "db": {
+        "workers": 1,
+        "read_ms": 8.0,
+        "write_ms": 25.0,
+        "read_replicas": 0,
+        "max_queue": 500,
+        "shards": 1,
+        "hot_share": 0.0
+      },
+      "workload": {
+        "rps": 60,
+        "read_ratio": 0.95,
+        "duration_s": 4,
+        "timeout_ms": 1000.0,
+        "warmup_s": 1
+      },
+      "events": [],
+      "seed": 19,
+      "app_only": false,
+      "policy": {
+        "max_retries": 0,
+        "backoff_ms": 100.0,
+        "backoff_multiplier": 2.0,
+        "jitter": true,
+        "rate_limit_rps": null,
+        "burst": 100
+      }
+    },
+    "metrics": {
+      "served_rps": 60.0,
+      "p95_ms": 88.68799963921458,
+      "p99_ms": 131.75550220157055,
+      "success_rate": 1.0
+    },
+    "evidence": {
+      "configuration": {
+        "app": {
+          "latency_ms": 20.0,
+          "lb_strategy": null,
+          "max_queue": 200,
+          "replicas": 3,
+          "workers": 8
+        },
+        "app_only": false,
+        "cache": {
+          "enabled": false,
+          "hit_rate": 0.85,
+          "latency_ms": 1.0,
+          "workers": 64
+        },
+        "cdn": {
+          "enabled": false,
+          "hit_rate": 0.6,
+          "latency_ms": 8.0
+        },
+        "db": {
+          "hot_share": 0.0,
+          "max_queue": 500,
+          "read_ms": 8.0,
+          "read_replicas": 0,
+          "shards": 1,
+          "workers": 1,
+          "write_ms": 25.0
+        },
+        "events": [],
+        "policy": {
+          "backoff_ms": 100.0,
+          "backoff_multiplier": 2.0,
+          "burst": 100,
+          "jitter": true,
+          "max_retries": 0,
+          "rate_limit_rps": null
+        },
+        "queue": {
+          "consumers": 8,
+          "enabled": false,
+          "enqueue_ms": 2.0,
+          "max_depth": 5000
+        },
+        "seed": 19,
+        "workload": {
+          "duration_s": 4,
+          "read_ratio": 0.95,
+          "rps": 60,
+          "timeout_ms": 1000.0,
+          "warmup_s": 1
+        }
+      },
+      "metrics": {
+        "p95_ms": 88.68799963921458,
+        "p99_ms": 131.75550220157055,
+        "served_rps": 60.0,
+        "success_rate": 1.0
+      },
+      "tiers": {
+        "app": {
+          "mean_util": 0.07291666666666667,
+          "peak_queue": 0.0
+        },
+        "db_primary": {
+          "mean_util": 0.4166666666666667,
+          "peak_queue": 0.25
+        }
+      }
+    }
+  },
+  {
+    "id": "r60-db1-cache1-s7",
+    "config": {
+      "name": "Custom design",
+      "app": {
+        "replicas": 3,
+        "workers": 8,
+        "latency_ms": 20.0,
+        "lb_strategy": "least_queue",
+        "max_queue": 200
+      },
+      "cache": {
+        "enabled": true,
+        "hit_rate": 0.85,
+        "latency_ms": 1.0,
+        "workers": 64
+      },
+      "cdn": {
+        "enabled": false,
+        "hit_rate": 0.6,
+        "latency_ms": 8.0
+      },
+      "queue": {
+        "enabled": false,
+        "consumers": 8,
+        "max_depth": 5000,
+        "enqueue_ms": 2.0
+      },
+      "db": {
+        "workers": 1,
+        "read_ms": 8.0,
+        "write_ms": 25.0,
+        "read_replicas": 0,
+        "max_queue": 500,
+        "shards": 1,
+        "hot_share": 0.0
+      },
+      "workload": {
+        "rps": 60,
+        "read_ratio": 0.95,
+        "duration_s": 4,
+        "timeout_ms": 1000.0,
+        "warmup_s": 1
+      },
+      "events": [],
+      "seed": 7,
+      "app_only": false,
+      "policy": {
+        "max_retries": 0,
+        "backoff_ms": 100.0,
+        "backoff_multiplier": 2.0,
+        "jitter": true,
+        "rate_limit_rps": null,
+        "burst": 100
+      }
+    },
+    "metrics": {
+      "served_rps": 58.0,
+      "p95_ms": 54.43303622426549,
+      "p99_ms": 75.18056801131334,
+      "success_rate": 1.0
+    },
+    "evidence": {
+      "configuration": {
+        "app": {
+          "latency_ms": 20.0,
+          "lb_strategy": null,
+          "max_queue": 200,
+          "replicas": 3,
+          "workers": 8
+        },
+        "app_only": false,
+        "cache": {
+          "enabled": true,
+          "hit_rate": 0.85,
+          "latency_ms": 1.0,
+          "workers": 64
+        },
+        "cdn": {
+          "enabled": false,
+          "hit_rate": 0.6,
+          "latency_ms": 8.0
+        },
+        "db": {
+          "hot_share": 0.0,
+          "max_queue": 500,
+          "read_ms": 8.0,
+          "read_replicas": 0,
+          "shards": 1,
+          "workers": 1,
+          "write_ms": 25.0
+        },
+        "events": [],
+        "policy": {
+          "backoff_ms": 100.0,
+          "backoff_multiplier": 2.0,
+          "burst": 100,
+          "jitter": true,
+          "max_retries": 0,
+          "rate_limit_rps": null
+        },
+        "queue": {
+          "consumers": 8,
+          "enabled": false,
+          "enqueue_ms": 2.0,
+          "max_depth": 5000
+        },
+        "seed": 7,
+        "workload": {
+          "duration_s": 4,
+          "read_ratio": 0.95,
+          "rps": 60,
+          "timeout_ms": 1000.0,
+          "warmup_s": 1
+        }
+      },
+      "metrics": {
+        "p95_ms": 54.43303622426549,
+        "p99_ms": 75.18056801131334,
+        "served_rps": 58.0,
+        "success_rate": 1.0
+      },
+      "tiers": {
+        "app": {
+          "mean_util": 0.03472222222222222,
+          "peak_queue": 0.0
+        },
+        "cache": {
+          "mean_util": 0.0,
+          "peak_queue": 0.0
+        },
+        "db_primary": {
+          "mean_util": 0.16666666666666666,
+          "peak_queue": 0.0
+        }
+      }
+    }
+  },
+  {
+    "id": "r60-db1-cache1-s19",
+    "config": {
+      "name": "Custom design",
+      "app": {
+        "replicas": 3,
+        "workers": 8,
+        "latency_ms": 20.0,
+        "lb_strategy": "least_queue",
+        "max_queue": 200
+      },
+      "cache": {
+        "enabled": true,
+        "hit_rate": 0.85,
+        "latency_ms": 1.0,
+        "workers": 64
+      },
+      "cdn": {
+        "enabled": false,
+        "hit_rate": 0.6,
+        "latency_ms": 8.0
+      },
+      "queue": {
+        "enabled": false,
+        "consumers": 8,
+        "max_depth": 5000,
+        "enqueue_ms": 2.0
+      },
+      "db": {
+        "workers": 1,
+        "read_ms": 8.0,
+        "write_ms": 25.0,
+        "read_replicas": 0,
+        "max_queue": 500,
+        "shards": 1,
+        "hot_share": 0.0
+      },
+      "workload": {
+        "rps": 60,
+        "read_ratio": 0.95,
+        "duration_s": 4,
+        "timeout_ms": 1000.0,
+        "warmup_s": 1
+      },
+      "events": [],
+      "seed": 19,
+      "app_only": false,
+      "policy": {
+        "max_retries": 0,
+        "backoff_ms": 100.0,
+        "backoff_multiplier": 2.0,
+        "jitter": true,
+        "rate_limit_rps": null,
+        "burst": 100
+      }
+    },
+    "metrics": {
+      "served_rps": 58.0,
+      "p95_ms": 65.0894286876031,
+      "p99_ms": 102.60861234587787,
+      "success_rate": 1.0
+    },
+    "evidence": {
+      "configuration": {
+        "app": {
+          "latency_ms": 20.0,
+          "lb_strategy": null,
+          "max_queue": 200,
+          "replicas": 3,
+          "workers": 8
+        },
+        "app_only": false,
+        "cache": {
+          "enabled": true,
+          "hit_rate": 0.85,
+          "latency_ms": 1.0,
+          "workers": 64
+        },
+        "cdn": {
+          "enabled": false,
+          "hit_rate": 0.6,
+          "latency_ms": 8.0
+        },
+        "db": {
+          "hot_share": 0.0,
+          "max_queue": 500,
+          "read_ms": 8.0,
+          "read_replicas": 0,
+          "shards": 1,
+          "workers": 1,
+          "write_ms": 25.0
+        },
+        "events": [],
+        "policy": {
+          "backoff_ms": 100.0,
+          "backoff_multiplier": 2.0,
+          "burst": 100,
+          "jitter": true,
+          "max_retries": 0,
+          "rate_limit_rps": null
+        },
+        "queue": {
+          "consumers": 8,
+          "enabled": false,
+          "enqueue_ms": 2.0,
+          "max_depth": 5000
+        },
+        "seed": 19,
+        "workload": {
+          "duration_s": 4,
+          "read_ratio": 0.95,
+          "rps": 60,
+          "timeout_ms": 1000.0,
+          "warmup_s": 1
+        }
+      },
+      "metrics": {
+        "p95_ms": 65.0894286876031,
+        "p99_ms": 102.60861234587787,
+        "served_rps": 58.0,
+        "success_rate": 1.0
+      },
+      "tiers": {
+        "app": {
+          "mean_util": 0.027777777777777776,
+          "peak_queue": 0.0
+        },
+        "cache": {
+          "mean_util": 0.0013020833333333333,
+          "peak_queue": 0.0
+        },
+        "db_primary": {
+          "mean_util": 0.0,
+          "peak_queue": 0.0
+        }
+      }
+    }
+  },
+  {
+    "id": "r60-db4-cache0-s7",
+    "config": {
+      "name": "Custom design",
+      "app": {
+        "replicas": 3,
+        "workers": 8,
+        "latency_ms": 20.0,
+        "lb_strategy": "least_queue",
+        "max_queue": 200
+      },
+      "cache": {
+        "enabled": false,
+        "hit_rate": 0.85,
+        "latency_ms": 1.0,
+        "workers": 64
+      },
+      "cdn": {
+        "enabled": false,
+        "hit_rate": 0.6,
+        "latency_ms": 8.0
+      },
+      "queue": {
+        "enabled": false,
+        "consumers": 8,
+        "max_depth": 5000,
+        "enqueue_ms": 2.0
+      },
+      "db": {
+        "workers": 4,
+        "read_ms": 8.0,
+        "write_ms": 25.0,
+        "read_replicas": 0,
+        "max_queue": 500,
+        "shards": 1,
+        "hot_share": 0.0
+      },
+      "workload": {
+        "rps": 60,
+        "read_ratio": 0.95,
+        "duration_s": 4,
+        "timeout_ms": 1000.0,
+        "warmup_s": 1
+      },
+      "events": [],
+      "seed": 7,
+      "app_only": false,
+      "policy": {
+        "max_retries": 0,
+        "backoff_ms": 100.0,
+        "backoff_multiplier": 2.0,
+        "jitter": true,
+        "rate_limit_rps": null,
+        "burst": 100
+      }
+    },
+    "metrics": {
+      "served_rps": 65.0,
+      "p95_ms": 70.4223479771822,
+      "p99_ms": 114.17708728444101,
+      "success_rate": 1.0
+    },
+    "evidence": {
+      "configuration": {
+        "app": {
+          "latency_ms": 20.0,
+          "lb_strategy": null,
+          "max_queue": 200,
+          "replicas": 3,
+          "workers": 8
+        },
+        "app_only": false,
+        "cache": {
+          "enabled": false,
+          "hit_rate": 0.85,
+          "latency_ms": 1.0,
+          "workers": 64
+        },
+        "cdn": {
+          "enabled": false,
+          "hit_rate": 0.6,
+          "latency_ms": 8.0
+        },
+        "db": {
+          "hot_share": 0.0,
+          "max_queue": 500,
+          "read_ms": 8.0,
+          "read_replicas": 0,
+          "shards": 1,
+          "workers": 4,
+          "write_ms": 25.0
+        },
+        "events": [],
+        "policy": {
+          "backoff_ms": 100.0,
+          "backoff_multiplier": 2.0,
+          "burst": 100,
+          "jitter": true,
+          "max_retries": 0,
+          "rate_limit_rps": null
+        },
+        "queue": {
+          "consumers": 8,
+          "enabled": false,
+          "enqueue_ms": 2.0,
+          "max_depth": 5000
+        },
+        "seed": 7,
+        "workload": {
+          "duration_s": 4,
+          "read_ratio": 0.95,
+          "rps": 60,
+          "timeout_ms": 1000.0,
+          "warmup_s": 1
+        }
+      },
+      "metrics": {
+        "p95_ms": 70.4223479771822,
+        "p99_ms": 114.17708728444101,
+        "served_rps": 65.0,
+        "success_rate": 1.0
+      },
+      "tiers": {
+        "app": {
+          "mean_util": 0.041666666666666664,
+          "peak_queue": 0.0
+        },
+        "db_primary": {
+          "mean_util": 0.22916666666666666,
+          "peak_queue": 0.0
+        }
+      }
+    }
+  },
+  {
+    "id": "r60-db4-cache0-s19",
+    "config": {
+      "name": "Custom design",
+      "app": {
+        "replicas": 3,
+        "workers": 8,
+        "latency_ms": 20.0,
+        "lb_strategy": "least_queue",
+        "max_queue": 200
+      },
+      "cache": {
+        "enabled": false,
+        "hit_rate": 0.85,
+        "latency_ms": 1.0,
+        "workers": 64
+      },
+      "cdn": {
+        "enabled": false,
+        "hit_rate": 0.6,
+        "latency_ms": 8.0
+      },
+      "queue": {
+        "enabled": false,
+        "consumers": 8,
+        "max_depth": 5000,
+        "enqueue_ms": 2.0
+      },
+      "db": {
+        "workers": 4,
+        "read_ms": 8.0,
+        "write_ms": 25.0,
+        "read_replicas": 0,
+        "max_queue": 500,
+        "shards": 1,
+        "hot_share": 0.0
+      },
+      "workload": {
+        "rps": 60,
+        "read_ratio": 0.95,
+        "duration_s": 4,
+        "timeout_ms": 1000.0,
+        "warmup_s": 1
+      },
+      "events": [],
+      "seed": 19,
+      "app_only": false,
+      "policy": {
+        "max_retries": 0,
+        "backoff_ms": 100.0,
+        "backoff_multiplier": 2.0,
+        "jitter": true,
+        "rate_limit_rps": null,
+        "burst": 100
+      }
+    },
+    "metrics": {
+      "served_rps": 62.333333333333336,
+      "p95_ms": 62.26697553393234,
+      "p99_ms": 77.92504583032466,
+      "success_rate": 1.0
+    },
+    "evidence": {
+      "configuration": {
+        "app": {
+          "latency_ms": 20.0,
+          "lb_strategy": null,
+          "max_queue": 200,
+          "replicas": 3,
+          "workers": 8
+        },
+        "app_only": false,
+        "cache": {
+          "enabled": false,
+          "hit_rate": 0.85,
+          "latency_ms": 1.0,
+          "workers": 64
+        },
+        "cdn": {
+          "enabled": false,
+          "hit_rate": 0.6,
+          "latency_ms": 8.0
+        },
+        "db": {
+          "hot_share": 0.0,
+          "max_queue": 500,
+          "read_ms": 8.0,
+          "read_replicas": 0,
+          "shards": 1,
+          "workers": 4,
+          "write_ms": 25.0
+        },
+        "events": [],
+        "policy": {
+          "backoff_ms": 100.0,
+          "backoff_multiplier": 2.0,
+          "burst": 100,
+          "jitter": true,
+          "max_retries": 0,
+          "rate_limit_rps": null
+        },
+        "queue": {
+          "consumers": 8,
+          "enabled": false,
+          "enqueue_ms": 2.0,
+          "max_depth": 5000
+        },
+        "seed": 19,
+        "workload": {
+          "duration_s": 4,
+          "read_ratio": 0.95,
+          "rps": 60,
+          "timeout_ms": 1000.0,
+          "warmup_s": 1
+        }
+      },
+      "metrics": {
+        "p95_ms": 62.26697553393234,
+        "p99_ms": 77.92504583032466,
+        "served_rps": 62.333333333333336,
+        "success_rate": 1.0
+      },
+      "tiers": {
+        "app": {
+          "mean_util": 0.03125,
+          "peak_queue": 0.0
+        },
+        "db_primary": {
+          "mean_util": 0.10416666666666667,
+          "peak_queue": 0.0
+        }
+      }
+    }
+  },
+  {
+    "id": "r60-db4-cache1-s7",
+    "config": {
+      "name": "Custom design",
+      "app": {
+        "replicas": 3,
+        "workers": 8,
+        "latency_ms": 20.0,
+        "lb_strategy": "least_queue",
+        "max_queue": 200
+      },
+      "cache": {
+        "enabled": true,
+        "hit_rate": 0.85,
+        "latency_ms": 1.0,
+        "workers": 64
+      },
+      "cdn": {
+        "enabled": false,
+        "hit_rate": 0.6,
+        "latency_ms": 8.0
+      },
+      "queue": {
+        "enabled": false,
+        "consumers": 8,
+        "max_depth": 5000,
+        "enqueue_ms": 2.0
+      },
+      "db": {
+        "workers": 4,
+        "read_ms": 8.0,
+        "write_ms": 25.0,
+        "read_replicas": 0,
+        "max_queue": 500,
+        "shards": 1,
+        "hot_share": 0.0
+      },
+      "workload": {
+        "rps": 60,
+        "read_ratio": 0.95,
+        "duration_s": 4,
+        "timeout_ms": 1000.0,
+        "warmup_s": 1
+      },
+      "events": [],
+      "seed": 7,
+      "app_only": false,
+      "policy": {
+        "max_retries": 0,
+        "backoff_ms": 100.0,
+        "backoff_multiplier": 2.0,
+        "jitter": true,
+        "rate_limit_rps": null,
+        "burst": 100
+      }
+    },
+    "metrics": {
+      "served_rps": 60.0,
+      "p95_ms": 68.19169436435422,
+      "p99_ms": 83.41873409167079,
+      "success_rate": 1.0
+    },
+    "evidence": {
+      "configuration": {
+        "app": {
+          "latency_ms": 20.0,
+          "lb_strategy": null,
+          "max_queue": 200,
+          "replicas": 3,
+          "workers": 8
+        },
+        "app_only": false,
+        "cache": {
+          "enabled": true,
+          "hit_rate": 0.85,
+          "latency_ms": 1.0,
+          "workers": 64
+        },
+        "cdn": {
+          "enabled": false,
+          "hit_rate": 0.6,
+          "latency_ms": 8.0
+        },
+        "db": {
+          "hot_share": 0.0,
+          "max_queue": 500,
+          "read_ms": 8.0,
+          "read_replicas": 0,
+          "shards": 1,
+          "workers": 4,
+          "write_ms": 25.0
+        },
+        "events": [],
+        "policy": {
+          "backoff_ms": 100.0,
+          "backoff_multiplier": 2.0,
+          "burst": 100,
+          "jitter": true,
+          "max_retries": 0,
+          "rate_limit_rps": null
+        },
+        "queue": {
+          "consumers": 8,
+          "enabled": false,
+          "enqueue_ms": 2.0,
+          "max_depth": 5000
+        },
+        "seed": 7,
+        "workload": {
+          "duration_s": 4,
+          "read_ratio": 0.95,
+          "rps": 60,
+          "timeout_ms": 1000.0,
+          "warmup_s": 1
+        }
+      },
+      "metrics": {
+        "p95_ms": 68.19169436435422,
+        "p99_ms": 83.41873409167079,
+        "served_rps": 60.0,
+        "success_rate": 1.0
+      },
+      "tiers": {
+        "app": {
+          "mean_util": 0.048611111111111105,
+          "peak_queue": 0.0
+        },
+        "cache": {
+          "mean_util": 0.0,
+          "peak_queue": 0.0
+        },
+        "db_primary": {
+          "mean_util": 0.020833333333333332,
+          "peak_queue": 0.0
+        }
+      }
+    }
+  },
+  {
+    "id": "r60-db4-cache1-s19",
+    "config": {
+      "name": "Custom design",
+      "app": {
+        "replicas": 3,
+        "workers": 8,
+        "latency_ms": 20.0,
+        "lb_strategy": "least_queue",
+        "max_queue": 200
+      },
+      "cache": {
+        "enabled": true,
+        "hit_rate": 0.85,
+        "latency_ms": 1.0,
+        "workers": 64
+      },
+      "cdn": {
+        "enabled": false,
+        "hit_rate": 0.6,
+        "latency_ms": 8.0
+      },
+      "queue": {
+        "enabled": false,
+        "consumers": 8,
+        "max_depth": 5000,
+        "enqueue_ms": 2.0
+      },
+      "db": {
+        "workers": 4,
+        "read_ms": 8.0,
+        "write_ms": 25.0,
+        "read_replicas": 0,
+        "max_queue": 500,
+        "shards": 1,
+        "hot_share": 0.0
+      },
+      "workload": {
+        "rps": 60,
+        "read_ratio": 0.95,
+        "duration_s": 4,
+        "timeout_ms": 1000.0,
+        "warmup_s": 1
+      },
+      "events": [],
+      "seed": 19,
+      "app_only": false,
+      "policy": {
+        "max_retries": 0,
+        "backoff_ms": 100.0,
+        "backoff_multiplier": 2.0,
+        "jitter": true,
+        "rate_limit_rps": null,
+        "burst": 100
+      }
+    },
+    "metrics": {
+      "served_rps": 57.0,
+      "p95_ms": 69.46355161656248,
+      "p99_ms": 108.6715968455815,
+      "success_rate": 1.0
+    },
+    "evidence": {
+      "configuration": {
+        "app": {
+          "latency_ms": 20.0,
+          "lb_strategy": null,
+          "max_queue": 200,
+          "replicas": 3,
+          "workers": 8
+        },
+        "app_only": false,
+        "cache": {
+          "enabled": true,
+          "hit_rate": 0.85,
+          "latency_ms": 1.0,
+          "workers": 64
+        },
+        "cdn": {
+          "enabled": false,
+          "hit_rate": 0.6,
+          "latency_ms": 8.0
+        },
+        "db": {
+          "hot_share": 0.0,
+          "max_queue": 500,
+          "read_ms": 8.0,
+          "read_replicas": 0,
+          "shards": 1,
+          "workers": 4,
+          "write_ms": 25.0
+        },
+        "events": [],
+        "policy": {
+          "backoff_ms": 100.0,
+          "backoff_multiplier": 2.0,
+          "burst": 100,
+          "jitter": true,
+          "max_retries": 0,
+          "rate_limit_rps": null
+        },
+        "queue": {
+          "consumers": 8,
+          "enabled": false,
+          "enqueue_ms": 2.0,
+          "max_depth": 5000
+        },
+        "seed": 19,
+        "workload": {
+          "duration_s": 4,
+          "read_ratio": 0.95,
+          "rps": 60,
+          "timeout_ms": 1000.0,
+          "warmup_s": 1
+        }
+      },
+      "metrics": {
+        "p95_ms": 69.46355161656248,
+        "p99_ms": 108.6715968455815,
+        "served_rps": 57.0,
+        "success_rate": 1.0
+      },
+      "tiers": {
+        "app": {
+          "mean_util": 0.03472222222222222,
+          "peak_queue": 0.0
+        },
+        "cache": {
+          "mean_util": 0.0026041666666666665,
+          "peak_queue": 0.0
+        },
+        "db_primary": {
+          "mean_util": 0.020833333333333332,
+          "peak_queue": 0.0
+        }
+      }
+    }
+  },
+  {
+    "id": "r60-db16-cache0-s7",
+    "config": {
+      "name": "Custom design",
+      "app": {
+        "replicas": 3,
+        "workers": 8,
+        "latency_ms": 20.0,
+        "lb_strategy": "least_queue",
+        "max_queue": 200
+      },
+      "cache": {
+        "enabled": false,
+        "hit_rate": 0.85,
+        "latency_ms": 1.0,
+        "workers": 64
+      },
+      "cdn": {
+        "enabled": false,
+        "hit_rate": 0.6,
+        "latency_ms": 8.0
+      },
+      "queue": {
+        "enabled": false,
+        "consumers": 8,
+        "max_depth": 5000,
+        "enqueue_ms": 2.0
+      },
+      "db": {
+        "workers": 16,
+        "read_ms": 8.0,
+        "write_ms": 25.0,
+        "read_replicas": 0,
+        "max_queue": 500,
+        "shards": 1,
+        "hot_share": 0.0
+      },
+      "workload": {
+        "rps": 60,
+        "read_ratio": 0.95,
+        "duration_s": 4,
+        "timeout_ms": 1000.0,
+        "warmup_s": 1
+      },
+      "events": [],
+      "seed": 7,
+      "app_only": false,
+      "policy": {
+        "max_retries": 0,
+        "backoff_ms": 100.0,
+        "backoff_multiplier": 2.0,
+        "jitter": true,
+        "rate_limit_rps": null,
+        "burst": 100
+      }
+    },
+    "metrics": {
+      "served_rps": 65.0,
+      "p95_ms": 70.4223479771822,
+      "p99_ms": 114.17708728444101,
+      "success_rate": 1.0
+    },
+    "evidence": {
+      "configuration": {
+        "app": {
+          "latency_ms": 20.0,
+          "lb_strategy": null,
+          "max_queue": 200,
+          "replicas": 3,
+          "workers": 8
+        },
+        "app_only": false,
+        "cache": {
+          "enabled": false,
+          "hit_rate": 0.85,
+          "latency_ms": 1.0,
+          "workers": 64
+        },
+        "cdn": {
+          "enabled": false,
+          "hit_rate": 0.6,
+          "latency_ms": 8.0
+        },
+        "db": {
+          "hot_share": 0.0,
+          "max_queue": 500,
+          "read_ms": 8.0,
+          "read_replicas": 0,
+          "shards": 1,
+          "workers": 16,
+          "write_ms": 25.0
+        },
+        "events": [],
+        "policy": {
+          "backoff_ms": 100.0,
+          "backoff_multiplier": 2.0,
+          "burst": 100,
+          "jitter": true,
+          "max_retries": 0,
+          "rate_limit_rps": null
+        },
+        "queue": {
+          "consumers": 8,
+          "enabled": false,
+          "enqueue_ms": 2.0,
+          "max_depth": 5000
+        },
+        "seed": 7,
+        "workload": {
+          "duration_s": 4,
+          "read_ratio": 0.95,
+          "rps": 60,
+          "timeout_ms": 1000.0,
+          "warmup_s": 1
+        }
+      },
+      "metrics": {
+        "p95_ms": 70.4223479771822,
+        "p99_ms": 114.17708728444101,
+        "served_rps": 65.0,
+        "success_rate": 1.0
+      },
+      "tiers": {
+        "app": {
+          "mean_util": 0.041666666666666664,
+          "peak_queue": 0.0
+        },
+        "db_primary": {
+          "mean_util": 0.057291666666666664,
+          "peak_queue": 0.0
+        }
+      }
+    }
+  },
+  {
+    "id": "r60-db16-cache0-s19",
+    "config": {
+      "name": "Custom design",
+      "app": {
+        "replicas": 3,
+        "workers": 8,
+        "latency_ms": 20.0,
+        "lb_strategy": "least_queue",
+        "max_queue": 200
+      },
+      "cache": {
+        "enabled": false,
+        "hit_rate": 0.85,
+        "latency_ms": 1.0,
+        "workers": 64
+      },
+      "cdn": {
+        "enabled": false,
+        "hit_rate": 0.6,
+        "latency_ms": 8.0
+      },
+      "queue": {
+        "enabled": false,
+        "consumers": 8,
+        "max_depth": 5000,
+        "enqueue_ms": 2.0
+      },
+      "db": {
+        "workers": 16,
+        "read_ms": 8.0,
+        "write_ms": 25.0,
+        "read_replicas": 0,
+        "max_queue": 500,
+        "shards": 1,
+        "hot_share": 0.0
+      },
+      "workload": {
+        "rps": 60,
+        "read_ratio": 0.95,
+        "duration_s": 4,
+        "timeout_ms": 1000.0,
+        "warmup_s": 1
+      },
+      "events": [],
+      "seed": 19,
+      "app_only": false,
+      "policy": {
+        "max_retries": 0,
+        "backoff_ms": 100.0,
+        "backoff_multiplier": 2.0,
+        "jitter": true,
+        "rate_limit_rps": null,
+        "burst": 100
+      }
+    },
+    "metrics": {
+      "served_rps": 62.333333333333336,
+      "p95_ms": 62.26697553393234,
+      "p99_ms": 77.92504583032466,
+      "success_rate": 1.0
+    },
+    "evidence": {
+      "configuration": {
+        "app": {
+          "latency_ms": 20.0,
+          "lb_strategy": null,
+          "max_queue": 200,
+          "replicas": 3,
+          "workers": 8
+        },
+        "app_only": false,
+        "cache": {
+          "enabled": false,
+          "hit_rate": 0.85,
+          "latency_ms": 1.0,
+          "workers": 64
+        },
+        "cdn": {
+          "enabled": false,
+          "hit_rate": 0.6,
+          "latency_ms": 8.0
+        },
+        "db": {
+          "hot_share": 0.0,
+          "max_queue": 500,
+          "read_ms": 8.0,
+          "read_replicas": 0,
+          "shards": 1,
+          "workers": 16,
+          "write_ms": 25.0
+        },
+        "events": [],
+        "policy": {
+          "backoff_ms": 100.0,
+          "backoff_multiplier": 2.0,
+          "burst": 100,
+          "jitter": true,
+          "max_retries": 0,
+          "rate_limit_rps": null
+        },
+        "queue": {
+          "consumers": 8,
+          "enabled": false,
+          "enqueue_ms": 2.0,
+          "max_depth": 5000
+        },
+        "seed": 19,
+        "workload": {
+          "duration_s": 4,
+          "read_ratio": 0.95,
+          "rps": 60,
+          "timeout_ms": 1000.0,
+          "warmup_s": 1
+        }
+      },
+      "metrics": {
+        "p95_ms": 62.26697553393234,
+        "p99_ms": 77.92504583032466,
+        "served_rps": 62.333333333333336,
+        "success_rate": 1.0
+      },
+      "tiers": {
+        "app": {
+          "mean_util": 0.03125,
+          "peak_queue": 0.0
+        },
+        "db_primary": {
+          "mean_util": 0.026041666666666668,
+          "peak_queue": 0.0
+        }
+      }
+    }
+  },
+  {
+    "id": "r60-db16-cache1-s7",
+    "config": {
+      "name": "Custom design",
+      "app": {
+        "replicas": 3,
+        "workers": 8,
+        "latency_ms": 20.0,
+        "lb_strategy": "least_queue",
+        "max_queue": 200
+      },
+      "cache": {
+        "enabled": true,
+        "hit_rate": 0.85,
+        "latency_ms": 1.0,
+        "workers": 64
+      },
+      "cdn": {
+        "enabled": false,
+        "hit_rate": 0.6,
+        "latency_ms": 8.0
+      },
+      "queue": {
+        "enabled": false,
+        "consumers": 8,
+        "max_depth": 5000,
+        "enqueue_ms": 2.0
+      },
+      "db": {
+        "workers": 16,
+        "read_ms": 8.0,
+        "write_ms": 25.0,
+        "read_replicas": 0,
+        "max_queue": 500,
+        "shards": 1,
+        "hot_share": 0.0
+      },
+      "workload": {
+        "rps": 60,
+        "read_ratio": 0.95,
+        "duration_s": 4,
+        "timeout_ms": 1000.0,
+        "warmup_s": 1
+      },
+      "events": [],
+      "seed": 7,
+      "app_only": false,
+      "policy": {
+        "max_retries": 0,
+        "backoff_ms": 100.0,
+        "backoff_multiplier": 2.0,
+        "jitter": true,
+        "rate_limit_rps": null,
+        "burst": 100
+      }
+    },
+    "metrics": {
+      "served_rps": 60.0,
+      "p95_ms": 68.19169436435422,
+      "p99_ms": 83.41873409167079,
+      "success_rate": 1.0
+    },
+    "evidence": {
+      "configuration": {
+        "app": {
+          "latency_ms": 20.0,
+          "lb_strategy": null,
+          "max_queue": 200,
+          "replicas": 3,
+          "workers": 8
+        },
+        "app_only": false,
+        "cache": {
+          "enabled": true,
+          "hit_rate": 0.85,
+          "latency_ms": 1.0,
+          "workers": 64
+        },
+        "cdn": {
+          "enabled": false,
+          "hit_rate": 0.6,
+          "latency_ms": 8.0
+        },
+        "db": {
+          "hot_share": 0.0,
+          "max_queue": 500,
+          "read_ms": 8.0,
+          "read_replicas": 0,
+          "shards": 1,
+          "workers": 16,
+          "write_ms": 25.0
+        },
+        "events": [],
+        "policy": {
+          "backoff_ms": 100.0,
+          "backoff_multiplier": 2.0,
+          "burst": 100,
+          "jitter": true,
+          "max_retries": 0,
+          "rate_limit_rps": null
+        },
+        "queue": {
+          "consumers": 8,
+          "enabled": false,
+          "enqueue_ms": 2.0,
+          "max_depth": 5000
+        },
+        "seed": 7,
+        "workload": {
+          "duration_s": 4,
+          "read_ratio": 0.95,
+          "rps": 60,
+          "timeout_ms": 1000.0,
+          "warmup_s": 1
+        }
+      },
+      "metrics": {
+        "p95_ms": 68.19169436435422,
+        "p99_ms": 83.41873409167079,
+        "served_rps": 60.0,
+        "success_rate": 1.0
+      },
+      "tiers": {
+        "app": {
+          "mean_util": 0.048611111111111105,
+          "peak_queue": 0.0
+        },
+        "cache": {
+          "mean_util": 0.0,
+          "peak_queue": 0.0
+        },
+        "db_primary": {
+          "mean_util": 0.005208333333333333,
+          "peak_queue": 0.0
+        }
+      }
+    }
+  },
+  {
+    "id": "r60-db16-cache1-s19",
+    "config": {
+      "name": "Custom design",
+      "app": {
+        "replicas": 3,
+        "workers": 8,
+        "latency_ms": 20.0,
+        "lb_strategy": "least_queue",
+        "max_queue": 200
+      },
+      "cache": {
+        "enabled": true,
+        "hit_rate": 0.85,
+        "latency_ms": 1.0,
+        "workers": 64
+      },
+      "cdn": {
+        "enabled": false,
+        "hit_rate": 0.6,
+        "latency_ms": 8.0
+      },
+      "queue": {
+        "enabled": false,
+        "consumers": 8,
+        "max_depth": 5000,
+        "enqueue_ms": 2.0
+      },
+      "db": {
+        "workers": 16,
+        "read_ms": 8.0,
+        "write_ms": 25.0,
+        "read_replicas": 0,
+        "max_queue": 500,
+        "shards": 1,
+        "hot_share": 0.0
+      },
+      "workload": {
+        "rps": 60,
+        "read_ratio": 0.95,
+        "duration_s": 4,
+        "timeout_ms": 1000.0,
+        "warmup_s": 1
+      },
+      "events": [],
+      "seed": 19,
+      "app_only": false,
+      "policy": {
+        "max_retries": 0,
+        "backoff_ms": 100.0,
+        "backoff_multiplier": 2.0,
+        "jitter": true,
+        "rate_limit_rps": null,
+        "burst": 100
+      }
+    },
+    "metrics": {
+      "served_rps": 57.0,
+      "p95_ms": 69.46355161656248,
+      "p99_ms": 108.6715968455815,
+      "success_rate": 1.0
+    },
+    "evidence": {
+      "configuration": {
+        "app": {
+          "latency_ms": 20.0,
+          "lb_strategy": null,
+          "max_queue": 200,
+          "replicas": 3,
+          "workers": 8
+        },
+        "app_only": false,
+        "cache": {
+          "enabled": true,
+          "hit_rate": 0.85,
+          "latency_ms": 1.0,
+          "workers": 64
+        },
+        "cdn": {
+          "enabled": false,
+          "hit_rate": 0.6,
+          "latency_ms": 8.0
+        },
+        "db": {
+          "hot_share": 0.0,
+          "max_queue": 500,
+          "read_ms": 8.0,
+          "read_replicas": 0,
+          "shards": 1,
+          "workers": 16,
+          "write_ms": 25.0
+        },
+        "events": [],
+        "policy": {
+          "backoff_ms": 100.0,
+          "backoff_multiplier": 2.0,
+          "burst": 100,
+          "jitter": true,
+          "max_retries": 0,
+          "rate_limit_rps": null
+        },
+        "queue": {
+          "consumers": 8,
+          "enabled": false,
+          "enqueue_ms": 2.0,
+          "max_depth": 5000
+        },
+        "seed": 19,
+        "workload": {
+          "duration_s": 4,
+          "read_ratio": 0.95,
+          "rps": 60,
+          "timeout_ms": 1000.0,
+          "warmup_s": 1
+        }
+      },
+      "metrics": {
+        "p95_ms": 69.46355161656248,
+        "p99_ms": 108.6715968455815,
+        "served_rps": 57.0,
+        "success_rate": 1.0
+      },
+      "tiers": {
+        "app": {
+          "mean_util": 0.03472222222222222,
+          "peak_queue": 0.0
+        },
+        "cache": {
+          "mean_util": 0.0026041666666666665,
+          "peak_queue": 0.0
+        },
+        "db_primary": {
+          "mean_util": 0.005208333333333333,
+          "peak_queue": 0.0
+        }
+      }
+    }
+  },
+  {
+    "id": "r180-db1-cache0-s7",
+    "config": {
+      "name": "Custom design",
+      "app": {
+        "replicas": 3,
+        "workers": 8,
+        "latency_ms": 20.0,
+        "lb_strategy": "least_queue",
+        "max_queue": 200
+      },
+      "cache": {
+        "enabled": false,
+        "hit_rate": 0.85,
+        "latency_ms": 1.0,
+        "workers": 64
+      },
+      "cdn": {
+        "enabled": false,
+        "hit_rate": 0.6,
+        "latency_ms": 8.0
+      },
+      "queue": {
+        "enabled": false,
+        "consumers": 8,
+        "max_depth": 5000,
+        "enqueue_ms": 2.0
+      },
+      "db": {
+        "workers": 1,
+        "read_ms": 8.0,
+        "write_ms": 25.0,
+        "read_replicas": 0,
+        "max_queue": 500,
+        "shards": 1,
+        "hot_share": 0.0
+      },
+      "workload": {
+        "rps": 180,
+        "read_ratio": 0.95,
+        "duration_s": 4,
+        "timeout_ms": 1000.0,
+        "warmup_s": 1
+      },
+      "events": [],
+      "seed": 7,
+      "app_only": false,
+      "policy": {
+        "max_retries": 0,
+        "backoff_ms": 100.0,
+        "backoff_multiplier": 2.0,
+        "jitter": true,
+        "rate_limit_rps": null,
+        "burst": 100
+      }
+    },
+    "metrics": {
+      "served_rps": 99.66666666666667,
+      "p95_ms": 1000.0,
+      "p99_ms": 1000.0,
+      "success_rate": 0.5496323529411765
+    },
+    "evidence": {
+      "configuration": {
+        "app": {
+          "latency_ms": 20.0,
+          "lb_strategy": null,
+          "max_queue": 200,
+          "replicas": 3,
+          "workers": 8
+        },
+        "app_only": false,
+        "cache": {
+          "enabled": false,
+          "hit_rate": 0.85,
+          "latency_ms": 1.0,
+          "workers": 64
+        },
+        "cdn": {
+          "enabled": false,
+          "hit_rate": 0.6,
+          "latency_ms": 8.0
+        },
+        "db": {
+          "hot_share": 0.0,
+          "max_queue": 500,
+          "read_ms": 8.0,
+          "read_replicas": 0,
+          "shards": 1,
+          "workers": 1,
+          "write_ms": 25.0
+        },
+        "events": [],
+        "policy": {
+          "backoff_ms": 100.0,
+          "backoff_multiplier": 2.0,
+          "burst": 100,
+          "jitter": true,
+          "max_retries": 0,
+          "rate_limit_rps": null
+        },
+        "queue": {
+          "consumers": 8,
+          "enabled": false,
+          "enqueue_ms": 2.0,
+          "max_depth": 5000
+        },
+        "seed": 7,
+        "workload": {
+          "duration_s": 4,
+          "read_ratio": 0.95,
+          "rps": 180,
+          "timeout_ms": 1000.0,
+          "warmup_s": 1
+        }
+      },
+      "metrics": {
+        "p95_ms": 1000.0,
+        "p99_ms": 1000.0,
+        "served_rps": 99.66666666666667,
+        "success_rate": 0.5496323529411765
+      },
+      "tiers": {
+        "app": {
+          "mean_util": 0.14930555555555555,
+          "peak_queue": 0.0
+        },
+        "db_primary": {
+          "mean_util": 1.0,
+          "peak_queue": 182.0
+        }
+      }
+    }
+  },
+  {
+    "id": "r180-db1-cache0-s19",
+    "config": {
+      "name": "Custom design",
+      "app": {
+        "replicas": 3,
+        "workers": 8,
+        "latency_ms": 20.0,
+        "lb_strategy": "least_queue",
+        "max_queue": 200
+      },
+      "cache": {
+        "enabled": false,
+        "hit_rate": 0.85,
+        "latency_ms": 1.0,
+        "workers": 64
+      },
+      "cdn": {
+        "enabled": false,
+        "hit_rate": 0.6,
+        "latency_ms": 8.0
+      },
+      "queue": {
+        "enabled": false,
+        "consumers": 8,
+        "max_depth": 5000,
+        "enqueue_ms": 2.0
+      },
+      "db": {
+        "workers": 1,
+        "read_ms": 8.0,
+        "write_ms": 25.0,
+        "read_replicas": 0,
+        "max_queue": 500,
+        "shards": 1,
+        "hot_share": 0.0
+      },
+      "workload": {
+        "rps": 180,
+        "read_ratio": 0.95,
+        "duration_s": 4,
+        "timeout_ms": 1000.0,
+        "warmup_s": 1
+      },
+      "events": [],
+      "seed": 19,
+      "app_only": false,
+      "policy": {
+        "max_retries": 0,
+        "backoff_ms": 100.0,
+        "backoff_multiplier": 2.0,
+        "jitter": true,
+        "rate_limit_rps": null,
+        "burst": 100
+      }
+    },
+    "metrics": {
+      "served_rps": 119.0,
+      "p95_ms": 1000.0,
+      "p99_ms": 1000.0,
+      "success_rate": 0.6891891891891891
+    },
+    "evidence": {
+      "configuration": {
+        "app": {
+          "latency_ms": 20.0,
+          "lb_strategy": null,
+          "max_queue": 200,
+          "replicas": 3,
+          "workers": 8
+        },
+        "app_only": false,
+        "cache": {
+          "enabled": false,
+          "hit_rate": 0.85,
+          "latency_ms": 1.0,
+          "workers": 64
+        },
+        "cdn": {
+          "enabled": false,
+          "hit_rate": 0.6,
+          "latency_ms": 8.0
+        },
+        "db": {
+          "hot_share": 0.0,
+          "max_queue": 500,
+          "read_ms": 8.0,
+          "read_replicas": 0,
+          "shards": 1,
+          "workers": 1,
+          "write_ms": 25.0
+        },
+        "events": [],
+        "policy": {
+          "backoff_ms": 100.0,
+          "backoff_multiplier": 2.0,
+          "burst": 100,
+          "jitter": true,
+          "max_retries": 0,
+          "rate_limit_rps": null
+        },
+        "queue": {
+          "consumers": 8,
+          "enabled": false,
+          "enqueue_ms": 2.0,
+          "max_depth": 5000
+        },
+        "seed": 19,
+        "workload": {
+          "duration_s": 4,
+          "read_ratio": 0.95,
+          "rps": 180,
+          "timeout_ms": 1000.0,
+          "warmup_s": 1
+        }
+      },
+      "metrics": {
+        "p95_ms": 1000.0,
+        "p99_ms": 1000.0,
+        "served_rps": 119.0,
+        "success_rate": 0.6891891891891891
+      },
+      "tiers": {
+        "app": {
+          "mean_util": 0.10069444444444443,
+          "peak_queue": 0.0
+        },
+        "db_primary": {
+          "mean_util": 1.0,
+          "peak_queue": 162.5
+        }
+      }
+    }
+  },
+  {
+    "id": "r180-db1-cache1-s7",
+    "config": {
+      "name": "Custom design",
+      "app": {
+        "replicas": 3,
+        "workers": 8,
+        "latency_ms": 20.0,
+        "lb_strategy": "least_queue",
+        "max_queue": 200
+      },
+      "cache": {
+        "enabled": true,
+        "hit_rate": 0.85,
+        "latency_ms": 1.0,
+        "workers": 64
+      },
+      "cdn": {
+        "enabled": false,
+        "hit_rate": 0.6,
+        "latency_ms": 8.0
+      },
+      "queue": {
+        "enabled": false,
+        "consumers": 8,
+        "max_depth": 5000,
+        "enqueue_ms": 2.0
+      },
+      "db": {
+        "workers": 1,
+        "read_ms": 8.0,
+        "write_ms": 25.0,
+        "read_replicas": 0,
+        "max_queue": 500,
+        "shards": 1,
+        "hot_share": 0.0
+      },
+      "workload": {
+        "rps": 180,
+        "read_ratio": 0.95,
+        "duration_s": 4,
+        "timeout_ms": 1000.0,
+        "warmup_s": 1
+      },
+      "events": [],
+      "seed": 7,
+      "app_only": false,
+      "policy": {
+        "max_retries": 0,
+        "backoff_ms": 100.0,
+        "backoff_multiplier": 2.0,
+        "jitter": true,
+        "rate_limit_rps": null,
+        "burst": 100
+      }
+    },
+    "metrics": {
+      "served_rps": 178.33333333333334,
+      "p95_ms": 76.53501097847575,
+      "p99_ms": 112.1914153069187,
+      "success_rate": 1.0
+    },
+    "evidence": {
+      "configuration": {
+        "app": {
+          "latency_ms": 20.0,
+          "lb_strategy": null,
+          "max_queue": 200,
+          "replicas": 3,
+          "workers": 8
+        },
+        "app_only": false,
+        "cache": {
+          "enabled": true,
+          "hit_rate": 0.85,
+          "latency_ms": 1.0,
+          "workers": 64
+        },
+        "cdn": {
+          "enabled": false,
+          "hit_rate": 0.6,
+          "latency_ms": 8.0
+        },
+        "db": {
+          "hot_share": 0.0,
+          "max_queue": 500,
+          "read_ms": 8.0,
+          "read_replicas": 0,
+          "shards": 1,
+          "workers": 1,
+          "write_ms": 25.0
+        },
+        "events": [],
+        "policy": {
+          "backoff_ms": 100.0,
+          "backoff_multiplier": 2.0,
+          "burst": 100,
+          "jitter": true,
+          "max_retries": 0,
+          "rate_limit_rps": null
+        },
+        "queue": {
+          "consumers": 8,
+          "enabled": false,
+          "enqueue_ms": 2.0,
+          "max_depth": 5000
+        },
+        "seed": 7,
+        "workload": {
+          "duration_s": 4,
+          "read_ratio": 0.95,
+          "rps": 180,
+          "timeout_ms": 1000.0,
+          "warmup_s": 1
+        }
+      },
+      "metrics": {
+        "p95_ms": 76.53501097847575,
+        "p99_ms": 112.1914153069187,
+        "served_rps": 178.33333333333334,
+        "success_rate": 1.0
+      },
+      "tiers": {
+        "app": {
+          "mean_util": 0.11805555555555557,
+          "peak_queue": 0.0
+        },
+        "cache": {
+          "mean_util": 0.0013020833333333333,
+          "peak_queue": 0.0
+        },
+        "db_primary": {
+          "mean_util": 0.5,
+          "peak_queue": 0.75
+        }
+      }
+    }
+  },
+  {
+    "id": "r180-db1-cache1-s19",
+    "config": {
+      "name": "Custom design",
+      "app": {
+        "replicas": 3,
+        "workers": 8,
+        "latency_ms": 20.0,
+        "lb_strategy": "least_queue",
+        "max_queue": 200
+      },
+      "cache": {
+        "enabled": true,
+        "hit_rate": 0.85,
+        "latency_ms": 1.0,
+        "workers": 64
+      },
+      "cdn": {
+        "enabled": false,
+        "hit_rate": 0.6,
+        "latency_ms": 8.0
+      },
+      "queue": {
+        "enabled": false,
+        "consumers": 8,
+        "max_depth": 5000,
+        "enqueue_ms": 2.0
+      },
+      "db": {
+        "workers": 1,
+        "read_ms": 8.0,
+        "write_ms": 25.0,
+        "read_replicas": 0,
+        "max_queue": 500,
+        "shards": 1,
+        "hot_share": 0.0
+      },
+      "workload": {
+        "rps": 180,
+        "read_ratio": 0.95,
+        "duration_s": 4,
+        "timeout_ms": 1000.0,
+        "warmup_s": 1
+      },
+      "events": [],
+      "seed": 19,
+      "app_only": false,
+      "policy": {
+        "max_retries": 0,
+        "backoff_ms": 100.0,
+        "backoff_multiplier": 2.0,
+        "jitter": true,
+        "rate_limit_rps": null,
+        "burst": 100
+      }
+    },
+    "metrics": {
+      "served_rps": 174.66666666666666,
+      "p95_ms": 67.94886365945743,
+      "p99_ms": 111.6204229799617,
+      "success_rate": 1.0
+    },
+    "evidence": {
+      "configuration": {
+        "app": {
+          "latency_ms": 20.0,
+          "lb_strategy": null,
+          "max_queue": 200,
+          "replicas": 3,
+          "workers": 8
+        },
+        "app_only": false,
+        "cache": {
+          "enabled": true,
+          "hit_rate": 0.85,
+          "latency_ms": 1.0,
+          "workers": 64
+        },
+        "cdn": {
+          "enabled": false,
+          "hit_rate": 0.6,
+          "latency_ms": 8.0
+        },
+        "db": {
+          "hot_share": 0.0,
+          "max_queue": 500,
+          "read_ms": 8.0,
+          "read_replicas": 0,
+          "shards": 1,
+          "workers": 1,
+          "write_ms": 25.0
+        },
+        "events": [],
+        "policy": {
+          "backoff_ms": 100.0,
+          "backoff_multiplier": 2.0,
+          "burst": 100,
+          "jitter": true,
+          "max_retries": 0,
+          "rate_limit_rps": null
+        },
+        "queue": {
+          "consumers": 8,
+          "enabled": false,
+          "enqueue_ms": 2.0,
+          "max_depth": 5000
+        },
+        "seed": 19,
+        "workload": {
+          "duration_s": 4,
+          "read_ratio": 0.95,
+          "rps": 180,
+          "timeout_ms": 1000.0,
+          "warmup_s": 1
+        }
+      },
+      "metrics": {
+        "p95_ms": 67.94886365945743,
+        "p99_ms": 111.6204229799617,
+        "served_rps": 174.66666666666666,
+        "success_rate": 1.0
+      },
+      "tiers": {
+        "app": {
+          "mean_util": 0.125,
+          "peak_queue": 0.0
+        },
+        "cache": {
+          "mean_util": 0.0026041666666666665,
+          "peak_queue": 0.0
+        },
+        "db_primary": {
+          "mean_util": 0.5833333333333334,
+          "peak_queue": 0.25
+        }
+      }
+    }
+  },
+  {
+    "id": "r180-db4-cache0-s7",
+    "config": {
+      "name": "Custom design",
+      "app": {
+        "replicas": 3,
+        "workers": 8,
+        "latency_ms": 20.0,
+        "lb_strategy": "least_queue",
+        "max_queue": 200
+      },
+      "cache": {
+        "enabled": false,
+        "hit_rate": 0.85,
+        "latency_ms": 1.0,
+        "workers": 64
+      },
+      "cdn": {
+        "enabled": false,
+        "hit_rate": 0.6,
+        "latency_ms": 8.0
+      },
+      "queue": {
+        "enabled": false,
+        "consumers": 8,
+        "max_depth": 5000,
+        "enqueue_ms": 2.0
+      },
+      "db": {
+        "workers": 4,
+        "read_ms": 8.0,
+        "write_ms": 25.0,
+        "read_replicas": 0,
+        "max_queue": 500,
+        "shards": 1,
+        "hot_share": 0.0
+      },
+      "workload": {
+        "rps": 180,
+        "read_ratio": 0.95,
+        "duration_s": 4,
+        "timeout_ms": 1000.0,
+        "warmup_s": 1
+      },
+      "events": [],
+      "seed": 7,
+      "app_only": false,
+      "policy": {
+        "max_retries": 0,
+        "backoff_ms": 100.0,
+        "backoff_multiplier": 2.0,
+        "jitter": true,
+        "rate_limit_rps": null,
+        "burst": 100
+      }
+    },
+    "metrics": {
+      "served_rps": 183.0,
+      "p95_ms": 69.89666560869871,
+      "p99_ms": 122.62117275671744,
+      "success_rate": 1.0
+    },
+    "evidence": {
+      "configuration": {
+        "app": {
+          "latency_ms": 20.0,
+          "lb_strategy": null,
+          "max_queue": 200,
+          "replicas": 3,
+          "workers": 8
+        },
+        "app_only": false,
+        "cache": {
+          "enabled": false,
+          "hit_rate": 0.85,
+          "latency_ms": 1.0,
+          "workers": 64
+        },
+        "cdn": {
+          "enabled": false,
+          "hit_rate": 0.6,
+          "latency_ms": 8.0
+        },
+        "db": {
+          "hot_share": 0.0,
+          "max_queue": 500,
+          "read_ms": 8.0,
+          "read_replicas": 0,
+          "shards": 1,
+          "workers": 4,
+          "write_ms": 25.0
+        },
+        "events": [],
+        "policy": {
+          "backoff_ms": 100.0,
+          "backoff_multiplier": 2.0,
+          "burst": 100,
+          "jitter": true,
+          "max_retries": 0,
+          "rate_limit_rps": null
+        },
+        "queue": {
+          "consumers": 8,
+          "enabled": false,
+          "enqueue_ms": 2.0,
+          "max_depth": 5000
+        },
+        "seed": 7,
+        "workload": {
+          "duration_s": 4,
+          "read_ratio": 0.95,
+          "rps": 180,
+          "timeout_ms": 1000.0,
+          "warmup_s": 1
+        }
+      },
+      "metrics": {
+        "p95_ms": 69.89666560869871,
+        "p99_ms": 122.62117275671744,
+        "served_rps": 183.0,
+        "success_rate": 1.0
+      },
+      "tiers": {
+        "app": {
+          "mean_util": 0.17361111111111113,
+          "peak_queue": 0.0
+        },
+        "db_primary": {
+          "mean_util": 0.375,
+          "peak_queue": 0.0
+        }
+      }
+    }
+  },
+  {
+    "id": "r180-db4-cache0-s19",
+    "config": {
+      "name": "Custom design",
+      "app": {
+        "replicas": 3,
+        "workers": 8,
+        "latency_ms": 20.0,
+        "lb_strategy": "least_queue",
+        "max_queue": 200
+      },
+      "cache": {
+        "enabled": false,
+        "hit_rate": 0.85,
+        "latency_ms": 1.0,
+        "workers": 64
+      },
+      "cdn": {
+        "enabled": false,
+        "hit_rate": 0.6,
+        "latency_ms": 8.0
+      },
+      "queue": {
+        "enabled": false,
+        "consumers": 8,
+        "max_depth": 5000,
+        "enqueue_ms": 2.0
+      },
+      "db": {
+        "workers": 4,
+        "read_ms": 8.0,
+        "write_ms": 25.0,
+        "read_replicas": 0,
+        "max_queue": 500,
+        "shards": 1,
+        "hot_share": 0.0
+      },
+      "workload": {
+        "rps": 180,
+        "read_ratio": 0.95,
+        "duration_s": 4,
+        "timeout_ms": 1000.0,
+        "warmup_s": 1
+      },
+      "events": [],
+      "seed": 19,
+      "app_only": false,
+      "policy": {
+        "max_retries": 0,
+        "backoff_ms": 100.0,
+        "backoff_multiplier": 2.0,
+        "jitter": true,
+        "rate_limit_rps": null,
+        "burst": 100
+      }
+    },
+    "metrics": {
+      "served_rps": 180.0,
+      "p95_ms": 68.2743052517001,
+      "p99_ms": 93.77285579565755,
+      "success_rate": 1.0
+    },
+    "evidence": {
+      "configuration": {
+        "app": {
+          "latency_ms": 20.0,
+          "lb_strategy": null,
+          "max_queue": 200,
+          "replicas": 3,
+          "workers": 8
+        },
+        "app_only": false,
+        "cache": {
+          "enabled": false,
+          "hit_rate": 0.85,
+          "latency_ms": 1.0,
+          "workers": 64
+        },
+        "cdn": {
+          "enabled": false,
+          "hit_rate": 0.6,
+          "latency_ms": 8.0
+        },
+        "db": {
+          "hot_share": 0.0,
+          "max_queue": 500,
+          "read_ms": 8.0,
+          "read_replicas": 0,
+          "shards": 1,
+          "workers": 4,
+          "write_ms": 25.0
+        },
+        "events": [],
+        "policy": {
+          "backoff_ms": 100.0,
+          "backoff_multiplier": 2.0,
+          "burst": 100,
+          "jitter": true,
+          "max_retries": 0,
+          "rate_limit_rps": null
+        },
+        "queue": {
+          "consumers": 8,
+          "enabled": false,
+          "enqueue_ms": 2.0,
+          "max_depth": 5000
+        },
+        "seed": 19,
+        "workload": {
+          "duration_s": 4,
+          "read_ratio": 0.95,
+          "rps": 180,
+          "timeout_ms": 1000.0,
+          "warmup_s": 1
+        }
+      },
+      "metrics": {
+        "p95_ms": 68.2743052517001,
+        "p99_ms": 93.77285579565755,
+        "served_rps": 180.0,
+        "success_rate": 1.0
+      },
+      "tiers": {
+        "app": {
+          "mean_util": 0.13888888888888887,
+          "peak_queue": 0.0
+        },
+        "db_primary": {
+          "mean_util": 0.3125,
+          "peak_queue": 0.0
+        }
+      }
+    }
+  },
+  {
+    "id": "r180-db4-cache1-s7",
+    "config": {
+      "name": "Custom design",
+      "app": {
+        "replicas": 3,
+        "workers": 8,
+        "latency_ms": 20.0,
+        "lb_strategy": "least_queue",
+        "max_queue": 200
+      },
+      "cache": {
+        "enabled": true,
+        "hit_rate": 0.85,
+        "latency_ms": 1.0,
+        "workers": 64
+      },
+      "cdn": {
+        "enabled": false,
+        "hit_rate": 0.6,
+        "latency_ms": 8.0
+      },
+      "queue": {
+        "enabled": false,
+        "consumers": 8,
+        "max_depth": 5000,
+        "enqueue_ms": 2.0
+      },
+      "db": {
+        "workers": 4,
+        "read_ms": 8.0,
+        "write_ms": 25.0,
+        "read_replicas": 0,
+        "max_queue": 500,
+        "shards": 1,
+        "hot_share": 0.0
+      },
+      "workload": {
+        "rps": 180,
+        "read_ratio": 0.95,
+        "duration_s": 4,
+        "timeout_ms": 1000.0,
+        "warmup_s": 1
+      },
+      "events": [],
+      "seed": 7,
+      "app_only": false,
+      "policy": {
+        "max_retries": 0,
+        "backoff_ms": 100.0,
+        "backoff_multiplier": 2.0,
+        "jitter": true,
+        "rate_limit_rps": null,
+        "burst": 100
+      }
+    },
+    "metrics": {
+      "served_rps": 185.66666666666666,
+      "p95_ms": 68.56851486908191,
+      "p99_ms": 106.51634199328159,
+      "success_rate": 1.0
+    },
+    "evidence": {
+      "configuration": {
+        "app": {
+          "latency_ms": 20.0,
+          "lb_strategy": null,
+          "max_queue": 200,
+          "replicas": 3,
+          "workers": 8
+        },
+        "app_only": false,
+        "cache": {
+          "enabled": true,
+          "hit_rate": 0.85,
+          "latency_ms": 1.0,
+          "workers": 64
+        },
+        "cdn": {
+          "enabled": false,
+          "hit_rate": 0.6,
+          "latency_ms": 8.0
+        },
+        "db": {
+          "hot_share": 0.0,
+          "max_queue": 500,
+          "read_ms": 8.0,
+          "read_replicas": 0,
+          "shards": 1,
+          "workers": 4,
+          "write_ms": 25.0
+        },
+        "events": [],
+        "policy": {
+          "backoff_ms": 100.0,
+          "backoff_multiplier": 2.0,
+          "burst": 100,
+          "jitter": true,
+          "max_retries": 0,
+          "rate_limit_rps": null
+        },
+        "queue": {
+          "consumers": 8,
+          "enabled": false,
+          "enqueue_ms": 2.0,
+          "max_depth": 5000
+        },
+        "seed": 7,
+        "workload": {
+          "duration_s": 4,
+          "read_ratio": 0.95,
+          "rps": 180,
+          "timeout_ms": 1000.0,
+          "warmup_s": 1
+        }
+      },
+      "metrics": {
+        "p95_ms": 68.56851486908191,
+        "p99_ms": 106.51634199328159,
+        "served_rps": 185.66666666666666,
+        "success_rate": 1.0
+      },
+      "tiers": {
+        "app": {
+          "mean_util": 0.14236111111111113,
+          "peak_queue": 0.0
+        },
+        "cache": {
+          "mean_util": 0.0013020833333333333,
+          "peak_queue": 0.0
+        },
+        "db_primary": {
+          "mean_util": 0.125,
+          "peak_queue": 0.0
+        }
+      }
+    }
+  },
+  {
+    "id": "r180-db4-cache1-s19",
+    "config": {
+      "name": "Custom design",
+      "app": {
+        "replicas": 3,
+        "workers": 8,
+        "latency_ms": 20.0,
+        "lb_strategy": "least_queue",
+        "max_queue": 200
+      },
+      "cache": {
+        "enabled": true,
+        "hit_rate": 0.85,
+        "latency_ms": 1.0,
+        "workers": 64
+      },
+      "cdn": {
+        "enabled": false,
+        "hit_rate": 0.6,
+        "latency_ms": 8.0
+      },
+      "queue": {
+        "enabled": false,
+        "consumers": 8,
+        "max_depth": 5000,
+        "enqueue_ms": 2.0
+      },
+      "db": {
+        "workers": 4,
+        "read_ms": 8.0,
+        "write_ms": 25.0,
+        "read_replicas": 0,
+        "max_queue": 500,
+        "shards": 1,
+        "hot_share": 0.0
+      },
+      "workload": {
+        "rps": 180,
+        "read_ratio": 0.95,
+        "duration_s": 4,
+        "timeout_ms": 1000.0,
+        "warmup_s": 1
+      },
+      "events": [],
+      "seed": 19,
+      "app_only": false,
+      "policy": {
+        "max_retries": 0,
+        "backoff_ms": 100.0,
+        "backoff_multiplier": 2.0,
+        "jitter": true,
+        "rate_limit_rps": null,
+        "burst": 100
+      }
+    },
+    "metrics": {
+      "served_rps": 177.66666666666666,
+      "p95_ms": 70.8255676848502,
+      "p99_ms": 126.07178541027223,
+      "success_rate": 1.0
+    },
+    "evidence": {
+      "configuration": {
+        "app": {
+          "latency_ms": 20.0,
+          "lb_strategy": null,
+          "max_queue": 200,
+          "replicas": 3,
+          "workers": 8
+        },
+        "app_only": false,
+        "cache": {
+          "enabled": true,
+          "hit_rate": 0.85,
+          "latency_ms": 1.0,
+          "workers": 64
+        },
+        "cdn": {
+          "enabled": false,
+          "hit_rate": 0.6,
+          "latency_ms": 8.0
+        },
+        "db": {
+          "hot_share": 0.0,
+          "max_queue": 500,
+          "read_ms": 8.0,
+          "read_replicas": 0,
+          "shards": 1,
+          "workers": 4,
+          "write_ms": 25.0
+        },
+        "events": [],
+        "policy": {
+          "backoff_ms": 100.0,
+          "backoff_multiplier": 2.0,
+          "burst": 100,
+          "jitter": true,
+          "max_retries": 0,
+          "rate_limit_rps": null
+        },
+        "queue": {
+          "consumers": 8,
+          "enabled": false,
+          "enqueue_ms": 2.0,
+          "max_depth": 5000
+        },
+        "seed": 19,
+        "workload": {
+          "duration_s": 4,
+          "read_ratio": 0.95,
+          "rps": 180,
+          "timeout_ms": 1000.0,
+          "warmup_s": 1
+        }
+      },
+      "metrics": {
+        "p95_ms": 70.8255676848502,
+        "p99_ms": 126.07178541027223,
+        "served_rps": 177.66666666666666,
+        "success_rate": 1.0
+      },
+      "tiers": {
+        "app": {
+          "mean_util": 0.14236111111111108,
+          "peak_queue": 0.0
+        },
+        "cache": {
+          "mean_util": 0.0026041666666666665,
+          "peak_queue": 0.0
+        },
+        "db_primary": {
+          "mean_util": 0.16666666666666666,
+          "peak_queue": 0.0
+        }
+      }
+    }
+  },
+  {
+    "id": "r180-db16-cache0-s7",
+    "config": {
+      "name": "Custom design",
+      "app": {
+        "replicas": 3,
+        "workers": 8,
+        "latency_ms": 20.0,
+        "lb_strategy": "least_queue",
+        "max_queue": 200
+      },
+      "cache": {
+        "enabled": false,
+        "hit_rate": 0.85,
+        "latency_ms": 1.0,
+        "workers": 64
+      },
+      "cdn": {
+        "enabled": false,
+        "hit_rate": 0.6,
+        "latency_ms": 8.0
+      },
+      "queue": {
+        "enabled": false,
+        "consumers": 8,
+        "max_depth": 5000,
+        "enqueue_ms": 2.0
+      },
+      "db": {
+        "workers": 16,
+        "read_ms": 8.0,
+        "write_ms": 25.0,
+        "read_replicas": 0,
+        "max_queue": 500,
+        "shards": 1,
+        "hot_share": 0.0
+      },
+      "workload": {
+        "rps": 180,
+        "read_ratio": 0.95,
+        "duration_s": 4,
+        "timeout_ms": 1000.0,
+        "warmup_s": 1
+      },
+      "events": [],
+      "seed": 7,
+      "app_only": false,
+      "policy": {
+        "max_retries": 0,
+        "backoff_ms": 100.0,
+        "backoff_multiplier": 2.0,
+        "jitter": true,
+        "rate_limit_rps": null,
+        "burst": 100
+      }
+    },
+    "metrics": {
+      "served_rps": 178.0,
+      "p95_ms": 69.35220489475043,
+      "p99_ms": 115.70858267186584,
+      "success_rate": 1.0
+    },
+    "evidence": {
+      "configuration": {
+        "app": {
+          "latency_ms": 20.0,
+          "lb_strategy": null,
+          "max_queue": 200,
+          "replicas": 3,
+          "workers": 8
+        },
+        "app_only": false,
+        "cache": {
+          "enabled": false,
+          "hit_rate": 0.85,
+          "latency_ms": 1.0,
+          "workers": 64
+        },
+        "cdn": {
+          "enabled": false,
+          "hit_rate": 0.6,
+          "latency_ms": 8.0
+        },
+        "db": {
+          "hot_share": 0.0,
+          "max_queue": 500,
+          "read_ms": 8.0,
+          "read_replicas": 0,
+          "shards": 1,
+          "workers": 16,
+          "write_ms": 25.0
+        },
+        "events": [],
+        "policy": {
+          "backoff_ms": 100.0,
+          "backoff_multiplier": 2.0,
+          "burst": 100,
+          "jitter": true,
+          "max_retries": 0,
+          "rate_limit_rps": null
+        },
+        "queue": {
+          "consumers": 8,
+          "enabled": false,
+          "enqueue_ms": 2.0,
+          "max_depth": 5000
+        },
+        "seed": 7,
+        "workload": {
+          "duration_s": 4,
+          "read_ratio": 0.95,
+          "rps": 180,
+          "timeout_ms": 1000.0,
+          "warmup_s": 1
+        }
+      },
+      "metrics": {
+        "p95_ms": 69.35220489475043,
+        "p99_ms": 115.70858267186584,
+        "served_rps": 178.0,
+        "success_rate": 1.0
+      },
+      "tiers": {
+        "app": {
+          "mean_util": 0.11805555555555554,
+          "peak_queue": 0.0
+        },
+        "db_primary": {
+          "mean_util": 0.13020833333333334,
+          "peak_queue": 0.0
+        }
+      }
+    }
+  },
+  {
+    "id": "r180-db16-cache0-s19",
+    "config": {
+      "name": "Custom design",
+      "app": {
+        "replicas": 3,
+        "workers": 8,
+        "latency_ms": 20.0,
+        "lb_strategy": "least_queue",
+        "max_queue": 200
+      },
+      "cache": {
+        "enabled": false,
+        "hit_rate": 0.85,
+        "latency_ms": 1.0,
+        "workers": 64
+      },
+      "cdn": {
+        "enabled": false,
+        "hit_rate": 0.6,
+        "latency_ms": 8.0
+      },
+      "queue": {
+        "enabled": false,
+        "consumers": 8,
+        "max_depth": 5000,
+        "enqueue_ms": 2.0
+      },
+      "db": {
+        "workers": 16,
+        "read_ms": 8.0,
+        "write_ms": 25.0,
+        "read_replicas": 0,
+        "max_queue": 500,
+        "shards": 1,
+        "hot_share": 0.0
+      },
+      "workload": {
+        "rps": 180,
+        "read_ratio": 0.95,
+        "duration_s": 4,
+        "timeout_ms": 1000.0,
+        "warmup_s": 1
+      },
+      "events": [],
+      "seed": 19,
+      "app_only": false,
+      "policy": {
+        "max_retries": 0,
+        "backoff_ms": 100.0,
+        "backoff_multiplier": 2.0,
+        "jitter": true,
+        "rate_limit_rps": null,
+        "burst": 100
+      }
+    },
+    "metrics": {
+      "served_rps": 197.33333333333334,
+      "p95_ms": 74.10773758043003,
+      "p99_ms": 99.65343652559208,
+      "success_rate": 1.0
+    },
+    "evidence": {
+      "configuration": {
+        "app": {
+          "latency_ms": 20.0,
+          "lb_strategy": null,
+          "max_queue": 200,
+          "replicas": 3,
+          "workers": 8
+        },
+        "app_only": false,
+        "cache": {
+          "enabled": false,
+          "hit_rate": 0.85,
+          "latency_ms": 1.0,
+          "workers": 64
+        },
+        "cdn": {
+          "enabled": false,
+          "hit_rate": 0.6,
+          "latency_ms": 8.0
+        },
+        "db": {
+          "hot_share": 0.0,
+          "max_queue": 500,
+          "read_ms": 8.0,
+          "read_replicas": 0,
+          "shards": 1,
+          "workers": 16,
+          "write_ms": 25.0
+        },
+        "events": [],
+        "policy": {
+          "backoff_ms": 100.0,
+          "backoff_multiplier": 2.0,
+          "burst": 100,
+          "jitter": true,
+          "max_retries": 0,
+          "rate_limit_rps": null
+        },
+        "queue": {
+          "consumers": 8,
+          "enabled": false,
+          "enqueue_ms": 2.0,
+          "max_depth": 5000
+        },
+        "seed": 19,
+        "workload": {
+          "duration_s": 4,
+          "read_ratio": 0.95,
+          "rps": 180,
+          "timeout_ms": 1000.0,
+          "warmup_s": 1
+        }
+      },
+      "metrics": {
+        "p95_ms": 74.10773758043003,
+        "p99_ms": 99.65343652559208,
+        "served_rps": 197.33333333333334,
+        "success_rate": 1.0
+      },
+      "tiers": {
+        "app": {
+          "mean_util": 0.14236111111111113,
+          "peak_queue": 0.0
+        },
+        "db_primary": {
+          "mean_util": 0.171875,
+          "peak_queue": 0.0
+        }
+      }
+    }
+  },
+  {
+    "id": "r180-db16-cache1-s7",
+    "config": {
+      "name": "Custom design",
+      "app": {
+        "replicas": 3,
+        "workers": 8,
+        "latency_ms": 20.0,
+        "lb_strategy": "least_queue",
+        "max_queue": 200
+      },
+      "cache": {
+        "enabled": true,
+        "hit_rate": 0.85,
+        "latency_ms": 1.0,
+        "workers": 64
+      },
+      "cdn": {
+        "enabled": false,
+        "hit_rate": 0.6,
+        "latency_ms": 8.0
+      },
+      "queue": {
+        "enabled": false,
+        "consumers": 8,
+        "max_depth": 5000,
+        "enqueue_ms": 2.0
+      },
+      "db": {
+        "workers": 16,
+        "read_ms": 8.0,
+        "write_ms": 25.0,
+        "read_replicas": 0,
+        "max_queue": 500,
+        "shards": 1,
+        "hot_share": 0.0
+      },
+      "workload": {
+        "rps": 180,
+        "read_ratio": 0.95,
+        "duration_s": 4,
+        "timeout_ms": 1000.0,
+        "warmup_s": 1
+      },
+      "events": [],
+      "seed": 7,
+      "app_only": false,
+      "policy": {
+        "max_retries": 0,
+        "backoff_ms": 100.0,
+        "backoff_multiplier": 2.0,
+        "jitter": true,
+        "rate_limit_rps": null,
+        "burst": 100
+      }
+    },
+    "metrics": {
+      "served_rps": 185.66666666666666,
+      "p95_ms": 68.56851486908191,
+      "p99_ms": 106.51634199328159,
+      "success_rate": 1.0
+    },
+    "evidence": {
+      "configuration": {
+        "app": {
+          "latency_ms": 20.0,
+          "lb_strategy": null,
+          "max_queue": 200,
+          "replicas": 3,
+          "workers": 8
+        },
+        "app_only": false,
+        "cache": {
+          "enabled": true,
+          "hit_rate": 0.85,
+          "latency_ms": 1.0,
+          "workers": 64
+        },
+        "cdn": {
+          "enabled": false,
+          "hit_rate": 0.6,
+          "latency_ms": 8.0
+        },
+        "db": {
+          "hot_share": 0.0,
+          "max_queue": 500,
+          "read_ms": 8.0,
+          "read_replicas": 0,
+          "shards": 1,
+          "workers": 16,
+          "write_ms": 25.0
+        },
+        "events": [],
+        "policy": {
+          "backoff_ms": 100.0,
+          "backoff_multiplier": 2.0,
+          "burst": 100,
+          "jitter": true,
+          "max_retries": 0,
+          "rate_limit_rps": null
+        },
+        "queue": {
+          "consumers": 8,
+          "enabled": false,
+          "enqueue_ms": 2.0,
+          "max_depth": 5000
+        },
+        "seed": 7,
+        "workload": {
+          "duration_s": 4,
+          "read_ratio": 0.95,
+          "rps": 180,
+          "timeout_ms": 1000.0,
+          "warmup_s": 1
+        }
+      },
+      "metrics": {
+        "p95_ms": 68.56851486908191,
+        "p99_ms": 106.51634199328159,
+        "served_rps": 185.66666666666666,
+        "success_rate": 1.0
+      },
+      "tiers": {
+        "app": {
+          "mean_util": 0.14236111111111113,
+          "peak_queue": 0.0
+        },
+        "cache": {
+          "mean_util": 0.0013020833333333333,
+          "peak_queue": 0.0
+        },
+        "db_primary": {
+          "mean_util": 0.03125,
+          "peak_queue": 0.0
+        }
+      }
+    }
+  },
+  {
+    "id": "r180-db16-cache1-s19",
+    "config": {
+      "name": "Custom design",
+      "app": {
+        "replicas": 3,
+        "workers": 8,
+        "latency_ms": 20.0,
+        "lb_strategy": "least_queue",
+        "max_queue": 200
+      },
+      "cache": {
+        "enabled": true,
+        "hit_rate": 0.85,
+        "latency_ms": 1.0,
+        "workers": 64
+      },
+      "cdn": {
+        "enabled": false,
+        "hit_rate": 0.6,
+        "latency_ms": 8.0
+      },
+      "queue": {
+        "enabled": false,
+        "consumers": 8,
+        "max_depth": 5000,
+        "enqueue_ms": 2.0
+      },
+      "db": {
+        "workers": 16,
+        "read_ms": 8.0,
+        "write_ms": 25.0,
+        "read_replicas": 0,
+        "max_queue": 500,
+        "shards": 1,
+        "hot_share": 0.0
+      },
+      "workload": {
+        "rps": 180,
+        "read_ratio": 0.95,
+        "duration_s": 4,
+        "timeout_ms": 1000.0,
+        "warmup_s": 1
+      },
+      "events": [],
+      "seed": 19,
+      "app_only": false,
+      "policy": {
+        "max_retries": 0,
+        "backoff_ms": 100.0,
+        "backoff_multiplier": 2.0,
+        "jitter": true,
+        "rate_limit_rps": null,
+        "burst": 100
+      }
+    },
+    "metrics": {
+      "served_rps": 174.33333333333334,
+      "p95_ms": 68.01187761405491,
+      "p99_ms": 116.94331335785716,
+      "success_rate": 1.0
+    },
+    "evidence": {
+      "configuration": {
+        "app": {
+          "latency_ms": 20.0,
+          "lb_strategy": null,
+          "max_queue": 200,
+          "replicas": 3,
+          "workers": 8
+        },
+        "app_only": false,
+        "cache": {
+          "enabled": true,
+          "hit_rate": 0.85,
+          "latency_ms": 1.0,
+          "workers": 64
+        },
+        "cdn": {
+          "enabled": false,
+          "hit_rate": 0.6,
+          "latency_ms": 8.0
+        },
+        "db": {
+          "hot_share": 0.0,
+          "max_queue": 500,
+          "read_ms": 8.0,
+          "read_replicas": 0,
+          "shards": 1,
+          "workers": 16,
+          "write_ms": 25.0
+        },
+        "events": [],
+        "policy": {
+          "backoff_ms": 100.0,
+          "backoff_multiplier": 2.0,
+          "burst": 100,
+          "jitter": true,
+          "max_retries": 0,
+          "rate_limit_rps": null
+        },
+        "queue": {
+          "consumers": 8,
+          "enabled": false,
+          "enqueue_ms": 2.0,
+          "max_depth": 5000
+        },
+        "seed": 19,
+        "workload": {
+          "duration_s": 4,
+          "read_ratio": 0.95,
+          "rps": 180,
+          "timeout_ms": 1000.0,
+          "warmup_s": 1
+        }
+      },
+      "metrics": {
+        "p95_ms": 68.01187761405491,
+        "p99_ms": 116.94331335785716,
+        "served_rps": 174.33333333333334,
+        "success_rate": 1.0
+      },
+      "tiers": {
+        "app": {
+          "mean_util": 0.13888888888888887,
+          "peak_queue": 0.0
+        },
+        "cache": {
+          "mean_util": 0.0026041666666666665,
+          "peak_queue": 0.0
+        },
+        "db_primary": {
+          "mean_util": 0.036458333333333336,
+          "peak_queue": 0.0
+        }
+      }
+    }
+  },
+  {
+    "id": "r540-db1-cache0-s7",
+    "config": {
+      "name": "Custom design",
+      "app": {
+        "replicas": 3,
+        "workers": 8,
+        "latency_ms": 20.0,
+        "lb_strategy": "least_queue",
+        "max_queue": 200
+      },
+      "cache": {
+        "enabled": false,
+        "hit_rate": 0.85,
+        "latency_ms": 1.0,
+        "workers": 64
+      },
+      "cdn": {
+        "enabled": false,
+        "hit_rate": 0.6,
+        "latency_ms": 8.0
+      },
+      "queue": {
+        "enabled": false,
+        "consumers": 8,
+        "max_depth": 5000,
+        "enqueue_ms": 2.0
+      },
+      "db": {
+        "workers": 1,
+        "read_ms": 8.0,
+        "write_ms": 25.0,
+        "read_replicas": 0,
+        "max_queue": 500,
+        "shards": 1,
+        "hot_share": 0.0
+      },
+      "workload": {
+        "rps": 540,
+        "read_ratio": 0.95,
+        "duration_s": 4,
+        "timeout_ms": 1000.0,
+        "warmup_s": 1
+      },
+      "events": [],
+      "seed": 7,
+      "app_only": false,
+      "policy": {
+        "max_retries": 0,
+        "backoff_ms": 100.0,
+        "backoff_multiplier": 2.0,
+        "jitter": true,
+        "rate_limit_rps": null,
+        "burst": 100
+      }
+    },
+    "metrics": {
+      "served_rps": 73.0,
+      "p95_ms": 1000.0,
+      "p99_ms": 1000.0,
+      "success_rate": 0.132486388384755
+    },
+    "evidence": {
+      "configuration": {
+        "app": {
+          "latency_ms": 20.0,
+          "lb_strategy": null,
+          "max_queue": 200,
+          "replicas": 3,
+          "workers": 8
+        },
+        "app_only": false,
+        "cache": {
+          "enabled": false,
+          "hit_rate": 0.85,
+          "latency_ms": 1.0,
+          "workers": 64
+        },
+        "cdn": {
+          "enabled": false,
+          "hit_rate": 0.6,
+          "latency_ms": 8.0
+        },
+        "db": {
+          "hot_share": 0.0,
+          "max_queue": 500,
+          "read_ms": 8.0,
+          "read_replicas": 0,
+          "shards": 1,
+          "workers": 1,
+          "write_ms": 25.0
+        },
+        "events": [],
+        "policy": {
+          "backoff_ms": 100.0,
+          "backoff_multiplier": 2.0,
+          "burst": 100,
+          "jitter": true,
+          "max_retries": 0,
+          "rate_limit_rps": null
+        },
+        "queue": {
+          "consumers": 8,
+          "enabled": false,
+          "enqueue_ms": 2.0,
+          "max_depth": 5000
+        },
+        "seed": 7,
+        "workload": {
+          "duration_s": 4,
+          "read_ratio": 0.95,
+          "rps": 540,
+          "timeout_ms": 1000.0,
+          "warmup_s": 1
+        }
+      },
+      "metrics": {
+        "p95_ms": 1000.0,
+        "p99_ms": 1000.0,
+        "served_rps": 73.0,
+        "success_rate": 0.132486388384755
+      },
+      "tiers": {
+        "app": {
+          "mean_util": 0.5347222222222222,
+          "peak_queue": 0.0
+        },
+        "db_primary": {
+          "mean_util": 1.0,
+          "peak_queue": 489.75
+        }
+      }
+    }
+  },
+  {
+    "id": "r540-db1-cache0-s19",
+    "config": {
+      "name": "Custom design",
+      "app": {
+        "replicas": 3,
+        "workers": 8,
+        "latency_ms": 20.0,
+        "lb_strategy": "least_queue",
+        "max_queue": 200
+      },
+      "cache": {
+        "enabled": false,
+        "hit_rate": 0.85,
+        "latency_ms": 1.0,
+        "workers": 64
+      },
+      "cdn": {
+        "enabled": false,
+        "hit_rate": 0.6,
+        "latency_ms": 8.0
+      },
+      "queue": {
+        "enabled": false,
+        "consumers": 8,
+        "max_depth": 5000,
+        "enqueue_ms": 2.0
+      },
+      "db": {
+        "workers": 1,
+        "read_ms": 8.0,
+        "write_ms": 25.0,
+        "read_replicas": 0,
+        "max_queue": 500,
+        "shards": 1,
+        "hot_share": 0.0
+      },
+      "workload": {
+        "rps": 540,
+        "read_ratio": 0.95,
+        "duration_s": 4,
+        "timeout_ms": 1000.0,
+        "warmup_s": 1
+      },
+      "events": [],
+      "seed": 19,
+      "app_only": false,
+      "policy": {
+        "max_retries": 0,
+        "backoff_ms": 100.0,
+        "backoff_multiplier": 2.0,
+        "jitter": true,
+        "rate_limit_rps": null,
+        "burst": 100
+      }
+    },
+    "metrics": {
+      "served_rps": 72.33333333333333,
+      "p95_ms": 1000.0,
+      "p99_ms": 1000.0,
+      "success_rate": 0.1399097356544165
+    },
+    "evidence": {
+      "configuration": {
+        "app": {
+          "latency_ms": 20.0,
+          "lb_strategy": null,
+          "max_queue": 200,
+          "replicas": 3,
+          "workers": 8
+        },
+        "app_only": false,
+        "cache": {
+          "enabled": false,
+          "hit_rate": 0.85,
+          "latency_ms": 1.0,
+          "workers": 64
+        },
+        "cdn": {
+          "enabled": false,
+          "hit_rate": 0.6,
+          "latency_ms": 8.0
+        },
+        "db": {
+          "hot_share": 0.0,
+          "max_queue": 500,
+          "read_ms": 8.0,
+          "read_replicas": 0,
+          "shards": 1,
+          "workers": 1,
+          "write_ms": 25.0
+        },
+        "events": [],
+        "policy": {
+          "backoff_ms": 100.0,
+          "backoff_multiplier": 2.0,
+          "burst": 100,
+          "jitter": true,
+          "max_retries": 0,
+          "rate_limit_rps": null
+        },
+        "queue": {
+          "consumers": 8,
+          "enabled": false,
+          "enqueue_ms": 2.0,
+          "max_depth": 5000
+        },
+        "seed": 19,
+        "workload": {
+          "duration_s": 4,
+          "read_ratio": 0.95,
+          "rps": 540,
+          "timeout_ms": 1000.0,
+          "warmup_s": 1
+        }
+      },
+      "metrics": {
+        "p95_ms": 1000.0,
+        "p99_ms": 1000.0,
+        "served_rps": 72.33333333333333,
+        "success_rate": 0.1399097356544165
+      },
+      "tiers": {
+        "app": {
+          "mean_util": 0.46875,
+          "peak_queue": 0.0
+        },
+        "db_primary": {
+          "mean_util": 1.0,
+          "peak_queue": 482.25
+        }
+      }
+    }
+  },
+  {
+    "id": "r540-db1-cache1-s7",
+    "config": {
+      "name": "Custom design",
+      "app": {
+        "replicas": 3,
+        "workers": 8,
+        "latency_ms": 20.0,
+        "lb_strategy": "least_queue",
+        "max_queue": 200
+      },
+      "cache": {
+        "enabled": true,
+        "hit_rate": 0.85,
+        "latency_ms": 1.0,
+        "workers": 64
+      },
+      "cdn": {
+        "enabled": false,
+        "hit_rate": 0.6,
+        "latency_ms": 8.0
+      },
+      "queue": {
+        "enabled": false,
+        "consumers": 8,
+        "max_depth": 5000,
+        "enqueue_ms": 2.0
+      },
+      "db": {
+        "workers": 1,
+        "read_ms": 8.0,
+        "write_ms": 25.0,
+        "read_replicas": 0,
+        "max_queue": 500,
+        "shards": 1,
+        "hot_share": 0.0
+      },
+      "workload": {
+        "rps": 540,
+        "read_ratio": 0.95,
+        "duration_s": 4,
+        "timeout_ms": 1000.0,
+        "warmup_s": 1
+      },
+      "events": [],
+      "seed": 7,
+      "app_only": false,
+      "policy": {
+        "max_retries": 0,
+        "backoff_ms": 100.0,
+        "backoff_multiplier": 2.0,
+        "jitter": true,
+        "rate_limit_rps": null,
+        "burst": 100
+      }
+    },
+    "metrics": {
+      "served_rps": 500.0,
+      "p95_ms": 998.3815599042958,
+      "p99_ms": 1000.0,
+      "success_rate": 0.9505703422053232
+    },
+    "evidence": {
+      "configuration": {
+        "app": {
+          "latency_ms": 20.0,
+          "lb_strategy": null,
+          "max_queue": 200,
+          "replicas": 3,
+          "workers": 8
+        },
+        "app_only": false,
+        "cache": {
+          "enabled": true,
+          "hit_rate": 0.85,
+          "latency_ms": 1.0,
+          "workers": 64
+        },
+        "cdn": {
+          "enabled": false,
+          "hit_rate": 0.6,
+          "latency_ms": 8.0
+        },
+        "db": {
+          "hot_share": 0.0,
+          "max_queue": 500,
+          "read_ms": 8.0,
+          "read_replicas": 0,
+          "shards": 1,
+          "workers": 1,
+          "write_ms": 25.0
+        },
+        "events": [],
+        "policy": {
+          "backoff_ms": 100.0,
+          "backoff_multiplier": 2.0,
+          "burst": 100,
+          "jitter": true,
+          "max_retries": 0,
+          "rate_limit_rps": null
+        },
+        "queue": {
+          "consumers": 8,
+          "enabled": false,
+          "enqueue_ms": 2.0,
+          "max_depth": 5000
+        },
+        "seed": 7,
+        "workload": {
+          "duration_s": 4,
+          "read_ratio": 0.95,
+          "rps": 540,
+          "timeout_ms": 1000.0,
+          "warmup_s": 1
+        }
+      },
+      "metrics": {
+        "p95_ms": 998.3815599042958,
+        "p99_ms": 1000.0,
+        "served_rps": 500.0,
+        "success_rate": 0.9505703422053232
+      },
+      "tiers": {
+        "app": {
+          "mean_util": 0.4618055555555556,
+          "peak_queue": 0.0
+        },
+        "cache": {
+          "mean_util": 0.0013020833333333333,
+          "peak_queue": 0.0
+        },
+        "db_primary": {
+          "mean_util": 1.0,
+          "peak_queue": 96.75
+        }
+      }
+    }
+  },
+  {
+    "id": "r540-db1-cache1-s19",
+    "config": {
+      "name": "Custom design",
+      "app": {
+        "replicas": 3,
+        "workers": 8,
+        "latency_ms": 20.0,
+        "lb_strategy": "least_queue",
+        "max_queue": 200
+      },
+      "cache": {
+        "enabled": true,
+        "hit_rate": 0.85,
+        "latency_ms": 1.0,
+        "workers": 64
+      },
+      "cdn": {
+        "enabled": false,
+        "hit_rate": 0.6,
+        "latency_ms": 8.0
+      },
+      "queue": {
+        "enabled": false,
+        "consumers": 8,
+        "max_depth": 5000,
+        "enqueue_ms": 2.0
+      },
+      "db": {
+        "workers": 1,
+        "read_ms": 8.0,
+        "write_ms": 25.0,
+        "read_replicas": 0,
+        "max_queue": 500,
+        "shards": 1,
+        "hot_share": 0.0
+      },
+      "workload": {
+        "rps": 540,
+        "read_ratio": 0.95,
+        "duration_s": 4,
+        "timeout_ms": 1000.0,
+        "warmup_s": 1
+      },
+      "events": [],
+      "seed": 19,
+      "app_only": false,
+      "policy": {
+        "max_retries": 0,
+        "backoff_ms": 100.0,
+        "backoff_multiplier": 2.0,
+        "jitter": true,
+        "rate_limit_rps": null,
+        "burst": 100
+      }
+    },
+    "metrics": {
+      "served_rps": 542.3333333333334,
+      "p95_ms": 860.9124214106632,
+      "p99_ms": 937.1709911239001,
+      "success_rate": 0.9993857493857494
+    },
+    "evidence": {
+      "configuration": {
+        "app": {
+          "latency_ms": 20.0,
+          "lb_strategy": null,
+          "max_queue": 200,
+          "replicas": 3,
+          "workers": 8
+        },
+        "app_only": false,
+        "cache": {
+          "enabled": true,
+          "hit_rate": 0.85,
+          "latency_ms": 1.0,
+          "workers": 64
+        },
+        "cdn": {
+          "enabled": false,
+          "hit_rate": 0.6,
+          "latency_ms": 8.0
+        },
+        "db": {
+          "hot_share": 0.0,
+          "max_queue": 500,
+          "read_ms": 8.0,
+          "read_replicas": 0,
+          "shards": 1,
+          "workers": 1,
+          "write_ms": 25.0
+        },
+        "events": [],
+        "policy": {
+          "backoff_ms": 100.0,
+          "backoff_multiplier": 2.0,
+          "burst": 100,
+          "jitter": true,
+          "max_retries": 0,
+          "rate_limit_rps": null
+        },
+        "queue": {
+          "consumers": 8,
+          "enabled": false,
+          "enqueue_ms": 2.0,
+          "max_depth": 5000
+        },
+        "seed": 19,
+        "workload": {
+          "duration_s": 4,
+          "read_ratio": 0.95,
+          "rps": 540,
+          "timeout_ms": 1000.0,
+          "warmup_s": 1
+        }
+      },
+      "metrics": {
+        "p95_ms": 860.9124214106632,
+        "p99_ms": 937.1709911239001,
+        "served_rps": 542.3333333333334,
+        "success_rate": 0.9993857493857494
+      },
+      "tiers": {
+        "app": {
+          "mean_util": 0.5138888888888888,
+          "peak_queue": 0.0
+        },
+        "cache": {
+          "mean_util": 0.0078125,
+          "peak_queue": 0.0
+        },
+        "db_primary": {
+          "mean_util": 1.0,
+          "peak_queue": 77.0
+        }
+      }
+    }
+  },
+  {
+    "id": "r540-db4-cache0-s7",
+    "config": {
+      "name": "Custom design",
+      "app": {
+        "replicas": 3,
+        "workers": 8,
+        "latency_ms": 20.0,
+        "lb_strategy": "least_queue",
+        "max_queue": 200
+      },
+      "cache": {
+        "enabled": false,
+        "hit_rate": 0.85,
+        "latency_ms": 1.0,
+        "workers": 64
+      },
+      "cdn": {
+        "enabled": false,
+        "hit_rate": 0.6,
+        "latency_ms": 8.0
+      },
+      "queue": {
+        "enabled": false,
+        "consumers": 8,
+        "max_depth": 5000,
+        "enqueue_ms": 2.0
+      },
+      "db": {
+        "workers": 4,
+        "read_ms": 8.0,
+        "write_ms": 25.0,
+        "read_replicas": 0,
+        "max_queue": 500,
+        "shards": 1,
+        "hot_share": 0.0
+      },
+      "workload": {
+        "rps": 540,
+        "read_ratio": 0.95,
+        "duration_s": 4,
+        "timeout_ms": 1000.0,
+        "warmup_s": 1
+      },
+      "events": [],
+      "seed": 7,
+      "app_only": false,
+      "policy": {
+        "max_retries": 0,
+        "backoff_ms": 100.0,
+        "backoff_multiplier": 2.0,
+        "jitter": true,
+        "rate_limit_rps": null,
+        "burst": 100
+      }
+    },
+    "metrics": {
+      "served_rps": 525.6666666666666,
+      "p95_ms": 598.8532955241135,
+      "p99_ms": 631.8811885422515,
+      "success_rate": 1.0
+    },
+    "evidence": {
+      "configuration": {
+        "app": {
+          "latency_ms": 20.0,
+          "lb_strategy": null,
+          "max_queue": 200,
+          "replicas": 3,
+          "workers": 8
+        },
+        "app_only": false,
+        "cache": {
+          "enabled": false,
+          "hit_rate": 0.85,
+          "latency_ms": 1.0,
+          "workers": 64
+        },
+        "cdn": {
+          "enabled": false,
+          "hit_rate": 0.6,
+          "latency_ms": 8.0
+        },
+        "db": {
+          "hot_share": 0.0,
+          "max_queue": 500,
+          "read_ms": 8.0,
+          "read_replicas": 0,
+          "shards": 1,
+          "workers": 4,
+          "write_ms": 25.0
+        },
+        "events": [],
+        "policy": {
+          "backoff_ms": 100.0,
+          "backoff_multiplier": 2.0,
+          "burst": 100,
+          "jitter": true,
+          "max_retries": 0,
+          "rate_limit_rps": null
+        },
+        "queue": {
+          "consumers": 8,
+          "enabled": false,
+          "enqueue_ms": 2.0,
+          "max_depth": 5000
+        },
+        "seed": 7,
+        "workload": {
+          "duration_s": 4,
+          "read_ratio": 0.95,
+          "rps": 540,
+          "timeout_ms": 1000.0,
+          "warmup_s": 1
+        }
+      },
+      "metrics": {
+        "p95_ms": 598.8532955241135,
+        "p99_ms": 631.8811885422515,
+        "served_rps": 525.6666666666666,
+        "success_rate": 1.0
+      },
+      "tiers": {
+        "app": {
+          "mean_util": 0.46875,
+          "peak_queue": 0.0
+        },
+        "db_primary": {
+          "mean_util": 1.0,
+          "peak_queue": 241.25
+        }
+      }
+    }
+  },
+  {
+    "id": "r540-db4-cache0-s19",
+    "config": {
+      "name": "Custom design",
+      "app": {
+        "replicas": 3,
+        "workers": 8,
+        "latency_ms": 20.0,
+        "lb_strategy": "least_queue",
+        "max_queue": 200
+      },
+      "cache": {
+        "enabled": false,
+        "hit_rate": 0.85,
+        "latency_ms": 1.0,
+        "workers": 64
+      },
+      "cdn": {
+        "enabled": false,
+        "hit_rate": 0.6,
+        "latency_ms": 8.0
+      },
+      "queue": {
+        "enabled": false,
+        "consumers": 8,
+        "max_depth": 5000,
+        "enqueue_ms": 2.0
+      },
+      "db": {
+        "workers": 4,
+        "read_ms": 8.0,
+        "write_ms": 25.0,
+        "read_replicas": 0,
+        "max_queue": 500,
+        "shards": 1,
+        "hot_share": 0.0
+      },
+      "workload": {
+        "rps": 540,
+        "read_ratio": 0.95,
+        "duration_s": 4,
+        "timeout_ms": 1000.0,
+        "warmup_s": 1
+      },
+      "events": [],
+      "seed": 19,
+      "app_only": false,
+      "policy": {
+        "max_retries": 0,
+        "backoff_ms": 100.0,
+        "backoff_multiplier": 2.0,
+        "jitter": true,
+        "rate_limit_rps": null,
+        "burst": 100
+      }
+    },
+    "metrics": {
+      "served_rps": 511.0,
+      "p95_ms": 631.5224823314936,
+      "p99_ms": 661.0875028024309,
+      "success_rate": 1.0
+    },
+    "evidence": {
+      "configuration": {
+        "app": {
+          "latency_ms": 20.0,
+          "lb_strategy": null,
+          "max_queue": 200,
+          "replicas": 3,
+          "workers": 8
+        },
+        "app_only": false,
+        "cache": {
+          "enabled": false,
+          "hit_rate": 0.85,
+          "latency_ms": 1.0,
+          "workers": 64
+        },
+        "cdn": {
+          "enabled": false,
+          "hit_rate": 0.6,
+          "latency_ms": 8.0
+        },
+        "db": {
+          "hot_share": 0.0,
+          "max_queue": 500,
+          "read_ms": 8.0,
+          "read_replicas": 0,
+          "shards": 1,
+          "workers": 4,
+          "write_ms": 25.0
+        },
+        "events": [],
+        "policy": {
+          "backoff_ms": 100.0,
+          "backoff_multiplier": 2.0,
+          "burst": 100,
+          "jitter": true,
+          "max_retries": 0,
+          "rate_limit_rps": null
+        },
+        "queue": {
+          "consumers": 8,
+          "enabled": false,
+          "enqueue_ms": 2.0,
+          "max_depth": 5000
+        },
+        "seed": 19,
+        "workload": {
+          "duration_s": 4,
+          "read_ratio": 0.95,
+          "rps": 540,
+          "timeout_ms": 1000.0,
+          "warmup_s": 1
+        }
+      },
+      "metrics": {
+        "p95_ms": 631.5224823314936,
+        "p99_ms": 661.0875028024309,
+        "served_rps": 511.0,
+        "success_rate": 1.0
+      },
+      "tiers": {
+        "app": {
+          "mean_util": 0.4270833333333333,
+          "peak_queue": 0.0
+        },
+        "db_primary": {
+          "mean_util": 1.0,
+          "peak_queue": 258.75
+        }
+      }
+    }
+  },
+  {
+    "id": "r540-db4-cache1-s7",
+    "config": {
+      "name": "Custom design",
+      "app": {
+        "replicas": 3,
+        "workers": 8,
+        "latency_ms": 20.0,
+        "lb_strategy": "least_queue",
+        "max_queue": 200
+      },
+      "cache": {
+        "enabled": true,
+        "hit_rate": 0.85,
+        "latency_ms": 1.0,
+        "workers": 64
+      },
+      "cdn": {
+        "enabled": false,
+        "hit_rate": 0.6,
+        "latency_ms": 8.0
+      },
+      "queue": {
+        "enabled": false,
+        "consumers": 8,
+        "max_depth": 5000,
+        "enqueue_ms": 2.0
+      },
+      "db": {
+        "workers": 4,
+        "read_ms": 8.0,
+        "write_ms": 25.0,
+        "read_replicas": 0,
+        "max_queue": 500,
+        "shards": 1,
+        "hot_share": 0.0
+      },
+      "workload": {
+        "rps": 540,
+        "read_ratio": 0.95,
+        "duration_s": 4,
+        "timeout_ms": 1000.0,
+        "warmup_s": 1
+      },
+      "events": [],
+      "seed": 7,
+      "app_only": false,
+      "policy": {
+        "max_retries": 0,
+        "backoff_ms": 100.0,
+        "backoff_multiplier": 2.0,
+        "jitter": true,
+        "rate_limit_rps": null,
+        "burst": 100
+      }
+    },
+    "metrics": {
+      "served_rps": 530.0,
+      "p95_ms": 68.94656475218328,
+      "p99_ms": 103.80124154418539,
+      "success_rate": 1.0
+    },
+    "evidence": {
+      "configuration": {
+        "app": {
+          "latency_ms": 20.0,
+          "lb_strategy": null,
+          "max_queue": 200,
+          "replicas": 3,
+          "workers": 8
+        },
+        "app_only": false,
+        "cache": {
+          "enabled": true,
+          "hit_rate": 0.85,
+          "latency_ms": 1.0,
+          "workers": 64
+        },
+        "cdn": {
+          "enabled": false,
+          "hit_rate": 0.6,
+          "latency_ms": 8.0
+        },
+        "db": {
+          "hot_share": 0.0,
+          "max_queue": 500,
+          "read_ms": 8.0,
+          "read_replicas": 0,
+          "shards": 1,
+          "workers": 4,
+          "write_ms": 25.0
+        },
+        "events": [],
+        "policy": {
+          "backoff_ms": 100.0,
+          "backoff_multiplier": 2.0,
+          "burst": 100,
+          "jitter": true,
+          "max_retries": 0,
+          "rate_limit_rps": null
+        },
+        "queue": {
+          "consumers": 8,
+          "enabled": false,
+          "enqueue_ms": 2.0,
+          "max_depth": 5000
+        },
+        "seed": 7,
+        "workload": {
+          "duration_s": 4,
+          "read_ratio": 0.95,
+          "rps": 540,
+          "timeout_ms": 1000.0,
+          "warmup_s": 1
+        }
+      },
+      "metrics": {
+        "p95_ms": 68.94656475218328,
+        "p99_ms": 103.80124154418539,
+        "served_rps": 530.0,
+        "success_rate": 1.0
+      },
+      "tiers": {
+        "app": {
+          "mean_util": 0.40625,
+          "peak_queue": 0.0
+        },
+        "cache": {
+          "mean_util": 0.006510416666666667,
+          "peak_queue": 0.0
+        },
+        "db_primary": {
+          "mean_util": 0.2916666666666667,
+          "peak_queue": 0.0
+        }
+      }
+    }
+  },
+  {
+    "id": "r540-db4-cache1-s19",
+    "config": {
+      "name": "Custom design",
+      "app": {
+        "replicas": 3,
+        "workers": 8,
+        "latency_ms": 20.0,
+        "lb_strategy": "least_queue",
+        "max_queue": 200
+      },
+      "cache": {
+        "enabled": true,
+        "hit_rate": 0.85,
+        "latency_ms": 1.0,
+        "workers": 64
+      },
+      "cdn": {
+        "enabled": false,
+        "hit_rate": 0.6,
+        "latency_ms": 8.0
+      },
+      "queue": {
+        "enabled": false,
+        "consumers": 8,
+        "max_depth": 5000,
+        "enqueue_ms": 2.0
+      },
+      "db": {
+        "workers": 4,
+        "read_ms": 8.0,
+        "write_ms": 25.0,
+        "read_replicas": 0,
+        "max_queue": 500,
+        "shards": 1,
+        "hot_share": 0.0
+      },
+      "workload": {
+        "rps": 540,
+        "read_ratio": 0.95,
+        "duration_s": 4,
+        "timeout_ms": 1000.0,
+        "warmup_s": 1
+      },
+      "events": [],
+      "seed": 19,
+      "app_only": false,
+      "policy": {
+        "max_retries": 0,
+        "backoff_ms": 100.0,
+        "backoff_multiplier": 2.0,
+        "jitter": true,
+        "rate_limit_rps": null,
+        "burst": 100
+      }
+    },
+    "metrics": {
+      "served_rps": 537.3333333333334,
+      "p95_ms": 65.51156717247007,
+      "p99_ms": 100.58638133455443,
+      "success_rate": 1.0
+    },
+    "evidence": {
+      "configuration": {
+        "app": {
+          "latency_ms": 20.0,
+          "lb_strategy": null,
+          "max_queue": 200,
+          "replicas": 3,
+          "workers": 8
+        },
+        "app_only": false,
+        "cache": {
+          "enabled": true,
+          "hit_rate": 0.85,
+          "latency_ms": 1.0,
+          "workers": 64
+        },
+        "cdn": {
+          "enabled": false,
+          "hit_rate": 0.6,
+          "latency_ms": 8.0
+        },
+        "db": {
+          "hot_share": 0.0,
+          "max_queue": 500,
+          "read_ms": 8.0,
+          "read_replicas": 0,
+          "shards": 1,
+          "workers": 4,
+          "write_ms": 25.0
+        },
+        "events": [],
+        "policy": {
+          "backoff_ms": 100.0,
+          "backoff_multiplier": 2.0,
+          "burst": 100,
+          "jitter": true,
+          "max_retries": 0,
+          "rate_limit_rps": null
+        },
+        "queue": {
+          "consumers": 8,
+          "enabled": false,
+          "enqueue_ms": 2.0,
+          "max_depth": 5000
+        },
+        "seed": 19,
+        "workload": {
+          "duration_s": 4,
+          "read_ratio": 0.95,
+          "rps": 540,
+          "timeout_ms": 1000.0,
+          "warmup_s": 1
+        }
+      },
+      "metrics": {
+        "p95_ms": 65.51156717247007,
+        "p99_ms": 100.58638133455443,
+        "served_rps": 537.3333333333334,
+        "success_rate": 1.0
+      },
+      "tiers": {
+        "app": {
+          "mean_util": 0.4305555555555555,
+          "peak_queue": 0.0
+        },
+        "cache": {
+          "mean_util": 0.005208333333333333,
+          "peak_queue": 0.0
+        },
+        "db_primary": {
+          "mean_util": 0.125,
+          "peak_queue": 0.0
+        }
+      }
+    }
+  },
+  {
+    "id": "r540-db16-cache0-s7",
+    "config": {
+      "name": "Custom design",
+      "app": {
+        "replicas": 3,
+        "workers": 8,
+        "latency_ms": 20.0,
+        "lb_strategy": "least_queue",
+        "max_queue": 200
+      },
+      "cache": {
+        "enabled": false,
+        "hit_rate": 0.85,
+        "latency_ms": 1.0,
+        "workers": 64
+      },
+      "cdn": {
+        "enabled": false,
+        "hit_rate": 0.6,
+        "latency_ms": 8.0
+      },
+      "queue": {
+        "enabled": false,
+        "consumers": 8,
+        "max_depth": 5000,
+        "enqueue_ms": 2.0
+      },
+      "db": {
+        "workers": 16,
+        "read_ms": 8.0,
+        "write_ms": 25.0,
+        "read_replicas": 0,
+        "max_queue": 500,
+        "shards": 1,
+        "hot_share": 0.0
+      },
+      "workload": {
+        "rps": 540,
+        "read_ratio": 0.95,
+        "duration_s": 4,
+        "timeout_ms": 1000.0,
+        "warmup_s": 1
+      },
+      "events": [],
+      "seed": 7,
+      "app_only": false,
+      "policy": {
+        "max_retries": 0,
+        "backoff_ms": 100.0,
+        "backoff_multiplier": 2.0,
+        "jitter": true,
+        "rate_limit_rps": null,
+        "burst": 100
+      }
+    },
+    "metrics": {
+      "served_rps": 527.0,
+      "p95_ms": 73.18465978638011,
+      "p99_ms": 104.00827719477739,
+      "success_rate": 1.0
+    },
+    "evidence": {
+      "configuration": {
+        "app": {
+          "latency_ms": 20.0,
+          "lb_strategy": null,
+          "max_queue": 200,
+          "replicas": 3,
+          "workers": 8
+        },
+        "app_only": false,
+        "cache": {
+          "enabled": false,
+          "hit_rate": 0.85,
+          "latency_ms": 1.0,
+          "workers": 64
+        },
+        "cdn": {
+          "enabled": false,
+          "hit_rate": 0.6,
+          "latency_ms": 8.0
+        },
+        "db": {
+          "hot_share": 0.0,
+          "max_queue": 500,
+          "read_ms": 8.0,
+          "read_replicas": 0,
+          "shards": 1,
+          "workers": 16,
+          "write_ms": 25.0
+        },
+        "events": [],
+        "policy": {
+          "backoff_ms": 100.0,
+          "backoff_multiplier": 2.0,
+          "burst": 100,
+          "jitter": true,
+          "max_retries": 0,
+          "rate_limit_rps": null
+        },
+        "queue": {
+          "consumers": 8,
+          "enabled": false,
+          "enqueue_ms": 2.0,
+          "max_depth": 5000
+        },
+        "seed": 7,
+        "workload": {
+          "duration_s": 4,
+          "read_ratio": 0.95,
+          "rps": 540,
+          "timeout_ms": 1000.0,
+          "warmup_s": 1
+        }
+      },
+      "metrics": {
+        "p95_ms": 73.18465978638011,
+        "p99_ms": 104.00827719477739,
+        "served_rps": 527.0,
+        "success_rate": 1.0
+      },
+      "tiers": {
+        "app": {
+          "mean_util": 0.4618055555555556,
+          "peak_queue": 0.0
+        },
+        "db_primary": {
+          "mean_util": 0.2916666666666667,
+          "peak_queue": 0.0
+        }
+      }
+    }
+  },
+  {
+    "id": "r540-db16-cache0-s19",
+    "config": {
+      "name": "Custom design",
+      "app": {
+        "replicas": 3,
+        "workers": 8,
+        "latency_ms": 20.0,
+        "lb_strategy": "least_queue",
+        "max_queue": 200
+      },
+      "cache": {
+        "enabled": false,
+        "hit_rate": 0.85,
+        "latency_ms": 1.0,
+        "workers": 64
+      },
+      "cdn": {
+        "enabled": false,
+        "hit_rate": 0.6,
+        "latency_ms": 8.0
+      },
+      "queue": {
+        "enabled": false,
+        "consumers": 8,
+        "max_depth": 5000,
+        "enqueue_ms": 2.0
+      },
+      "db": {
+        "workers": 16,
+        "read_ms": 8.0,
+        "write_ms": 25.0,
+        "read_replicas": 0,
+        "max_queue": 500,
+        "shards": 1,
+        "hot_share": 0.0
+      },
+      "workload": {
+        "rps": 540,
+        "read_ratio": 0.95,
+        "duration_s": 4,
+        "timeout_ms": 1000.0,
+        "warmup_s": 1
+      },
+      "events": [],
+      "seed": 19,
+      "app_only": false,
+      "policy": {
+        "max_retries": 0,
+        "backoff_ms": 100.0,
+        "backoff_multiplier": 2.0,
+        "jitter": true,
+        "rate_limit_rps": null,
+        "burst": 100
+      }
+    },
+    "metrics": {
+      "served_rps": 531.6666666666666,
+      "p95_ms": 70.82400975726105,
+      "p99_ms": 104.92552669548841,
+      "success_rate": 1.0
+    },
+    "evidence": {
+      "configuration": {
+        "app": {
+          "latency_ms": 20.0,
+          "lb_strategy": null,
+          "max_queue": 200,
+          "replicas": 3,
+          "workers": 8
+        },
+        "app_only": false,
+        "cache": {
+          "enabled": false,
+          "hit_rate": 0.85,
+          "latency_ms": 1.0,
+          "workers": 64
+        },
+        "cdn": {
+          "enabled": false,
+          "hit_rate": 0.6,
+          "latency_ms": 8.0
+        },
+        "db": {
+          "hot_share": 0.0,
+          "max_queue": 500,
+          "read_ms": 8.0,
+          "read_replicas": 0,
+          "shards": 1,
+          "workers": 16,
+          "write_ms": 25.0
+        },
+        "events": [],
+        "policy": {
+          "backoff_ms": 100.0,
+          "backoff_multiplier": 2.0,
+          "burst": 100,
+          "jitter": true,
+          "max_retries": 0,
+          "rate_limit_rps": null
+        },
+        "queue": {
+          "consumers": 8,
+          "enabled": false,
+          "enqueue_ms": 2.0,
+          "max_depth": 5000
+        },
+        "seed": 19,
+        "workload": {
+          "duration_s": 4,
+          "read_ratio": 0.95,
+          "rps": 540,
+          "timeout_ms": 1000.0,
+          "warmup_s": 1
+        }
+      },
+      "metrics": {
+        "p95_ms": 70.82400975726105,
+        "p99_ms": 104.92552669548841,
+        "served_rps": 531.6666666666666,
+        "success_rate": 1.0
+      },
+      "tiers": {
+        "app": {
+          "mean_util": 0.4236111111111111,
+          "peak_queue": 0.0
+        },
+        "db_primary": {
+          "mean_util": 0.2552083333333333,
+          "peak_queue": 0.0
+        }
+      }
+    }
+  },
+  {
+    "id": "r540-db16-cache1-s7",
+    "config": {
+      "name": "Custom design",
+      "app": {
+        "replicas": 3,
+        "workers": 8,
+        "latency_ms": 20.0,
+        "lb_strategy": "least_queue",
+        "max_queue": 200
+      },
+      "cache": {
+        "enabled": true,
+        "hit_rate": 0.85,
+        "latency_ms": 1.0,
+        "workers": 64
+      },
+      "cdn": {
+        "enabled": false,
+        "hit_rate": 0.6,
+        "latency_ms": 8.0
+      },
+      "queue": {
+        "enabled": false,
+        "consumers": 8,
+        "max_depth": 5000,
+        "enqueue_ms": 2.0
+      },
+      "db": {
+        "workers": 16,
+        "read_ms": 8.0,
+        "write_ms": 25.0,
+        "read_replicas": 0,
+        "max_queue": 500,
+        "shards": 1,
+        "hot_share": 0.0
+      },
+      "workload": {
+        "rps": 540,
+        "read_ratio": 0.95,
+        "duration_s": 4,
+        "timeout_ms": 1000.0,
+        "warmup_s": 1
+      },
+      "events": [],
+      "seed": 7,
+      "app_only": false,
+      "policy": {
+        "max_retries": 0,
+        "backoff_ms": 100.0,
+        "backoff_multiplier": 2.0,
+        "jitter": true,
+        "rate_limit_rps": null,
+        "burst": 100
+      }
+    },
+    "metrics": {
+      "served_rps": 530.3333333333334,
+      "p95_ms": 62.23261868444408,
+      "p99_ms": 105.57926010811009,
+      "success_rate": 1.0
+    },
+    "evidence": {
+      "configuration": {
+        "app": {
+          "latency_ms": 20.0,
+          "lb_strategy": null,
+          "max_queue": 200,
+          "replicas": 3,
+          "workers": 8
+        },
+        "app_only": false,
+        "cache": {
+          "enabled": true,
+          "hit_rate": 0.85,
+          "latency_ms": 1.0,
+          "workers": 64
+        },
+        "cdn": {
+          "enabled": false,
+          "hit_rate": 0.6,
+          "latency_ms": 8.0
+        },
+        "db": {
+          "hot_share": 0.0,
+          "max_queue": 500,
+          "read_ms": 8.0,
+          "read_replicas": 0,
+          "shards": 1,
+          "workers": 16,
+          "write_ms": 25.0
+        },
+        "events": [],
+        "policy": {
+          "backoff_ms": 100.0,
+          "backoff_multiplier": 2.0,
+          "burst": 100,
+          "jitter": true,
+          "max_retries": 0,
+          "rate_limit_rps": null
+        },
+        "queue": {
+          "consumers": 8,
+          "enabled": false,
+          "enqueue_ms": 2.0,
+          "max_depth": 5000
+        },
+        "seed": 7,
+        "workload": {
+          "duration_s": 4,
+          "read_ratio": 0.95,
+          "rps": 540,
+          "timeout_ms": 1000.0,
+          "warmup_s": 1
+        }
+      },
+      "metrics": {
+        "p95_ms": 62.23261868444408,
+        "p99_ms": 105.57926010811009,
+        "served_rps": 530.3333333333334,
+        "success_rate": 1.0
+      },
+      "tiers": {
+        "app": {
+          "mean_util": 0.4270833333333333,
+          "peak_queue": 0.0
+        },
+        "cache": {
+          "mean_util": 0.00390625,
+          "peak_queue": 0.0
+        },
+        "db_primary": {
+          "mean_util": 0.0625,
+          "peak_queue": 0.0
+        }
+      }
+    }
+  },
+  {
+    "id": "r540-db16-cache1-s19",
+    "config": {
+      "name": "Custom design",
+      "app": {
+        "replicas": 3,
+        "workers": 8,
+        "latency_ms": 20.0,
+        "lb_strategy": "least_queue",
+        "max_queue": 200
+      },
+      "cache": {
+        "enabled": true,
+        "hit_rate": 0.85,
+        "latency_ms": 1.0,
+        "workers": 64
+      },
+      "cdn": {
+        "enabled": false,
+        "hit_rate": 0.6,
+        "latency_ms": 8.0
+      },
+      "queue": {
+        "enabled": false,
+        "consumers": 8,
+        "max_depth": 5000,
+        "enqueue_ms": 2.0
+      },
+      "db": {
+        "workers": 16,
+        "read_ms": 8.0,
+        "write_ms": 25.0,
+        "read_replicas": 0,
+        "max_queue": 500,
+        "shards": 1,
+        "hot_share": 0.0
+      },
+      "workload": {
+        "rps": 540,
+        "read_ratio": 0.95,
+        "duration_s": 4,
+        "timeout_ms": 1000.0,
+        "warmup_s": 1
+      },
+      "events": [],
+      "seed": 19,
+      "app_only": false,
+      "policy": {
+        "max_retries": 0,
+        "backoff_ms": 100.0,
+        "backoff_multiplier": 2.0,
+        "jitter": true,
+        "rate_limit_rps": null,
+        "burst": 100
+      }
+    },
+    "metrics": {
+      "served_rps": 538.6666666666666,
+      "p95_ms": 65.3180540135886,
+      "p99_ms": 95.82050598744692,
+      "success_rate": 1.0
+    },
+    "evidence": {
+      "configuration": {
+        "app": {
+          "latency_ms": 20.0,
+          "lb_strategy": null,
+          "max_queue": 200,
+          "replicas": 3,
+          "workers": 8
+        },
+        "app_only": false,
+        "cache": {
+          "enabled": true,
+          "hit_rate": 0.85,
+          "latency_ms": 1.0,
+          "workers": 64
+        },
+        "cdn": {
+          "enabled": false,
+          "hit_rate": 0.6,
+          "latency_ms": 8.0
+        },
+        "db": {
+          "hot_share": 0.0,
+          "max_queue": 500,
+          "read_ms": 8.0,
+          "read_replicas": 0,
+          "shards": 1,
+          "workers": 16,
+          "write_ms": 25.0
+        },
+        "events": [],
+        "policy": {
+          "backoff_ms": 100.0,
+          "backoff_multiplier": 2.0,
+          "burst": 100,
+          "jitter": true,
+          "max_retries": 0,
+          "rate_limit_rps": null
+        },
+        "queue": {
+          "consumers": 8,
+          "enabled": false,
+          "enqueue_ms": 2.0,
+          "max_depth": 5000
+        },
+        "seed": 19,
+        "workload": {
+          "duration_s": 4,
+          "read_ratio": 0.95,
+          "rps": 540,
+          "timeout_ms": 1000.0,
+          "warmup_s": 1
+        }
+      },
+      "metrics": {
+        "p95_ms": 65.3180540135886,
+        "p99_ms": 95.82050598744692,
+        "served_rps": 538.6666666666666,
+        "success_rate": 1.0
+      },
+      "tiers": {
+        "app": {
+          "mean_util": 0.40972222222222227,
+          "peak_queue": 0.0
+        },
+        "cache": {
+          "mean_util": 0.009114583333333334,
+          "peak_queue": 0.0
+        },
+        "db_primary": {
+          "mean_util": 0.06770833333333333,
+          "peak_queue": 0.0
+        }
+      }
+    }
+  }
+]
