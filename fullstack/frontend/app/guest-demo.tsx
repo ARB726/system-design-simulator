@@ -27,12 +27,13 @@ export default function GuestDemo({onExit,onSignIn}:{onExit:()=>void;onSignIn:()
   },[]);
   const job=jobs[index],result=job?.result,summary=result?.summary;
   return <LabMotion><div className="guest-shell"><LabScene/><main className="guest-main">
-    <div className="page-heading"><div><div className="eyebrow"><ShieldCheck size={15}/> READ-ONLY GUEST DEMO</div><h1>Two designs. See the tradeoff.</h1><p>Explore real simulation snapshots without an account.</p></div><button className="button secondary" onClick={onExit}><ArrowLeft size={16}/> Back to sandbox</button></div>
+    <div className="page-heading"><div><div className="eyebrow"><ShieldCheck size={15}/> SYSTEMS LAB / SAMPLE EXPERIMENT</div><h1>Two designs. See the tradeoff.</h1><p>What changes when most reads no longer reach the database?</p></div><button className="button secondary" onClick={onExit}><ArrowLeft size={16}/> Back to sandbox</button></div>
     <div className="notice">These are precomputed, synthetic examples from the Python/SimPy engine. Viewing them creates no jobs and makes no AI calls.</div>
     <Walkthrough/>
     {error&&<p role="alert" className="error">{error}</p>}
     {!jobs.length&&!error&&<p role="status">Loading sample experiments...</p>}
     {!!jobs.length&&<>
+      <section className="experiment-brief" aria-label="Experiment brief"><div><div className="evidence-kicker">THE QUESTION</div><h2>Can a read cache relieve database pressure?</h2><p>The candidate enables a read cache. Keep the configured workload, seed and database capacity fixed, then inspect the measured difference.</p></div><dl><div><dt>Offered load</dt><dd>{job.payload.config.workload.rps} req/s</dd></div><div><dt>Database</dt><dd>{job.payload.config.db.workers} connections</dd></div><div><dt>Seed / duration</dt><dd>{job.payload.config.seed} / {job.payload.config.workload.duration_s}s</dd></div></dl></section>
       <section className="guest-samples" aria-label="Sample experiments">{jobs.map((sample,i)=><button key={sample.id} className={'button '+(index===i?'primary':'secondary')} aria-pressed={index===i} onClick={()=>setIndex(i)}><FlaskConical size={16}/>{i===0?'Baseline: no cache':'Candidate: cache enabled'}</button>)}</section>
       <ComparisonDeltas jobs={jobs}/>
       <TopologyHero config={job.payload.config} onToggle={()=>{}} readOnly/>

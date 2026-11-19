@@ -11,7 +11,7 @@ test('guest comparison shows measured deltas and the architecture change',async(
   const delta=b.result.summary.p95_ms-a.result.summary.p95_ms;
   await expect(changes.getByTestId('delta-latency')).toContainText(delta.toLocaleString('en-US',{maximumFractionDigits:1}));
   await expect(changes.getByTestId('delta-success')).toContainText('percentage points');
-  await expect(changes).toContainText('cache.enabled: off → on');
+  await expect(changes).toContainText('Read cache: off → on');
   await expect(changes).toContainText('Illustrative cost change');
 });
 
