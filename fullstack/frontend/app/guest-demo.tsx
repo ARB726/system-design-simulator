@@ -8,6 +8,7 @@ import {LabMotion,LabScene} from './lab-effects';
 import TopologyHero from './topology-hero';
 import ComparisonDeltas from './comparison-deltas';
 import BottleneckTakeaway from './bottleneck-takeaway';
+import SnapshotShare from './snapshot-share';
 const ResultCharts=dynamic(()=>import('./result-charts'),{loading:()=> <p role="status">Loading sample charts...</p>});
 const number=(n:number,digits=1)=>n.toLocaleString(undefined,{maximumFractionDigits:digits});
 
@@ -41,7 +42,7 @@ export default function GuestDemo({onExit,onSignIn}:{onExit:()=>void;onSignIn:()
           ['Illustrative monthly cost','$'+number(result!.cost,0),'/month'],
         ].map(([label,value,unit])=><div className="metric" key={label}><span>{label}</span><strong>{value} <small>{unit}</small></strong></div>)}</div>}
       </section>
-      {result&&<><BottleneckTakeaway result={result}/><ResultCharts result={result}/></>}
+      {result&&<><BottleneckTakeaway result={result}/><SnapshotShare key={job.id} job={job}/><ResultCharts result={result}/></>}
       <section className="panel guest-details"><div className="panel-heading"><div><h2><GitCompareArrows size={18}/> Compare the evidence</h2><p>Same workload, seed, and capacity. Only the read cache changes.</p></div></div>
         <div className="guest-table-wrap"><table className="guest-table"><thead><tr><th scope="col">Design</th><th scope="col">Throughput</th><th scope="col">p95 latency</th><th scope="col">Success</th><th scope="col">Illustrative cost</th></tr></thead><tbody>{jobs.map(sample=><tr key={sample.id}><th scope="row">{sample.payload.config.cache.enabled?'Cache enabled':'No cache'}</th><td>{number(sample.result!.summary!.served_rps)} req/s</td><td>{number(sample.result!.summary!.p95_ms)} ms</td><td>{number(sample.result!.summary!.success_rate*100,2)}%</td><td>${number(sample.result!.cost,0)}/mo</td></tr>)}</tbody></table></div>
         <p className="subtle">This is one paired experiment, not a production capacity prediction. Cache hit rate is a model input; a cache also adds illustrative cost.</p>
