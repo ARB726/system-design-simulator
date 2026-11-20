@@ -31,8 +31,12 @@ export default function Home() {
       if(['overview','sandbox','library','compare','learn'].includes(view))setView(view);
       else if(!view)setView('overview');
     };
-    sync();window.addEventListener('hashchange',sync);
-    return()=>window.removeEventListener('hashchange',sync);
+    function navigate(){
+      sync();
+      if(['overview','sandbox','library','compare','learn','demo'].includes(location.hash.slice(1)))window.scrollTo(0,0);
+    }
+    sync();window.addEventListener('hashchange',navigate);
+    return()=>window.removeEventListener('hashchange',navigate);
   },[]);
   function openGuest(){location.hash='demo';setGuest(true)}
   function closeGuest(){location.hash='sandbox';setTab('sandbox');setGuest(false)}
@@ -123,11 +127,21 @@ export default function Home() {
   if(guest)return <GuestDemo onExit={closeGuest} onSignIn={()=>{closeGuest();void signIn()}}/>;
   return <LabMotion><div className="app-shell"><LabScene/>
     <aside className="sidebar">
-      <a className="brand" href="/"><span className="brand-mark"><Layers3 size={23}/></span><span>systems<span className="brand-light">lab</span><small>THE ARCHITECTURE PLAYGROUND</small></span></a>
+      <a className="brand" href="/" aria-label="Systems Lab home"><span className="brand-mark"><Layers3 size={23}/></span><span>systems<span className="brand-light">lab</span><small>THE ARCHITECTURE PLAYGROUND</small></span></a>
       <div className="workspace"><span className="workspace-icon">S</span><span>Personal workspace<small>{token?'Connected workspace':'Explore the lab'}</small></span><ChevronRight size={15}/></div>
       <div className="nav-label">WORKSPACE</div>
-      <nav>{[{id:'overview',label:'Overview',icon:BookOpen},{id:'sandbox',label:'Sandbox',icon:LayoutDashboard},{id:'library',label:'Experiment library',icon:Library},{id:'compare',label:'Compare designs',icon:GitCompareArrows},{id:'learn',label:'Learning lab',icon:BookOpen}].map(n=><button key={n.id} aria-label={n.label} aria-current={tab===n.id?'page':undefined} title={n.label} className={'nav-item '+(tab===n.id?'active':'')} onClick={()=>{location.hash=n.id;setTab(n.id)}}><n.icon size={18}/>{n.label}{n.id==='library'&&jobs.length>0&&<span className="count">{jobs.length}</span>}</button>)}</nav>
-      <div className="sidebar-bottom"><div className="lab-note"><FlaskConical size={22}/><strong>Experiment with confidence.</strong><p>These are simulations. Your design does not provision real infrastructure.</p></div><button className="profile" onClick={()=>token?logout():signIn()}><span className="avatar">{identity?identity[0].toUpperCase():'Y'}</span><span>{identity||'Your workspace'}<small>{token?'Sign out':'Sign in to save experiments'}</small></span>{token?<LogOut size={16}/>:<ArrowRight size={16}/>}</button></div>
+      <nav aria-label="Workspace">{[
+        {id:'overview',label:'Overview',short:'Overview',icon:Layers3},
+        {id:'sandbox',label:'Sandbox',short:'Sandbox',icon:LayoutDashboard},
+        {id:'library',label:'Experiment library',short:'Library',icon:Library},
+        {id:'compare',label:'Compare designs',short:'Compare',icon:GitCompareArrows},
+        {id:'learn',label:'Learning lab',short:'Learn',icon:BookOpen},
+      ].map(n=><button key={n.id} aria-label={n.label} aria-current={tab===n.id?'page':undefined} title={n.label}
+        className={'nav-item '+(tab===n.id?'active':'')} onClick={()=>setTab(n.id)}>
+        <n.icon size={18}/><span className="nav-full-label">{n.label}</span><span className="nav-short-label">{n.short}</span>
+        {n.id==='library'&&jobs.length>0&&<span className="count">{jobs.length}</span>}
+      </button>)}</nav>
+      <div className="sidebar-bottom"><div className="lab-note"><FlaskConical size={22}/><strong>Experiment with confidence.</strong><p>These are simulations. Your design does not provision real infrastructure.</p></div><button className="profile" aria-label={token?'Sign out of '+identity:'Sign in to save experiments'} onClick={()=>token?logout():signIn()}><span className="avatar">{identity?identity[0].toUpperCase():'Y'}</span><span>{identity||'Your workspace'}<small>{token?'Sign out':'Sign in to save experiments'}</small></span><span className="profile-mobile-label">{token?'Sign out':'Sign in'}</span>{token?<LogOut size={16}/>:<ArrowRight size={16}/>}</button></div>
     </aside>
     <div className="main-shell"><header className="topbar"><span>Workspace <ChevronRight size={13}/> <strong>{tab==='overview'?'Overview':tab==='sandbox'?'Sandbox':tab==='library'?'Experiment library':tab==='compare'?'Compare designs':'Learning lab'}</strong></span><a className="button text-button summary-link" href="/overview/">Summary &amp; walkthrough</a><span className="environment"><span/> {settings?.auth==='local'?'Local workspace':'Cloud workspace'}</span></header>
     <main><ViewTransition view={tab}>
