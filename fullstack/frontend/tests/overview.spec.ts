@@ -83,3 +83,50 @@ test('phone layouts keep labeled workspace navigation and reloadable workflow li
     await page.getByRole('button', { name: 'Overview', exact: true }).click();
   }
 });
+
+test('read replay follows the selected design and respects both motion controls', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'no-preference' });
+  await page.goto('/');
+  const preview = page.getByRole('region', { name: 'What changes with a read cache?' });
+  const wire = preview.locator('.read-route-wire');
+  const animationName = () => wire.evaluate(el => getComputedStyle(el, '::after').animationName);
+  const replay = preview.getByRole('button', { name: 'Replay the read path' });
+  await expect(preview).toContainText('the app sends this read to the database');
+  await replay.click();
+  await expect.poll(animationName).toBe('follow-read');
+  expect(await wire.evaluate(el => getComputedStyle(el, '::after').animationIterationCount)).toBe('1');
+  await preview.getByRole('radio', { name: 'No cache' }).focus();
+  await page.keyboard.press('ArrowRight');
+  await expect(preview).toContainText('A cache hit serves this read');
+  await page.getByRole('button', { name: 'Pause background animations' }).click();
+  await replay.click();
+  await expect.poll(animationName).toBe('none');
+  await expect(preview.locator('.trace-active')).toHaveCSS('animation-name', 'none');
+  await page.getByRole('button', { name: 'Resume background animations' }).click();
+  await expect.poll(animationName).toBe('follow-read');
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/overview/');
+  await replay.click();
+  await expect.poll(animationName).toBe('none');
+  await expect(preview.locator('.trace-active')).toHaveCSS('animation-name', 'none');
+  await expect(preview.locator('.preview-metrics dl')).toHaveCSS('animation-name', 'none');
+});
+
+test('the guide explains experiments, result metrics and access on both entry points', async ({ page }) => {
+  for (const route of ['/', '/overview/']) {
+    await page.goto(route);
+    await expect(page.locator('body')).toHaveCSS('background-color', 'rgb(5, 5, 5)');
+    await expect(page.getByRole('link', { name: 'Try without signing in', exact: true }))
+      .toHaveCSS('background-color', 'rgb(166, 244, 119)');
+    await page.getByRole('link', { name: 'How to run a first experiment' }).click();
+    await expect(page.getByRole('heading', { name: 'A useful first experiment' })).toBeInViewport();
+    await page.getByText('Where does an async write wait?', { exact: true }).click();
+    await expect(page.getByText(/In a separate run, change only the consumer count/)).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Read the results' })).toBeVisible();
+    await expect(page.getByText('Offered load and throughput', { exact: true })).toBeVisible();
+    await expect(page.getByText('p95 and p99 latency', { exact: true })).toBeVisible();
+    await expect(page.getByText('Write acknowledgements and lag', { exact: true })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'What you can do as a guest' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'What the model measures' })).toBeVisible();
+  }
+});
