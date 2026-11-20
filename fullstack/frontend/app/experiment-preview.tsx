@@ -1,12 +1,13 @@
 'use client';
 
 import { useState } from 'react';
-import { Activity } from 'lucide-react';
+import { Activity, Database, RotateCcw, Server, Zap } from 'lucide-react';
 import recorded from '../public/guest-demo.json';
 
 // Both traces share axes so switching designs preserves the visual comparison.
 const samples = recorded.experiments.map(({ payload, result }) => ({
   label: payload.config.cache.enabled ? 'Read cache' : 'No cache',
+  cache: payload.config.cache.enabled,
   offered: payload.config.workload.rps,
   latency: result.summary.p95_ms,
   cost: result.cost,
@@ -20,6 +21,7 @@ const traces = samples.map(sample => sample.timeline.map(p =>
 
 export default function ExperimentPreview() {
   const [active, setActive] = useState(0);
+  const [replay, setReplay] = useState(0);
   const sample = samples[active];
   return <section className="experiment-preview" aria-labelledby="preview-title">
     <header>
@@ -34,9 +36,19 @@ export default function ExperimentPreview() {
         <span>{label}</span>
       </label>)}
     </fieldset>
+    <div className="read-route">
+      <div className="read-route-heading"><h3>Follow one read</h3>
+        <button type="button" onClick={() => setReplay(value => value + 1)} aria-label="Replay the read path"><RotateCcw size={14} aria-hidden="true"/> Replay</button>
+      </div>
+      <div key={sample.label + replay} className="read-route-track" aria-hidden="true">
+        <span><Server size={18}/> App</span><i className="read-route-wire"/>
+        <span>{sample.cache ? <Zap size={18}/> : <Database size={18}/>} {sample.cache ? 'Cache' : 'Database'}</span>
+      </div>
+      <p>{sample.cache ? 'A cache hit serves this read. A miss continues to the database.' : 'With the cache off, the app sends this read to the database.'}</p>
+    </div>
     <div className="preview-metrics" aria-live="polite" aria-atomic="true">
       <span className="visually-hidden">{sample.label}.</span>
-      <dl><div><dt>p95 latency</dt><dd>{sample.latency.toFixed(1)} <small>ms</small></dd></div>
+      <dl key={sample.label}><div><dt>p95 latency</dt><dd>{sample.latency.toFixed(1)} <small>ms</small></dd></div>
         <div><dt>Illustrative cost</dt><dd>${sample.cost}<small> / mo</small></dd></div></dl>
     </div>
     <figure className="latency-trace">

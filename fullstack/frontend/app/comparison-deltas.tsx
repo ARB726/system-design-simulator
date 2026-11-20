@@ -28,7 +28,7 @@ export default function ComparisonDeltas({jobs}:{jobs:Job[]}){
     <div className="metrics">{metrics.map(m=>{
       const delta=m.b-m.a;
       const direction=delta===0?'Unchanged':((delta>0)===m.higher?'Better':'Worse');
-      return <div className="metric" key={m.id} data-testid={'delta-'+m.id}>
+      return <div className="metric" key={m.id} data-testid={'delta-'+m.id} data-direction={direction.toLowerCase()}>
         <span>{m.label}</span><strong>{signed(delta)} <small>{m.unit}</small></strong>
         <p>{direction} · {format(m.a)} → {format(m.b)} {m.id==='success'?'%':m.unit}</p>
         {m.id!=='success'&&<p>{m.a===0?'No relative change from a zero baseline':signed(delta/m.a*100)+'% relative change'}</p>}
