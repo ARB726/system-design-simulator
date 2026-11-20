@@ -9,7 +9,7 @@ async function workspace(page:Page,enabled:boolean,provider:'openai'|'gemini'='o
   await page.route('**/api/catalog',route=>route.fulfill({json:{presets:[],challenges:[]}}));
   await page.route('**/api/experiments',route=>route.fulfill({json:[job]}));
   await page.route('**/api/experiments/ai-baseline',route=>route.fulfill({json:job}));
-  await page.goto('/');
+  await page.goto('/#sandbox');
   await page.getByRole('button',{name:'Experiment library',exact:true}).click();
   await page.getByRole('button',{name:/AI baseline.*Seed/}).click();
   await expect(page.getByRole('heading',{name:'Understand this experiment'})).toBeVisible();
