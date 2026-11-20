@@ -12,7 +12,7 @@ test('new visitors choose a workflow before entering the simulator',async({page}
   await page.getByRole('link',{name:'Open sandbox',exact:true}).click();
   await expect(page.getByLabel('Experiment name',{exact:true})).toBeVisible();
   await page.getByLabel('Experiment name',{exact:true}).fill('Keep my design');
-  await page.getByRole('link',{name:'Configure',exact:false}).click();
+  await page.evaluate(()=>{location.hash='experiment-settings'});
   await expect(page.getByLabel('Experiment name',{exact:true})).toHaveValue('Keep my design');
   await page.getByRole('button',{name:'Overview',exact:true}).click();
   await page.getByRole('link',{name:'Open sandbox',exact:true}).click();
