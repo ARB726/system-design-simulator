@@ -29,7 +29,7 @@ export default function Home() {
       const view=location.hash.slice(1);
       setGuest(view==='demo');
       if(['overview','sandbox','library','compare','learn'].includes(view))setView(view);
-      else if(!view)setView('overview');
+      else if(!view || view === 'first-experiment')setView('overview');
     };
     function navigate(){
       sync();
