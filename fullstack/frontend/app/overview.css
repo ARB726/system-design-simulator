@@ -1,0 +1,11 @@
+.overview{max-width:1120px;margin:0 auto;display:grid;gap:2rem;font-size:1rem;line-height:1.75}
+.overview h1{font-size:clamp(2rem,4vw,3.5rem);line-height:1.15;max-width:20ch;margin:.8rem 0 1.2rem}
+.overview h2{font-size:1.4rem;margin-bottom:.8rem}.overview h3{font-size:1.1rem;margin-bottom:.6rem}
+.overview p{max-width:75ch}.overview .eyebrow{font-size:.875rem}.overview-intro{padding:1.5rem 0}
+.overview-actions{display:flex;flex-wrap:wrap;gap:.8rem;margin:1.5rem 0 .6rem}.overview .overview-note{font-size:.875rem}
+.overview-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem}.overview-grid article,.overview-method{padding:1.5rem}
+.overview-grid article{display:flex;align-items:flex-start;flex-direction:column;gap:.5rem}.overview-grid article .button{margin-top:auto}
+.overview .button,.overview-document>.button{font-size:.875rem;white-space:normal}.overview-method ol{padding-left:1.4rem}.overview-method li{margin:.5rem 0}
+.overview .walkthrough{margin-top:1rem;padding:1.5rem}.overview .walkthrough summary{font-size:1rem;cursor:pointer}.overview .walkthrough p{margin:1rem 0}.overview video{display:block;width:100%;height:auto;margin:1rem 0}
+.overview-document{max-width:1200px;margin:auto;padding:2rem}.overview-document>.button{margin-bottom:1rem}
+@media(max-width:700px){.overview-grid{grid-template-columns:1fr}.overview-document{padding:1rem}.overview-grid article,.overview-method{padding:1rem}}
