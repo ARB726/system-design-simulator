@@ -7,7 +7,7 @@ test('guest compares engine snapshots without protected requests or AI calls',as
   page.on('request',request=>{
     if(/\/api\/(experiments|import|auth)\b|\/auth\/v1\//.test(request.url()))protectedRequests.push(request.url());
   });
-  await page.goto('/');
+  await page.goto('/#sandbox');
   await page.getByRole('button',{name:'Try without signing in'}).click();
   await expect(page.getByRole('heading',{name:'Two designs. See the tradeoff.'})).toBeVisible();
   await expect(page.getByRole('table')).toBeVisible();
@@ -28,7 +28,7 @@ test('a missing guest fixture shows a recoverable loading error',async({page})=>
   await page.route('**/api/settings',r=>r.fulfill({json:{auth:'local'}}));
   await page.route('**/api/catalog',r=>r.fulfill({json:{presets:[],challenges:[]}}));
   await page.route('**/guest-demo.json',r=>r.fulfill({status:503}));
-  await page.goto('/');
+  await page.goto('/#sandbox');
   await page.getByRole('button',{name:'Try without signing in'}).click();
   await expect(page.getByRole('alert').filter({hasText:'Sample experiments could not be loaded'})).toBeVisible();
   await page.getByRole('button',{name:'Back to sandbox'}).click();

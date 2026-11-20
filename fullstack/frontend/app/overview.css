@@ -9,3 +9,6 @@
 .overview .walkthrough{margin-top:1rem;padding:1.5rem}.overview .walkthrough summary{font-size:1rem;cursor:pointer}.overview .walkthrough p{margin:1rem 0}.overview video{display:block;width:100%;height:auto;margin:1rem 0}
 .overview-document{max-width:1200px;margin:auto;padding:2rem}.overview-document>.button{margin-bottom:1rem}
 @media(max-width:700px){.overview-grid{grid-template-columns:1fr}.overview-document{padding:1rem}.overview-grid article,.overview-method{padding:1rem}}
+
+.topbar .summary-link{margin-left:auto;font-size:.875rem;white-space:normal;text-align:center}
+@media(max-width:550px){.topbar>span:first-child{display:none}.topbar{gap:.5rem}.topbar .summary-link{padding:.5rem}}

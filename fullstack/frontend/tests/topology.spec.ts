@@ -1,7 +1,7 @@
 import {test,expect} from '@playwright/test';
 
 test('architecture illustration controls real configuration and respects motion preferences',async({page})=>{
-  await page.goto('/');
+  await page.goto('/#sandbox');
   await page.evaluate(()=>document.fonts.ready);
   const preview=page.getByRole('region',{name:'Interactive architecture preview'});
   await expect(preview).toBeVisible();

@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 
 test('register, simulate, compare, export, and inspect responsive layout',async({page})=>{
-  await page.goto('/');
+  await page.goto('/#sandbox');
   await expect(page.getByRole('heading',{name:'Your architecture. Under pressure.'})).toBeVisible();
   await page.screenshot({path:'../../.local/fullstack-desktop.png',fullPage:true});
   await page.getByLabel('Experiment name',{exact:true}).fill('Browser baseline');
