@@ -39,10 +39,10 @@ export const LabScene = memo(function LabScene() {
         for(let j=i+1;j<positions.length;j++){
           const b=positions[j],distance=Math.hypot(a.x-b.x,a.y-b.y);
           if(distance>180)continue;
-          context.strokeStyle=`rgba(132,139,255,${(1-distance/180)*.2})`;
+          context.strokeStyle=`rgba(122,171,128,${(1-distance/180)*.2})`;
           context.beginPath();context.moveTo(a.x,a.y);context.lineTo(b.x,b.y);context.stroke();
         }
-        context.fillStyle=i%3===0?'rgba(111,233,214,.65)':'rgba(169,150,255,.5)';
+        context.fillStyle=i%3===0?'rgba(162,251,126,.55)':'rgba(91,166,111,.45)';
         context.beginPath();context.arc(a.x,a.y,i%3===0?1.8:1.1,0,Math.PI*2);context.fill();
       }
       if(!paused&&!media.matches&&!document.hidden)frame=requestAnimationFrame(draw);
@@ -67,5 +67,5 @@ export function ViewTransition({children,view}:{children:React.ReactNode;view:st
 }
 
 export function DesignTelemetry({rps,replicas,seed,busy}:{rps:number;replicas:number;seed:number;busy:boolean}) {
-  return <div className="design-telemetry"><div><span className="telemetry-kicker">EXPERIMENT PARAMETERS</span><span className="telemetry-state"><i/>{busy?'Engine running':'Ready to explore'}</span></div><div className="telemetry-values"><span><strong>{rps.toLocaleString()}</strong><small>offered req / sec</small></span><span><strong>{String(replicas).padStart(2,'0')}</strong><small>application replicas</small></span><span><strong>{seed}</strong><small>reproducible seed</small></span><svg viewBox="0 0 180 50" aria-hidden="true"><defs><linearGradient id="signal"><stop stopColor="#a990ff"/><stop offset="1" stopColor="#59e0d0"/></linearGradient></defs><path d="M0 36H16L24 25L32 34L45 12L55 42L67 23L80 30L94 17L105 29L115 8L127 31L140 21L150 26L163 13L172 22H180" fill="none" stroke="url(#signal)" strokeWidth="2"/></svg></div></div>;
+  return <div className="design-telemetry"><div><span className="telemetry-kicker">EXPERIMENT PARAMETERS</span><span className="telemetry-state"><i/>{busy?'Engine running':'Ready to explore'}</span></div><div className="telemetry-values"><span><strong>{rps.toLocaleString()}</strong><small>offered req / sec</small></span><span><strong>{String(replicas).padStart(2,'0')}</strong><small>application replicas</small></span><span><strong>{seed}</strong><small>reproducible seed</small></span><svg viewBox="0 0 180 50" aria-hidden="true"><defs><linearGradient id="signal"><stop stopColor="#a2f6a1"/><stop offset="1" stopColor="#80df86"/></linearGradient></defs><path d="M0 36H16L24 25L32 34L45 12L55 42L67 23L80 30L94 17L105 29L115 8L127 31L140 21L150 26L163 13L172 22H180" fill="none" stroke="url(#signal)" strokeWidth="2"/></svg></div></div>;
 }
