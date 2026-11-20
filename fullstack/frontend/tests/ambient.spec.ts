@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test';
 test('ambient effects pause, respect reduced motion, and fit narrow screens',async({page})=>{
   const errors:string[]=[];
   page.on('pageerror',error=>errors.push(error.message));
-  await page.goto('/');
+  await page.goto('/#sandbox');
   await page.evaluate(()=>document.fonts.ready);
   const canvas=page.locator('.lab-atmosphere canvas');
   await expect(canvas).toBeVisible();

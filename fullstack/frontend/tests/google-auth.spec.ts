@@ -13,7 +13,7 @@ async function settings(page:Page){
 test('Google button starts PKCE sign-in without password fields',async({page})=>{
   await settings(page);
   await page.route(project+'/auth/v1/authorize**',r=>r.fulfill({contentType:'text/html',body:'Google sign-in test provider'}));
-  await page.goto('/');
+  await page.goto('/#sandbox');
   await page.getByRole('button',{name:'Run simulation',exact:true}).click();
   const dialog=page.getByRole('dialog');
   await expect(dialog.getByRole('button',{name:'Continue with Google'})).toBeVisible();
@@ -67,7 +67,7 @@ test('missing PKCE verifier explains recovery and removes the unusable callback'
   await expect(page.getByRole('alert').filter({hasText:/lost its browser verification/})).toBeVisible();
   expect(new URL(page.url()).search).toBe('');
   await page.reload();
-  await expect(page.getByRole('heading',{name:'Your architecture. Under pressure.'})).toBeVisible();
+  await expect(page.getByRole('heading',{name:'Understand a system before you scale it.'})).toBeVisible();
   await expect(page.getByRole('alert').filter({hasText:/Could not connect/})).toHaveCount(0);
 });
 

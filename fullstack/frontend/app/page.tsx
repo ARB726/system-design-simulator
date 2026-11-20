@@ -6,6 +6,7 @@ import { Activity, ArrowDownToLine, ArrowRight, BookOpen, Boxes, Check, ChevronR
 import dynamic from 'next/dynamic';
 import TopologyHero from './topology-hero';
 import ComparisonDeltas from './comparison-deltas';
+import OverviewContent from './overview-content';
 const AIExplanation=dynamic(()=>import('./ai-explanation'),{loading:()=> <div className="panel empty-results" role="status">Loading architecture coach...</div>});
 const GuestDemo=dynamic(()=>import('./guest-demo'),{loading:()=> <p role="status">Opening guest demo...</p>});
 const ResultCharts = dynamic(()=>import('./result-charts'),{loading:()=> <div className="empty-results" role="status">Loading charts...</div>});
@@ -24,15 +25,21 @@ const enc = (b:Uint8Array) => btoa(String.fromCharCode(...b)).replace(/\+/g,'-')
 export default function Home() {
   const [guest,setGuest]=useState(false);
   useEffect(()=>{
-    const sync=()=>setGuest(location.hash==='#demo');
+    const sync=()=>{
+      const view=location.hash.slice(1);
+      setGuest(view==='demo');
+      if(['overview','sandbox','library','compare','learn'].includes(view))setView(view);
+      else if(!view)setView('overview');
+    };
     sync();window.addEventListener('hashchange',sync);
     return()=>window.removeEventListener('hashchange',sync);
   },[]);
   function openGuest(){location.hash='demo';setGuest(true)}
-  function closeGuest(){history.replaceState(null,'',location.pathname+location.search);setGuest(false)}
+  function closeGuest(){location.hash='sandbox';setTab('sandbox');setGuest(false)}
   const [apiBase,setApiBase]=useState(''); const [settings,setSettings]=useState<Settings>();
   const [token,setToken]=useState(''); const [identity,setIdentity]=useState('');
-  const [tab,setTab]=useState('sandbox'); const [config,setConfig]=useState<Config>(defaults);
+  const [tab,setView]=useState('overview');
+  function setTab(view:string){setView(view);if(location.hash.slice(1)!==view)location.hash=view;} const [config,setConfig]=useState<Config>(defaults);
   const [presets,setPresets]=useState<Preset[]>([]); const [challenges,setChallenges]=useState<Challenge[]>([]);
   const [preset,setPreset]=useState('Custom design'); const [story,setStory]=useState('Start with a design. Change one thing. See what happens.');
   const [jobs,setJobs]=useState<Job[]>([]); const [selected,setSelected]=useState<Job>(); const [comparison,setComparison]=useState<string[]>([]); const [compareJobs,setCompareJobs]=useState<Job[]>([]);
@@ -119,12 +126,13 @@ export default function Home() {
       <a className="brand" href="/"><span className="brand-mark"><Layers3 size={23}/></span><span>systems<span className="brand-light">lab</span><small>THE ARCHITECTURE PLAYGROUND</small></span></a>
       <div className="workspace"><span className="workspace-icon">S</span><span>Personal workspace<small>{token?'Connected workspace':'Explore the lab'}</small></span><ChevronRight size={15}/></div>
       <div className="nav-label">WORKSPACE</div>
-      <nav>{[{id:'sandbox',label:'Sandbox',icon:LayoutDashboard},{id:'library',label:'Experiment library',icon:Library},{id:'compare',label:'Compare designs',icon:GitCompareArrows},{id:'learn',label:'Learning lab',icon:BookOpen}].map(n=><button key={n.id} aria-label={n.label} aria-current={tab===n.id?'page':undefined} title={n.label} className={'nav-item '+(tab===n.id?'active':'')} onClick={()=>setTab(n.id)}><n.icon size={18}/>{n.label}{n.id==='library'&&jobs.length>0&&<span className="count">{jobs.length}</span>}</button>)}</nav>
+      <nav>{[{id:'overview',label:'Overview',icon:BookOpen},{id:'sandbox',label:'Sandbox',icon:LayoutDashboard},{id:'library',label:'Experiment library',icon:Library},{id:'compare',label:'Compare designs',icon:GitCompareArrows},{id:'learn',label:'Learning lab',icon:BookOpen}].map(n=><button key={n.id} aria-label={n.label} aria-current={tab===n.id?'page':undefined} title={n.label} className={'nav-item '+(tab===n.id?'active':'')} onClick={()=>{location.hash=n.id;setTab(n.id)}}><n.icon size={18}/>{n.label}{n.id==='library'&&jobs.length>0&&<span className="count">{jobs.length}</span>}</button>)}</nav>
       <div className="sidebar-bottom"><div className="lab-note"><FlaskConical size={22}/><strong>Experiment with confidence.</strong><p>These are simulations. Your design does not provision real infrastructure.</p></div><button className="profile" onClick={()=>token?logout():signIn()}><span className="avatar">{identity?identity[0].toUpperCase():'Y'}</span><span>{identity||'Your workspace'}<small>{token?'Sign out':'Sign in to save experiments'}</small></span>{token?<LogOut size={16}/>:<ArrowRight size={16}/>}</button></div>
     </aside>
-    <div className="main-shell"><header className="topbar"><span>Workspace <ChevronRight size={13}/> <strong>{tab==='sandbox'?'Sandbox':tab==='library'?'Experiment library':tab==='compare'?'Compare designs':'Learning lab'}</strong></span><span className="environment"><span/> {settings?.auth==='local'?'Local workspace':'Cloud workspace'}</span></header>
+    <div className="main-shell"><header className="topbar"><span>Workspace <ChevronRight size={13}/> <strong>{tab==='overview'?'Overview':tab==='sandbox'?'Sandbox':tab==='library'?'Experiment library':tab==='compare'?'Compare designs':'Learning lab'}</strong></span><a className="button text-button summary-link" href="/overview/">Summary &amp; walkthrough</a><span className="environment"><span/> {settings?.auth==='local'?'Local workspace':'Cloud workspace'}</span></header>
     <main><ViewTransition view={tab}>
       {error&&<div className="error" role="alert">{error}<button aria-label="Dismiss error" onClick={()=>setError('')}>×</button></div>}
+      {tab==='overview'&&<OverviewContent/>}
       {tab==='sandbox'&&<>
         {!token&&<section className="panel guest-entry"><div><strong>See what a read cache changes.</strong><p>Explore two recorded simulations and compare their results. No sign-in required.</p></div><button className="button primary" onClick={()=>{setError('');openGuest()}}>Try without signing in <ArrowRight size={16}/></button></section>}
         <div className="page-heading"><div><div className="eyebrow"><span/> BUILD · BREAK · UNDERSTAND</div><h1>Your architecture. Under pressure.</h1><p>Design a system, push its limits, and discover what really makes it work.</p></div><button className="button secondary" onClick={()=>{setConfig(structuredClone(defaults));setSelected(undefined);setPreset('Custom design');setChallenge(undefined);setStory('Start with a design. Change one thing. See what happens.')}}><Plus size={16}/> New experiment</button></div>
