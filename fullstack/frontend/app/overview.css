@@ -221,3 +221,7 @@ html[data-ambient-paused="true"] .trace-active { animation: none; }
   .workflow-icon { flex-basis: 2.1rem; height: 2.1rem; }
   .overview-document > nav { margin-bottom: 1rem; }
 }
+
+/* Keep account controls reachable when larger text exceeds the viewport. */
+.sidebar{overflow-y:auto}
+.sidebar-bottom{flex-shrink:0}
