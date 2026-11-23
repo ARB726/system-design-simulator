@@ -4,7 +4,7 @@ test('the first screen offers a no-sign-in demo with a reloadable link',async({p
   await page.route('**/api/settings',r=>r.fulfill({json:{auth:'local'}}));
   await page.route('**/api/catalog',r=>r.fulfill({json:{presets:[],challenges:[]}}));
   await page.goto('/#sandbox');
-  const entry=page.getByRole('button',{name:'Try without signing in',exact:true});
+  const entry=page.getByRole('button',{name:'Explore the cache example',exact:true});
   await expect(entry).toBeInViewport();
   await entry.click();
   await expect(page).toHaveURL(/#demo$/);

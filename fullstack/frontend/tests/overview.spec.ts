@@ -45,10 +45,10 @@ test('choosing a workflow preserves the current sandbox design', async ({ page }
 
 test('the guest demo keeps the standalone walkthrough and transcript reachable', async ({ page }) => {
   await page.goto('/');
-  await page.getByRole('link', { name: 'Try without signing in', exact: true }).click();
+  await page.getByRole('link', { name: 'Explore the cache example', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Two designs. See the tradeoff.' })).toBeVisible();
   await page.getByRole('link', { name: 'Summary & walkthrough' }).click();
-  await expect(page).toHaveURL(/\/overview\/$/);
+  await expect(page).toHaveURL(/\/overview\/index\.html$/);
   await page.getByRole('link', { name: 'Jump to walkthrough' }).click();
   await expect(page.getByText('Watch the 75-second walkthrough', { exact: true })).toBeInViewport();
   await page.getByText('Watch the 75-second walkthrough', { exact: true }).click();
@@ -68,7 +68,7 @@ test('phone layouts keep labeled workspace navigation and reloadable workflow li
     const overview = nav.getByRole('button', { name: 'Overview' });
     await expect(overview).toHaveAttribute('aria-current', 'page');
     expect((await overview.boundingBox())!.height).toBeGreaterThanOrEqual(44);
-    await expect(page.getByRole('link', { name: 'Try without signing in', exact: true })).toBeInViewport();
+    await expect(page.getByRole('link', { name: 'Explore the cache example', exact: true })).toBeInViewport();
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
   }
   for (const [link, hash, title] of [
@@ -116,7 +116,7 @@ test('the guide explains experiments, result metrics and access on both entry po
   for (const route of ['/', '/overview/']) {
     await page.goto(route);
     await expect(page.locator('body')).toHaveCSS('background-color', 'rgb(5, 5, 5)');
-    await expect(page.getByRole('link', { name: route==='/overview/'?'Explore recorded example':'Try without signing in', exact: true }))
+    await expect(page.getByRole('link', { name: 'Explore the cache example', exact: true }))
       .toHaveCSS('background-color', 'rgb(166, 244, 119)');
     await page.getByRole('link', { name: 'How to run a first experiment' }).click();
     await expect(page.getByRole('heading', { name: 'A useful first experiment' })).toBeInViewport();

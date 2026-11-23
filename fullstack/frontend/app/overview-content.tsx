@@ -30,9 +30,10 @@ export default function OverviewContent({signedIn=false,standalone=false}:{signe
         <h1 id="overview-title">Understand a system before you <span>scale it.</span></h1>
         <p className="overview-lead">Build an architecture, send traffic through it and see where requests slow down. Change one design choice to measure its effect.</p>
         <div className="overview-actions">
-          {!signedIn&&<a className="button primary" href="/#demo"><Play size={16} aria-hidden="true"/> {standalone?'Explore recorded example':'Try without signing in'}</a>}
+          {!signedIn&&<a className="button primary" href="/#demo"><Play size={16} aria-hidden="true"/> Explore the cache example</a>}
           <a className="button secondary" href="/#sandbox">Open sandbox</a>
         </div>
+        {!signedIn&&<p>No sign-in needed for the recorded example.</p>}
         <a className="overview-guide-link" href="#first-experiment">How to run a first experiment</a>
       </div>
       <ExperimentPreview/>
