@@ -146,7 +146,7 @@ export default function Home() {
     <div className="main-shell"><header className="topbar"><span>Workspace <ChevronRight size={13}/> <strong>{tab==='overview'?'Overview':tab==='sandbox'?'Sandbox':tab==='library'?'Experiment library':tab==='compare'?'Compare designs':'Learning lab'}</strong></span><a className="button text-button summary-link" href="/overview/">Summary &amp; walkthrough</a><span className="environment"><span/> {settings?.auth==='local'?'Local workspace':'Cloud workspace'}</span></header>
     <main><ViewTransition view={tab}>
       {error&&<div className="error" role="alert">{error}<button aria-label="Dismiss error" onClick={()=>setError('')}>×</button></div>}
-      {tab==='overview'&&<OverviewContent/>}
+      {tab==='overview'&&<OverviewContent signedIn={!!token}/>}
       {tab==='sandbox'&&<>
         {!token&&<section className="panel guest-entry"><div><strong>See what a read cache changes.</strong><p>Explore two recorded simulations and compare their results. No sign-in required.</p></div><button className="button primary" onClick={()=>{setError('');openGuest()}}>Try without signing in <ArrowRight size={16}/></button></section>}
         <div className="page-heading"><div><div className="eyebrow"><span/> BUILD · BREAK · UNDERSTAND</div><h1>Your architecture. Under pressure.</h1><p>Design a system, push its limits, and discover what really makes it work.</p></div><button className="button secondary" onClick={()=>{setConfig(structuredClone(defaults));setSelected(undefined);setPreset('Custom design');setChallenge(undefined);setStory('Start with a design. Change one thing. See what happens.')}}><Plus size={16}/> New experiment</button></div>

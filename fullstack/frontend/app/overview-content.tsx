@@ -22,7 +22,7 @@ const metrics = [
   ['Illustrative monthly cost', 'This is a model estimate for the configured design. Opening or running a simulation does not provision that infrastructure or create a matching cloud bill.'],
 ];
 
-export default function OverviewContent() {
+export default function OverviewContent({signedIn=false,standalone=false}:{signedIn?:boolean;standalone?:boolean}) {
   return <div className="overview">
     <section className="overview-intro" aria-labelledby="overview-title">
       <div>
@@ -30,7 +30,7 @@ export default function OverviewContent() {
         <h1 id="overview-title">Understand a system before you <span>scale it.</span></h1>
         <p className="overview-lead">Build an architecture, send traffic through it and see where requests slow down. Change one design choice to measure its effect.</p>
         <div className="overview-actions">
-          <a className="button primary" href="/#demo"><Play size={16} aria-hidden="true"/> Try without signing in</a>
+          {!signedIn&&<a className="button primary" href="/#demo"><Play size={16} aria-hidden="true"/> {standalone?'Explore recorded example':'Try without signing in'}</a>}
           <a className="button secondary" href="/#sandbox">Open sandbox</a>
         </div>
         <a className="overview-guide-link" href="#first-experiment">How to run a first experiment</a>
