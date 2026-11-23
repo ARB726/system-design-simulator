@@ -39,3 +39,5 @@ main{padding-top:42px}h1{font-size:clamp(29px,3.1vw,46px);line-height:1.18;lette
 .page-heading{column-gap:12px}
 .page-heading>div{min-width:0}
 .page-heading h1{overflow-wrap:anywhere}
+
+button.workspace{width:100%;text-align:left;color:inherit;font:inherit;cursor:pointer}button.workspace:hover{border-color:var(--accent,#b7ef85)}button.workspace:focus-visible{outline:2px solid var(--accent,#b7ef85);outline-offset:3px}
