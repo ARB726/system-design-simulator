@@ -7,6 +7,6 @@ export default function OverviewPage() {
       <a className="button text-button" href="#walkthrough">Jump to walkthrough</a>
       <a className="button text-button" href="#metrics-title">Metric guide</a>
     </nav>
-    <OverviewContent/>
+    <OverviewContent standalone/>
   </main>;
 }
