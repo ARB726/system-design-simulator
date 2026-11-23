@@ -5,7 +5,7 @@ test('register, simulate, compare, export, and inspect responsive layout',async(
   await expect(page.getByRole('heading',{name:'Your architecture. Under pressure.'})).toBeVisible();
   await page.screenshot({path:'../../.local/fullstack-desktop.png',fullPage:true});
   await page.getByLabel('Experiment name',{exact:true}).fill('Browser baseline');
-  await page.getByRole('button',{name:'Run simulation',exact:true}).click();
+  await page.getByRole('button',{name:'Sign in to run simulation',exact:true}).click();
   const dialog=page.getByRole('dialog');
   await dialog.getByLabel('Email',{exact:true}).fill(`browser-${Date.now()}@example.com`);
   await dialog.getByLabel('Password',{exact:true}).fill('correct-horse-battery-staple');

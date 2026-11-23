@@ -14,7 +14,7 @@ test('Google button starts PKCE sign-in without password fields',async({page})=>
   await settings(page);
   await page.route(project+'/auth/v1/authorize**',r=>r.fulfill({contentType:'text/html',body:'Google sign-in test provider'}));
   await page.goto('/#sandbox');
-  await page.getByRole('button',{name:'Run simulation',exact:true}).click();
+  await page.getByRole('button',{name:'Sign in to run simulation',exact:true}).click();
   const dialog=page.getByRole('dialog');
   await expect(dialog.getByRole('button',{name:'Continue with Google'})).toBeVisible();
   await expect(dialog.getByLabel('Password',{exact:true})).toHaveCount(0);
@@ -42,7 +42,19 @@ test('Google callback exchanges code, uses user token, and clears private state 
     return route.fulfill({json:[]});
   });
   await page.route(project+'/auth/v1/logout**',r=>r.fulfill({status:204}));
+  await page.goto('/#sandbox');
+  await page.getByLabel('Experiment name',{exact:true}).fill('Round trip design');
+  const rate = page.getByRole('slider').first();
+  await rate.focus();
+  await rate.press('ArrowRight');
+  const expectedRate = await rate.inputValue();
+  await page.getByRole('button',{name:'Sign in to run simulation',exact:true}).click();
+  await page.route(project+'/auth/v1/authorize**',r=>r.fulfill({contentType:'text/html',body:'Mock sign-in'}));
+  await page.getByRole('button',{name:'Continue with Google'}).click();
+  await page.waitForURL(project+'/auth/v1/authorize**');
   await page.goto('/?code=test-code');
+  await expect(page.getByLabel('Experiment name',{exact:true})).toHaveValue('Round trip design');
+  await expect(rate).toHaveValue(expectedRate);
   await expect(page.getByRole('button',{name:/google-user@example.com/})).toBeVisible();
   await expect.poll(()=>authenticated).toBeGreaterThan(0);
   expect(new URL(page.url()).search).toBe('');
