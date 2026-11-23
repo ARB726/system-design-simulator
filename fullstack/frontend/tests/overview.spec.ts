@@ -116,7 +116,7 @@ test('the guide explains experiments, result metrics and access on both entry po
   for (const route of ['/', '/overview/']) {
     await page.goto(route);
     await expect(page.locator('body')).toHaveCSS('background-color', 'rgb(5, 5, 5)');
-    await expect(page.getByRole('link', { name: 'Try without signing in', exact: true }))
+    await expect(page.getByRole('link', { name: route==='/overview/'?'Explore recorded example':'Try without signing in', exact: true }))
       .toHaveCSS('background-color', 'rgb(166, 244, 119)');
     await page.getByRole('link', { name: 'How to run a first experiment' }).click();
     await expect(page.getByRole('heading', { name: 'A useful first experiment' })).toBeInViewport();
