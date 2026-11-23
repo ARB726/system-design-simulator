@@ -63,7 +63,7 @@ export default function ExperimentPreview() {
         </svg>
       </div>
       <div className="trace-time" aria-hidden="true"><span>0 s</span><span>{lastSecond} s</span></div>
-      <p className="trace-key"><span>Selected design</span><span>Other design</span></p>
+      <p className="trace-key"><span>{sample.label}</span><span>{samples[1-active].label}</span></p>
     </figure>
   </section>;
 }
